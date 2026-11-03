@@ -1,95 +1,101 @@
-# Kanji — ditado com IA local para Mac
+# Kanji — local AI dictation for Mac
 
-Ditado com IA para o Mac, em **português e inglês ao mesmo tempo**. Aperte um atalho, fale, e o texto aparece revisado no app em que você estiver: Notes, Slack, Chrome, o chat do Claude, um terminal.
+English · [Português (Brasil)](README.pt-BR.md)
 
-Nativo (Swift, sem Electron), gratuito e de código aberto. A transcrição acontece no próprio Mac.
+AI dictation for the Mac, in **Portuguese and English at the same time**. Press a shortcut, speak, and the polished text shows up in whatever app you're in: Notes, Slack, Chrome, the Claude chat, a terminal.
 
-## O que ele faz
+Native (Swift, no Electron), free and open source. Transcription happens on your Mac.
 
-- **Escreve onde está o cursor.** Ao parar, o texto revisado entra no campo selecionado. Sem campo, ele fica no clipboard e no histórico.
-- **Português e inglês juntos.** Dois reconhecedores ouvem o mesmo áudio, e uma fusão palavra por palavra pega "deploy", "pull request" e "LLM" do inglês sem estragar o português. Frases inteiras em inglês ficam em inglês: nada é traduzido.
-- **Listas ditadas viram listas.** "Primeiro banana, segundo café… o quarto e o quinto vão ser Ferrari e McLaren" vira uma lista numerada, na ordem pedida.
-- **Revisão em duas camadas:**
-  - **Modelo do Mac** (Apple Intelligence): grátis e sem internet. É pequeno, então corrige palavra e pontuação trecho a trecho.
-  - **Modelo da nuvem, com a sua chave** (opcional): Claude, OpenAI, Gemini, Groq, OpenRouter ou qualquer API compatível com a da OpenAI. Ele revisa o ditado inteiro ao parar, em ~1,5 s, e entende o contexto.
-- **Glossário que aprende.** Cada termo que a revisão da nuvem corrige duas vezes ("Cláudio" → Claude) passa a valer também no modelo do Mac, sem internet.
-- **Ignora o silêncio.** Um detector de voz da Apple impede que ruído e silêncio virem palavras que você não disse.
-- **Histórico pesquisável** de tudo que você ditou e copiou. Ficam de fora as senhas marcadas pelos gerenciadores (1Password, Bitwarden, Chaves) e os textos com cara de chave de API ou token. Dá para desligar o histórico do clipboard.
+> The app's interface is in Brazilian Portuguese for now. This README keeps the exact Portuguese labels and gives the English meaning in parentheses.
 
-## Instalar
+## What it does
 
-> Requisitos: Mac com Apple Silicon, **macOS 27** ou mais recente e Apple Intelligence ativado. Sem a Apple Intelligence, o ditado funciona, mas sem a revisão local.
+- **Types where your cursor is.** When you stop, the polished text goes into the focused field. With no field, it lands in the clipboard and in the history.
+- **Portuguese and English together.** Two recognizers listen to the same audio, and a word-by-word merge picks up "deploy", "pull request" and "LLM" from English without breaking the Portuguese. Whole sentences in English stay in English: nothing gets translated.
+- **Dictated lists become lists.** "Primeiro banana, segundo café… o quarto e o quinto vão ser Ferrari e McLaren" ("First banana, second coffee… the fourth and fifth will be Ferrari and McLaren") becomes a numbered list, in the order you asked for.
+- **Two-tier correction:**
+  - **On-Mac model** (Apple Intelligence): free and offline. It's small, so it fixes words and punctuation chunk by chunk.
+  - **Cloud model, with your own key** (optional): Claude, OpenAI, Gemini, Groq, OpenRouter or any OpenAI-compatible API. It revises the whole dictation when you stop, in ~1.5 s, and understands the context.
+- **A glossary that learns.** Every term the cloud correction fixes twice ("Cláudio" → Claude) also starts applying to the on-Mac model, offline.
+- **Ignores silence.** An Apple voice detector keeps noise and silence from turning into words you never said.
+- **Searchable history** of everything you dictated and copied. Passwords flagged by password managers (1Password, Bitwarden, Keychain) and text that looks like an API key or token are left out. Clipboard history can be turned off.
 
-**Homebrew** (quando a primeira versão notarizada sair):
+## Install
+
+> Requirements: Apple Silicon Mac, **macOS 27** or later, and Apple Intelligence turned on. Without Apple Intelligence, dictation works, but without local correction.
+
+**Homebrew** (once the first notarized release is out):
 ```bash
 brew install --cask henriquebap/tap/kanji
 ```
 
-**Download direto:** baixe o `.zip` em [Releases](https://github.com/henriquebap/kanji-local-dictation/releases), descompacte e arraste o `Kanji.app` para Aplicativos.
+**Direct download:** get the `.zip` from [Releases](https://github.com/henriquebap/kanji-local-dictation/releases), unzip it and drag `Kanji.app` to Applications.
 
-**Compilando** (só precisa das Command Line Tools: `xcode-select --install`):
+**Build from source** (only needs the Command Line Tools: `xcode-select --install`):
 ```bash
 git clone https://github.com/henriquebap/kanji-local-dictation.git && cd kanji-local-dictation
 make install
 ```
 
-## Primeiros passos
+## Getting started
 
-Na primeira vez, o Kanji abre a janela **Primeiros passos**. Ela mostra, com ✓ verde, o que já está liberado:
+On first launch, Kanji opens the *Primeiros passos* (Getting started) window. A green ✓ shows what's already allowed:
 
-1. **Microfone:** clique em *Permitir*. O áudio é transcrito no próprio Mac.
-2. **Acessibilidade:** clique em *Abrir Ajustes do Sistema* e ative o Kanji na lista. É isso que deixa ele escrever no app em que você está.
-3. **Apple Intelligence:** ative em *Ajustes do Sistema › Apple Intelligence e Siri* para ter a revisão grátis.
-4. **Opcional, revisão na nuvem:** em *Ajustes › Correção*:
-   - escolha o provedor;
-   - cole a sua chave (ela fica no Keychain do macOS);
-   - clique em *Testar*.
+1. **Microphone:** click *Permitir* (Allow). Audio is transcribed on your Mac.
+2. **Accessibility:** click *Abrir Ajustes do Sistema* (Open System Settings) and turn Kanji on in the list. That's what lets it type into the app you're in.
+3. **Apple Intelligence:** turn it on in *System Settings › Apple Intelligence & Siri* to get free correction.
+4. **Optional, cloud correction:** in *Ajustes › Correção* (Settings › Correction):
+   - pick the provider;
+   - paste your key (it's stored in the macOS Keychain);
+   - click *Testar* (Test).
 
-Depois, é só usar: clique num campo de texto, aperte **⌃⌥D**, fale e aperte de novo. A janela volta pelo menu do Kanji › *Primeiros passos…*.
+Then just use it: click a text field, press **⌃⌥D**, speak and press it again. You can reopen the window from the Kanji menu › *Primeiros passos…*.
 
-| Atalho | O que faz | Onde muda |
+| Shortcut | What it does | Where to change it |
 |---|---|---|
-| **⌃⌥D** (global) | Começa a gravar; de novo, para e escreve o texto | Ajustes › Geral |
-| **esc** (gravando) | Cancela | fixo |
-| **⌃⌥T** (global) | Abre a janela do Kanji | Ajustes › Geral |
-| **⌘Y** | Histórico | fixo |
-| **⌘,** | Ajustes | fixo |
+| **⌃⌥D** (global) | Starts recording; press again to stop and type the text | *Ajustes › Geral* (Settings › General) |
+| **esc** (while recording) | Cancels | fixed |
+| **⌃⌥T** (global) | Opens the Kanji window | *Ajustes › Geral* |
+| **⌘Y** | *Histórico* (History) | fixed |
+| **⌘,** | *Ajustes* (Settings) | fixed |
 
-Em Ajustes › Geral também ficam o modo "segurar enquanto fala" e o "escrever enquanto você fala". Neste último, o texto aparece no campo durante a fala, revisado trecho a trecho pelo modelo do Mac. É o modo padrão quando não há provedor da nuvem.
+*Ajustes › Geral* also holds the "segurar enquanto fala" (hold while you talk) mode and the "escrever enquanto você fala" (type while you talk) mode. In the latter, text appears in the field as you speak, corrected chunk by chunk by the on-Mac model. It's the default mode when no cloud provider is set.
 
-## Privacidade
+## Privacy
 
-- **O áudio nunca sai do Mac.** A transcrição é do `SpeechAnalyzer` da Apple, on-device.
-- **Com o modelo do Mac,** nada sai do computador.
-- **Com um provedor da nuvem,** só o **texto** do ditado vai para ele, usando a **sua** chave e conforme os termos dele. O Kanji não tem servidor.
-- **Chaves de API** ficam no Keychain.
-- **Histórico** fica em `~/Library/Application Support/Kanji`; **ajustes e glossário** (inclusive os termos aprendidos), nas preferências do app.
-- **Histórico do clipboard:** vem ligado e guarda o que você copia, para achar depois. Uma senha que não venha de um gerenciador também entra nele. Se você copia senhas de outros lugares, desligue em Ajustes › Histórico.
+- **Audio never leaves your Mac.** Transcription is done by Apple's on-device `SpeechAnalyzer`.
+- **With the on-Mac model,** nothing leaves your computer.
+- **With a cloud provider,** only the dictation **text** goes to it, using **your** key and under its terms. Kanji has no server.
+- **API keys** are stored in the Keychain.
+- **History** lives in `~/Library/Application Support/Kanji`; **settings and glossary** (including learned terms) live in the app's preferences.
+- **Clipboard history:** on by default, it keeps what you copy so you can find it later. A password that doesn't come from a password manager also ends up in it. If you copy passwords from other places, turn it off in *Ajustes › Histórico* (Settings › History).
 
-## Idiomas
+## Languages
 
-Hoje: **português do Brasil com inglês misturado**. O reconhecimento de fala já aceita outros idiomas principais (Ajustes › Geral), mas as regras de lista e a revisão foram pensadas e testadas só para o português com inglês. Abrir para outros idiomas está no roadmap.
+Today: **Brazilian Portuguese mixed with English**. Speech recognition already accepts other major languages (*Ajustes › Geral*), but the list rules and the correction were designed and tested only for Portuguese with English. Opening up to other languages is on the roadmap.
 
-## Como funciona
+## How it works
 
-[docs/ARQUITETURA.md](docs/ARQUITETURA.md) tem o desenho completo: as camadas, o caminho do áudio até o texto, o que vai para cada modelo e por quê.
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) has the full design: the layers, the path from audio to text, what goes to each model and why.
 
-## Desenvolvimento
+Docs in Portuguese: [README.pt-BR.md](README.pt-BR.md) and [docs/ARCHITECTURE.pt-BR.md](docs/ARCHITECTURE.pt-BR.md).
+
+## Development
 
 ```bash
-make run       # compila build/Kanji.app e abre
-make install   # copia para /Applications
-make teste     # testes das regras (listas, junção de frases, fidelidade, glossário que aprende)
+make run       # builds build/Kanji.app and opens it
+make install   # copies it to /Applications
+make teste     # rule tests (lists, sentence joining, faithfulness, learning glossary)
 ```
 
-- O build usa `swiftc` direto e funciona sem o Xcode. Por isso o estado das telas fica em classes `@Observable`, sem as macros `@State` e `@Generable`.
-- As permissões do macOS ficam presas à assinatura do app. Para não pedir de novo a cada build, crie um certificado local uma vez com `./scripts/certificado-dev.sh`.
+- The build calls `swiftc` directly and works without Xcode. That's why screen state lives in `@Observable` classes, without the `@State` and `@Generable` macros.
+- macOS permissions are tied to the app's signature. To avoid being asked again on every build, create a local certificate once with `./scripts/dev-certificate.sh`.
 - Logs: `/usr/bin/log show --last 10m --predicate 'subsystem == "io.github.henriquebap.kanji"' --info`
-- Release assinado e notarizado: [docs/DISTRIBUICAO.md](docs/DISTRIBUICAO.md).
-- Próximos passos: [docs/ROADMAP.md](docs/ROADMAP.md).
+- Signed and notarized release: [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md).
+- Next steps: [docs/ROADMAP.md](docs/ROADMAP.md).
 
-PRs são bem-vindos. Para mudança grande, abra uma issue antes.
+PRs are welcome. For a big change, open an issue first.
 
-## Licença
+## License
 
-[Apache 2.0](LICENSE). Você pode usar, modificar e distribuir o código, inclusive comercialmente, mantendo o aviso de copyright e o [NOTICE](NOTICE). O nome **Kanji** e o ícone não fazem parte da licença: um fork publicado precisa de outro nome e outro ícone.
+[Apache 2.0](LICENSE). You can use, modify and distribute the code, including commercially, as long as you keep the copyright notice and the [NOTICE](NOTICE). The **Kanji** name and icon are not covered by the license: a published fork needs a different name and icon.

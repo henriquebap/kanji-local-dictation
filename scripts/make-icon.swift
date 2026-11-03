@@ -1,5 +1,5 @@
 // Gera Resources/AppIcon.icns: onda sonora branca sobre gradiente, no formato de ícone do macOS.
-// Uso: swift scripts/icone.swift
+// Uso: swift scripts/make-icon.swift
 import AppKit
 
 let lado: CGFloat = 1024

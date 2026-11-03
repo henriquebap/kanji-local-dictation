@@ -1,104 +1,104 @@
 # Roadmap
 
-Resumo das pesquisas de 03/11/2026: mercado, captura de áudio do sistema e modo agente.
+Summary of the research from 2026-11-03: market, system audio capture and agent mode.
 
-## Posicionamento
+## Positioning
 
-**O mercado:**
-- **Assinaturas na nuvem** a US$ 12–15/mês: Wispr Flow, Willow, Monologue.
-- **Apps locais com Whisper** em compra única de US$ 25–80: VoiceInk, MacWhisper, BetterDictation.
-- **Open-source que baixa modelo:** Handy (37k★, Tauri), FluidVoice (12,7k★), OpenWhispr (10,6k★, Electron), VoiceInk (7k★, mas não aceita PRs).
+**The market:**
+- **Cloud subscriptions** at US$ 12–15/month: Wispr Flow, Willow, Monologue.
+- **Local Whisper apps** as one-time purchases of US$ 25–80: VoiceInk, MacWhisper, BetterDictation.
+- **Open source that downloads a model:** Handy (37k★, Tauri), FluidVoice (12.7k★), OpenWhispr (10.6k★, Electron), VoiceInk (7k★, but doesn't accept PRs).
 
-**Mesma stack que a nossa (SpeechAnalyzer + Foundation Models):**
+**Same stack as ours (SpeechAnalyzer + Foundation Models):**
 - Yap (465★)
-- Megaphone (180★, parado desde jul/2026)
+- Megaphone (180★, inactive since Jul/2026)
 
-Ninguém domina, mas o espaço não está vazio. **O diferencial tem de vir da execução:**
-1. **pt-BR de primeira classe, misturado com inglês.** Todos os concorrentes são pensados para o inglês. A fusão PT+EN, com dois `SpeechTranscriber` no mesmo áudio, resolve o jargão técnico sem nuvem.
-2. **Ditado e clipboard num app só.** Hoje é preciso combinar VoiceInk com Maccy.
-3. **Open-source de verdade**, aceitando PRs.
-4. **Zero download, zero custo, nativo e leve.**
+Nobody dominates, but the space isn't empty. **The differentiator has to come from execution:**
+1. **First-class pt-BR, mixed with English.** Every competitor is designed for English. The PT+EN fusion, with two `SpeechTranscriber`s on the same audio, handles technical jargon without the cloud.
+2. **Dictation and clipboard in one app.** Today you have to combine VoiceInk with Maccy.
+3. **Truly open source**, accepting PRs.
+4. **Zero download, zero cost, native and lightweight.**
 
-**Riscos honestos:**
-- Não existe benchmark público do SpeechAnalyzer em pt-BR.
-- O modelo local (~3B, contexto de 8k tokens) às vezes responde ao texto em vez de corrigi-lo.
-- Exige Apple Intelligence.
+**Honest risks:**
+- There's no public SpeechAnalyzer benchmark for pt-BR.
+- The local model (~3B, 8k-token context) sometimes replies to the text instead of correcting it.
+- Requires Apple Intelligence.
 
-## Dores reais que a v1 precisa resolver
+## Real pain points v1 needs to solve
 
-| Dor | Como resolver |
+| Pain point | How to solve it |
 |---|---|
-| Colagem falha em terminal e campo seguro, e o clipboard fica sujo | Salvar e restaurar o clipboard; atalho de colagem próprio para terminais; detectar Secure Input e avisar |
-| Jargão sai errado ("cloud code") | Dicionário pessoal de substituições aplicado depois da transcrição |
-| O LLM "conversa" em vez de corrigir | Timeout, validação (descartar a saída se se afastar demais do original) e fallback para o bruto |
-| Permissão negada sem explicação | Onboarding de permissões com diagnóstico |
-| Senha vazando no histórico | Já ignora os tipos Concealed/Transient; falta lista de apps excluídos e detectar tokens |
+| Pasting fails in terminals and secure fields, and the clipboard gets clobbered | Save and restore the clipboard; a dedicated paste shortcut for terminals; detect Secure Input and warn |
+| Jargon comes out wrong ("cloud code") | Personal substitution dictionary applied after transcription |
+| The LLM "chats" instead of correcting | Timeout, validation (discard the output if it drifts too far from the original) and fallback to the raw text |
+| Permission denied with no explanation | Permission onboarding with diagnostics |
+| Passwords leaking into history | Already ignores the Concealed/Transient types; still missing an excluded-apps list and token detection |
 
-## Modelo de produto (decidido em 03/11/2026)
+## Product model (decided on 2026-11-03)
 
-- **Código aberto (Apache 2.0) e app gratuito.** O nome e o ícone ficam com o autor (ver `NOTICE`).
-- **Grátis para sempre:**
-  - transcrição no Mac;
-  - revisão com o modelo do Mac;
-  - revisão na nuvem com a chave da própria pessoa;
-  - glossário que aprende;
-  - histórico.
-- **Assinatura barata no futuro (R$ 5–10/mês):** revisão na nuvem sem precisar de chave e features novas.
-  - Exige um servidor próprio (proxy com conta, limite por usuário e cobrança), porque a chave do autor nunca vai dentro do app.
-  - Os créditos da API que vêm com o plano Max podem alimentar um produto vendido, mas o serviço não pode depender só deles: quando acabam, a API para. Precisa de crédito comprado ou auto-reload por trás.
-- **Distribuição:** download notarizado + Homebrew primeiro, Mac App Store e iPhone depois ([DISTRIBUICAO.md](DISTRIBUICAO.md)).
+- **Open source (Apache 2.0) and a free app.** The name and icon stay with the author (see `NOTICE`).
+- **Free forever:**
+  - transcription on the Mac;
+  - review with the Mac's model;
+  - cloud review with the user's own key;
+  - a glossary that learns;
+  - history.
+- **Cheap subscription in the future (R$ 5–10/month):** cloud review without needing a key, plus new features.
+  - Requires our own server (proxy with accounts, per-user limits and billing), because the author's key never ships inside the app.
+  - The API credits that come with the Max plan can power a product that is sold, but the service can't depend on them alone: when they run out, the API stops. It needs purchased credits or auto-reload behind it.
+- **Distribution:** notarized download + Homebrew first, Mac App Store and iPhone later ([DISTRIBUTION.md](DISTRIBUTION.md)).
 
-## Fases
+## Phases
 
-### v0.1: ditado usável (construída, falta validar no uso real)
-Escrita ao vivo no campo em foco (Acessibilidade) com painel compacto, ou texto no painel quando não há campo; português + inglês com fusão palavra por palavra e glossário pessoal; correção em streaming com validação, colagem com restauração do clipboard, atalhos globais configuráveis (ditar e abrir), esc para cancelar, app com janela principal e ícone, sons de estado, histórico de ditados e clipboard com busca.
+### v0.1: usable dictation (built, still needs validation in real use)
+Live typing into the focused field (Accessibility) with a compact panel, or text in the panel when there's no field; Portuguese + English with word-by-word fusion and a personal glossary; streaming correction with validation, pasting with clipboard restore, configurable global shortcuts (dictate and open), esc to cancel, an app with a main window and icon, status sounds, searchable dictation and clipboard history.
 
-### Feito em 03/11/2026
-- Revisão na nuvem com vários provedores: Claude, OpenAI, Gemini, Groq, OpenRouter e qualquer API compatível com a da OpenAI.
-- Modo "só no fim", com colagem por ⌘V que funciona em todos os apps.
-- Glossário que aprende com a revisão da nuvem.
-- Detector de voz contra palavras inventadas no silêncio.
-- Janela de primeiros passos com as permissões.
-- Filtro de chaves e tokens no histórico do clipboard.
+### Done on 2026-11-03
+- Cloud review with multiple providers: Claude, OpenAI, Gemini, Groq, OpenRouter and any OpenAI-compatible API.
+- "Only at the end" mode, pasting with ⌘V, which works in every app.
+- A glossary that learns from the cloud review.
+- Voice detector against words invented during silence.
+- Getting-started window with the permissions.
+- Filter for keys and tokens in the clipboard history.
 
-### v0.2: polimento (o que separa um brinquedo de um produto)
-- Timeout da correção
-- Apps excluídos do histórico
-- Benchmark: 30–50 áudios reais em pt-BR, medindo o WER contra Whisper large-v3 e Parakeet. Seria um número que nenhum concorrente publica.
+### v0.2: polish (what separates a toy from a product)
+- Correction timeout
+- Apps excluded from history
+- Benchmark: 30–50 real pt-BR recordings, measuring WER against Whisper large-v3 and Parakeet. It would be a number no competitor publishes.
 
-### v0.3: transcrever o que o Mac está tocando (reuniões, vídeos)
-- **Captura:** Core Audio process taps (`AudioHardwareCreateProcessTap`, API Swift `AudioHardwareSystem.shared.makeProcessTap`). Pede só a permissão "Gravação de áudio do sistema", menor que a de Gravação de Tela, e pode filtrar por app (`bundleIDs`). Evitar ScreenCaptureKit (exige permissão de tela) e drivers virtuais.
-- **Ao vivo:** `SpeechAnalyzer.start(inputSequence:)` com `AsyncStream<AnalyzerInput>` e preset `.progressiveTranscription`. O texto volátil aparece em cinza e o final em preto. No macOS 27, o `AnalyzerInputConverter` dispensa o `AVAudioConverter` manual.
-- **Eu × Outros:** dois transcritores, um no microfone e outro no tap, intercalados por `audioTimeRange`. Não existe diarização nativa.
-- **Requisitos:** `NSAudioCaptureUsageDescription` (sem ela o tap grava silêncio, sem erro), assinatura estável (Developer ID) para o TCC não esquecer a permissão, e aviso de consentimento: gravar reunião tem implicações de LGPD quando é trabalho.
-- **Limite:** o contexto local é de 8k tokens, então resumir uma reunião de 1 h exige o Claude (v0.4).
+### v0.3: transcribe what the Mac is playing (meetings, videos)
+- **Capture:** Core Audio process taps (`AudioHardwareCreateProcessTap`, Swift API `AudioHardwareSystem.shared.makeProcessTap`). Only asks for the "System Audio Recording" permission, narrower than Screen Recording, and can filter by app (`bundleIDs`). Avoid ScreenCaptureKit (requires screen permission) and virtual drivers.
+- **Live:** `SpeechAnalyzer.start(inputSequence:)` with `AsyncStream<AnalyzerInput>` and the `.progressiveTranscription` preset. Volatile text shows in gray and final text in black. On macOS 27, `AnalyzerInputConverter` removes the need for a manual `AVAudioConverter`.
+- **Me × Others:** two transcribers, one on the microphone and one on the tap, interleaved by `audioTimeRange`. There's no native diarization.
+- **Requirements:** `NSAudioCaptureUsageDescription` (without it the tap records silence, with no error), a stable signature (Developer ID) so TCC doesn't forget the permission, and a consent notice: recording a meeting has LGPD implications when it's work.
+- **Limit:** the local context is 8k tokens, so summarizing a 1 h meeting requires Claude (v0.4).
 
-### v0.4: modo agente (opt-in)
-- **Integração:** o pacote oficial [`anthropics/ClaudeForFoundationModels`](https://github.com/anthropics/ClaudeForFoundationModels) implementa o protocolo `LanguageModel`. A mesma `LanguageModelSession` troca entre o modelo local e o Claude via Dynamic Profiles. Está em beta e pede Xcode 27.
-- **Roteamento:** o modelo local só **classifica** a intenção num enum fechado, e uma tabela no código decide a rota:
+### v0.4: agent mode (opt-in)
+- **Integration:** the official package [`anthropics/ClaudeForFoundationModels`](https://github.com/anthropics/ClaudeForFoundationModels) implements the `LanguageModel` protocol. The same `LanguageModelSession` switches between the local model and Claude via Dynamic Profiles. It's in beta and requires Xcode 27.
+- **Routing:** the local model only **classifies** the intent into a closed enum, and a table in code decides the route:
 
-  | Rota | Quando |
+  | Route | When |
   |---|---|
-  | Local | Corrigir, extrair, uma tool simples |
-  | Claude Haiku 5.5 | Uma etapa com tools |
-  | Claude Sonnet 5.5 | Várias etapas, ata de reunião |
+  | Local | Correct, extract, a simple tool |
+  | Claude Haiku 5.5 | One step with tools |
+  | Claude Sonnet 5.5 | Multiple steps, meeting minutes |
 
-  Sem chave ou sem crédito, o pedido degrada para o local ou para uma fila de pendentes. **O ditado normal nunca passa pelo agente.**
+  Without a key or credits, the request degrades to the local model or to a pending queue. **Regular dictation never goes through the agent.**
 - **Tools v1:**
-  - Leitura, sem confirmação: buscar no histórico, traduzir (framework Translation).
-  - Com efeito, sempre confirmadas: criar evento ou lembrete (EventKit), criar nota.
-  - Rodar um atalho do usuário que esteja numa allowlist: dá extensibilidade de graça.
-- **Segurança:**
-  - Transcrição e clipboard são **dados**, nunca instrução.
-  - A confirmação acontece dentro do `call()` da tool, onde o modelo não tem como pulá-la.
-  - A chave fica no Keychain. Áudio e histórico completo nunca saem do Mac.
-- **Gimmick a evitar:** "traduz o que copiei" é mais rápido com um atalho fixo do que com um agente.
+  - Read-only, no confirmation: search history, translate (Translation framework).
+  - With side effects, always confirmed: create an event or reminder (EventKit), create a note.
+  - Run a user shortcut that is on an allowlist: extensibility for free.
+- **Security:**
+  - Transcription and clipboard are **data**, never instructions.
+  - Confirmation happens inside the tool's `call()`, where the model has no way to skip it.
+  - The key stays in the Keychain. Audio and the full history never leave the Mac.
+- **Gimmick to avoid:** "translate what I copied" is faster with a fixed shortcut than with an agent.
 
-## Decisão pendente: instalar o Xcode
+## Pending decision: install Xcode
 
-As Command Line Tools deste Mac (Swift 6.4-dev) têm três limitações:
-- o SwiftPM não linka nem um pacote vazio;
-- faltam as macros do SwiftUI (`@State`) e do Foundation Models (`@Generable`);
-- o pacote do Claude pede Xcode 27.
+The Command Line Tools on this Mac (Swift 6.4-dev) have three limitations:
+- SwiftPM can't link even an empty package;
+- the SwiftUI (`@State`) and Foundation Models (`@Generable`) macros are missing;
+- the Claude package requires Xcode 27.
 
-Com o Xcode 27 (~40 GB) tudo isso se resolve e o código volta ao SwiftUI idiomático. Contribuidores de um app de Mac open-source vão esperar abrir o projeto no Xcode.
+With Xcode 27 (~40 GB) all of this is solved and the code goes back to idiomatic SwiftUI. Contributors to an open-source Mac app will expect to open the project in Xcode.

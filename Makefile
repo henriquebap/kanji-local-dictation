@@ -1,6 +1,6 @@
 # Build sem SwiftPM: só precisa das Command Line Tools (xcode-select --install).
 APP := build/Kanji.app
-# Identidade estável mantém as permissões entre builds (scripts/certificado-dev.sh); sem ela, ad-hoc.
+# Identidade estável mantém as permissões entre builds (scripts/dev-certificate.sh); sem ela, ad-hoc.
 IDENTIDADE := $(shell security find-certificate -c "Kanji Dev" >/dev/null 2>&1 && echo "Kanji Dev" || echo -)
 SRC := $(wildcard Sources/Kanji/*.swift)
 
@@ -28,7 +28,7 @@ teste:
 	swiftc -parse-as-library -swift-version 6 -target arm64-apple-macosx27.0 Tests/*.swift Sources/Kanji/Correcao.swift Sources/Kanji/Revisao.swift Sources/Kanji/Fusao.swift Sources/Kanji/Historico.swift Sources/Kanji/Aprendizado.swift -o build/teste
 	./build/teste
 
-# Release para distribuir fora da App Store: Developer ID + Hardened Runtime + notarização (docs/DISTRIBUICAO.md).
+# Release para distribuir fora da App Store: Developer ID + Hardened Runtime + notarização (docs/DISTRIBUTION.md).
 DEV_ID ?= Developer ID Application
 VERSAO := $(shell /usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" Resources/Info.plist)
 ZIP := build/Kanji-$(VERSAO).zip

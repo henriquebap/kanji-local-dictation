@@ -1,5 +1,7 @@
 # Arquitetura do Kanji
 
+[English](ARCHITECTURE.md) · Português (Brasil)
+
 Como o áudio vira texto revisado no app em que você está. Os diagramas usam Mermaid, que o GitHub desenha sozinho.
 
 ## Em uma frase

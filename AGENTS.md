@@ -1,96 +1,97 @@
 # AGENTS.md
 
-Guia para agentes de código (Claude Code, Codex, Cursor…) que forem trabalhar neste repositório. Para pessoas, comece pelo [README](README.md). Para o desenho completo, veja [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
+Guide for coding agents (Claude Code, Codex, Cursor…) working in this repository. For people, start with the [README](README.md). For the full design, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## O que é
+## What it is
 
-O Kanji é um app nativo de macOS para ditado em **português do Brasil com inglês misturado**:
-- um atalho global grava;
-- o `SpeechAnalyzer` da Apple transcreve no próprio Mac;
-- um modelo de linguagem revisa (o modelo local da Apple, ou um provedor da nuvem com a chave do usuário);
-- o texto entra no app em que a pessoa está.
+Kanji is a native macOS app for dictation in **Brazilian Portuguese mixed with English**:
+- a global shortcut records;
+- Apple's `SpeechAnalyzer` transcribes on the Mac itself;
+- a language model reviews the text (Apple's local model, or a cloud provider with the user's key);
+- the text goes into the app the user is in.
 
-App gratuito, código aberto (Apache 2.0). O nome e o ícone são reservados (`NOTICE`).
+Free app, open source (Apache 2.0). The name and icon are reserved (`NOTICE`).
 
-**Escopo atual:** ditado do microfone, revisão, glossário que aprende e histórico de ditados e clipboard.
-**Fora do escopo por enquanto:** áudio do sistema/reuniões (v0.3), modo agente (v0.4), iPhone, App Store e servidor próprio. Veja [docs/ROADMAP.md](docs/ROADMAP.md).
+**Current scope:** microphone dictation, review, a glossary that learns, and dictation and clipboard history.
+**Out of scope for now:** system audio/meetings (v0.3), agent mode (v0.4), iPhone, App Store and our own server. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
-## Build e testes
+## Build and tests
 
 ```bash
 make app       # compila build/Kanji.app com swiftc
 make install   # copia para /Applications e abre
 make teste     # testes das regras puras (sem microfone nem modelo)
-make dist      # release assinado e notarizado (precisa de Developer ID; docs/DISTRIBUICAO.md)
+make dist      # release assinado e notarizado (precisa de Developer ID; docs/DISTRIBUTION.md)
 ```
 
-**Restrições do ambiente.** O build não usa Xcode nem SwiftPM, só `swiftc` (Command Line Tools):
-- Não existem as macros `@State`, `@Generable` e `#Preview`. O estado das views fica em classes `@MainActor @Observable`, e o esquema do Foundation Models é montado à mão (`DynamicGenerationSchema`).
-- Swift 6 com concorrência estrita, alvo `arm64-apple-macosx27.0`.
-- Um arquivo novo em `Sources/Kanji/` entra no build sozinho (wildcard no `Makefile`). Para testar um arquivo novo, inclua-o na linha do alvo `teste`.
-- Os testes são um executável próprio (`Tests/*.swift`, com `@main` em `CorrecaoTeste.swift`) que imprime `ok`/`FALHA`. Não é XCTest nem Swift Testing. Para um caso novo, use `conferir(nome, obtido, esperado)` em `Tests/RevisaoTeste.swift`.
+**Environment constraints.** The build uses neither Xcode nor SwiftPM, only `swiftc` (Command Line Tools):
+- The `@State`, `@Generable` and `#Preview` macros don't exist. View state lives in `@MainActor @Observable` classes, and the Foundation Models schema is built by hand (`DynamicGenerationSchema`).
+- Swift 6 with strict concurrency, target `arm64-apple-macosx27.0`.
+- A new file in `Sources/Kanji/` is picked up by the build automatically (wildcard in the `Makefile`). To test a new file, add it to the `teste` target's line.
+- The tests are their own executable (`Tests/*.swift`, with `@main` in `CorrecaoTeste.swift`) that prints `ok`/`FALHA`. It's neither XCTest nor Swift Testing. For a new case, use `conferir(nome, obtido, esperado)` in `Tests/RevisaoTeste.swift`.
 
-**Verificar no app de verdade:** rode `make install`, faça um ditado e leia o log:
+**Verify in the real app:** run `make install`, dictate something and read the log:
 ```bash
 /usr/bin/log show --last 10m --predicate 'subsystem == "io.github.henriquebap.kanji"' --style compact
 ```
-O histórico guarda, para cada ditado, a transcrição crua (`bruto`) e o texto final, em `~/Library/Application Support/Kanji/historico.json`. É o melhor material para avaliar uma mudança na revisão.
+For each dictation, the history stores the raw transcription (`bruto`) and the final text, in `~/Library/Application Support/Kanji/historico.json`. It's the best material for evaluating a change to the review.
 
-## Mapa do código
+## Code map
 
-| Arquivo | Responsabilidade |
+| File | Responsibility |
 |---|---|
-| `KanjiApp.swift` | Entrada do app, barra de menu, composição (`Kanji.shared`) |
-| `Ditado.swift` | Máquina de estados do ditado e a fila de trechos. **Comece por aqui** |
-| `Captura.swift` | Microfone → `SpeechDetector` + `SpeechTranscriber` PT e EN |
-| `Fusao.swift` | Escolhe PT ou EN palavra por palavra; glossário; maiúsculas |
-| `Revisao.swift` | Regras puras: listas ditadas, junção de frases por pausa |
-| `Correcao.swift` | Modelo local (Foundation Models) + trava de fidelidade |
-| `Nuvem.swift` | Provedores da nuvem (Anthropic Messages / OpenAI Chat Completions) + Keychain |
-| `Aprendizado.swift` | Glossário que aprende com as trocas feitas pela nuvem |
-| `Saida.swift`, `Alvo.swift` | Colar com ⌘V; escrever ao vivo pela Acessibilidade |
-| `Historico.swift` | Histórico em JSON + monitor do clipboard (filtra senhas e chaves) |
-| `Painel.swift`, `AjustesView.swift`, `PrimeirosPassos.swift`, `HistoricoView.swift`, `Janelas.swift` | Interface |
-| `Atalho.swift` | Atalhos globais (Carbon) |
-| `Ajustes.swift` | Chaves e valores padrão do `UserDefaults` |
+| `KanjiApp.swift` | App entry point, menu bar, composition (`Kanji.shared`) |
+| `Ditado.swift` | Dictation state machine and the segment queue. **Start here** |
+| `Captura.swift` | Microphone → `SpeechDetector` + PT and EN `SpeechTranscriber` |
+| `Fusao.swift` | Picks PT or EN word by word; glossary; capitalization |
+| `Revisao.swift` | Pure rules: dictated lists, joining sentences by pause |
+| `Correcao.swift` | Local model (Foundation Models) + fidelity guard |
+| `Nuvem.swift` | Cloud providers (Anthropic Messages / OpenAI Chat Completions) + Keychain |
+| `Aprendizado.swift` | Glossary that learns from the replacements the cloud makes |
+| `Saida.swift`, `Alvo.swift` | Paste with ⌘V; live typing via Accessibility |
+| `Historico.swift` | JSON history + clipboard monitor (filters passwords and keys) |
+| `Painel.swift`, `AjustesView.swift`, `PrimeirosPassos.swift`, `HistoricoView.swift`, `Janelas.swift` | UI |
+| `Atalho.swift` | Global shortcuts (Carbon) |
+| `Ajustes.swift` | `UserDefaults` keys and default values |
 
-## Regras que não podem quebrar
+## Rules that must not break
 
-1. **Nada de segredo no código.**
-   - Chaves de API só no Keychain (`Chaveiro`), uma por provedor.
-   - Nunca no `UserDefaults`, em log, em arquivo ou em teste. Use valores fictícios que não tenham o formato de uma chave real.
-2. **Os logs nunca levam o conteúdo do ditado nem do clipboard.**
-   - Registre contagens e tempos.
-   - Mensagens de erro de provedor vão com `privacy: .private`, porque podem citar o texto.
-   - Nada de `print()`: use `registro` (`os.Logger`).
-3. **O texto da pessoa é dado, nunca instrução.**
-   - A transcrição vai para o modelo dentro de `<transcricao>…</transcricao>`, com a regra de não responder ao conteúdo.
-   - Não concatene texto do usuário nas instruções do sistema. O estilo e o glossário vêm dos Ajustes, que a própria pessoa escreveu.
-4. **Nunca traduzir.**
-   - O que foi dito em inglês fica em inglês.
-   - O modelo local de ~3B traduz com frequência. A trava `Correcao.fiel` descarta a revisão quando isso acontece, e qualquer mudança no modelo local precisa manter os testes de fidelidade em `Tests/CorrecaoTeste.swift`.
-5. **A falha degrada, não quebra.**
-   - Sem chave, rede ou crédito, o ditado entrega o texto local e o painel avisa.
-   - O texto nunca pode sumir: se não houver campo, ele fica no clipboard e no histórico.
-6. **O áudio não sai do Mac.** Para a nuvem só vai texto, e só para o provedor que a pessoa escolheu.
-7. **Nenhuma dependência de terceiros.** Só frameworks da Apple. Antes de adicionar uma, abra uma issue.
+1. **No secrets in code.**
+   - API keys only in the Keychain (`Chaveiro`), one per provider.
+   - Never in `UserDefaults`, logs, files or tests. Use fake values that don't look like a real key.
+2. **Logs never include the content of a dictation or the clipboard.**
+   - Log counts and timings.
+   - Provider error messages go with `privacy: .private`, because they may quote the text.
+   - No `print()`: use `registro` (`os.Logger`).
+3. **The user's text is data, never instructions.**
+   - The transcription goes to the model inside `<transcricao>…</transcricao>`, with the rule not to respond to its content.
+   - Don't concatenate user text into the system instructions. Style and glossary come from Settings, which the user wrote themselves.
+4. **Never translate.**
+   - What was said in English stays in English.
+   - The ~3B local model translates often. The `Correcao.fiel` guard discards the review when that happens, and any change to the local model must keep the fidelity tests in `Tests/CorrecaoTeste.swift` passing.
+5. **Failure degrades, it doesn't break.**
+   - Without a key, network or credits, dictation delivers the local text and the panel shows a warning.
+   - Text must never disappear: if there's no field, it stays in the clipboard and in the history.
+6. **Audio never leaves the Mac.** Only text goes to the cloud, and only to the provider the user chose.
+7. **No third-party dependencies.** Apple frameworks only. Open an issue before adding one.
 
-## Convenções
+## Conventions
 
-- **Português** em nomes, comentários, mensagens de log e textos da interface, com acentuação correta. Termos técnicos em inglês ficam como são.
-- **Comentários explicam o porquê**, normalmente a observação ou o teste que levou à decisão ("visto nos testes", "reproduzido com áudio sintetizado"). Não descreva o que o código já diz.
-- **`// ponytail:`** marca uma simplificação deliberada com teto conhecido e diz quando trocar. Respeite, ou resolva o teto.
-- Diff pequeno, sem abstração para um caso só e sem configuração para valor que não muda.
-- Regra de texto que dá para testar vai em código puro (`Escrita`, `Fusao`, `Aprendizado`), com um caso em `Tests/`.
-- **Commits:** `tipo: descrição` (feat, fix, refactor, docs, test, chore, perf).
+- **The codebase is in Portuguese (pt-BR) by design:** Swift identifiers, code comments, log messages and the app's UI strings. New code follows the same convention, with correct accents. English technical terms stay as they are.
+- **Docs are English-first.** README and ARCHITECTURE have pt-BR copies (`README.pt-BR.md`, `docs/ARCHITECTURE.pt-BR.md`); when you change the English version, update the pt-BR copy too.
+- **Comments explain the why**, usually the observation or test that led to the decision ("visto nos testes", "reproduzido com áudio sintetizado"). Don't describe what the code already says.
+- **`// ponytail:`** marks a deliberate simplification with a known ceiling and says when to replace it. Respect it, or resolve the ceiling.
+- Small diffs, no abstraction for a single case and no configuration for a value that never changes.
+- Testable text rules go in pure code (`Escrita`, `Fusao`, `Aprendizado`), with a case in `Tests/`.
+- **Commits:** `type: description` (feat, fix, refactor, docs, test, chore, perf).
 
-## Armadilhas conhecidas
+## Known pitfalls
 
-- **Escrita pela Acessibilidade em editores web e Electron** (chat do Claude, Google no Chrome): o app responde "ok" e ignora o texto. Por isso, sem nada escrito ao vivo, o texto final é sempre colado com ⌘V.
-- **Chrome e Electron só expõem os campos** depois que alguém define `AXManualAccessibility` no app (`Alvo.emFoco`).
-- **`SpeechDetector` + `finalize(through:)` seguido só de silêncio** faz o finalizar do fim dar `RecogRejected`. O texto já firmado continua válido e o erro é tolerado em `Captura.parar`.
+- **Typing via Accessibility in web and Electron editors** (Claude chat, Google in Chrome): the app answers "ok" and ignores the text. That's why, when nothing was typed live, the final text is always pasted with ⌘V.
+- **Chrome and Electron only expose their fields** after someone sets `AXManualAccessibility` on the app (`Alvo.emFoco`).
+- **`SpeechDetector` + `finalize(through:)` followed only by silence** makes the final finalize return `RecogRejected`. The already-committed text remains valid and the error is tolerated in `Captura.parar`.
 - **Foundation Models:**
-  - com decodificação *greedy*, o modelo às vezes entra em loop até estourar o contexto de 8.192 tokens (daí o teto de tokens);
-  - os guardrails padrão recusam textos inofensivos (daí o `.permissiveContentTransformations`).
-- **Permissões do macOS** (Microfone, Acessibilidade) ficam presas à assinatura. Assinatura ad-hoc pede tudo de novo a cada build: use `scripts/certificado-dev.sh`.
-- **Modelos de provedores** mudam rápido. Confira o nome atual na documentação do provedor antes de mudar `Provedor.modeloPadrao`; nunca escreva de memória.
+  - with *greedy* decoding, the model sometimes loops until it overflows the 8,192-token context (hence the token cap);
+  - the default guardrails reject harmless text (hence `.permissiveContentTransformations`).
+- **macOS permissions** (Microphone, Accessibility) are tied to the signature. An ad-hoc signature asks for everything again on every build: use `scripts/dev-certificate.sh`.
+- **Provider models** change fast. Check the current name in the provider's documentation before changing `Provedor.modeloPadrao`; never write it from memory.
