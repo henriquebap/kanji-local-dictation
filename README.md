@@ -1,4 +1,4 @@
-# Kanji
+# Kanji — ditado com IA local para Mac
 
 Ditado com IA para o Mac, em **português e inglês ao mesmo tempo**. Aperte um atalho, fale, e o texto aparece revisado no app em que você estiver: Notes, Slack, Chrome, o chat do Claude, um terminal.
 
@@ -25,11 +25,11 @@ Nativo (Swift, sem Electron), gratuito e de código aberto. A transcrição acon
 brew install --cask henriquebap/tap/kanji
 ```
 
-**Download direto:** baixe o `.zip` em [Releases](https://github.com/henriquebap/kanji/releases), descompacte e arraste o `Kanji.app` para Aplicativos.
+**Download direto:** baixe o `.zip` em [Releases](https://github.com/henriquebap/kanji-local-dictation/releases), descompacte e arraste o `Kanji.app` para Aplicativos.
 
 **Compilando** (só precisa das Command Line Tools: `xcode-select --install`):
 ```bash
-git clone https://github.com/henriquebap/kanji.git && cd kanji
+git clone https://github.com/henriquebap/kanji-local-dictation.git && cd kanji-local-dictation
 make install
 ```
 

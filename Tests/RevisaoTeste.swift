@@ -60,6 +60,6 @@ import Foundation
     conferir("ortografia e maiúscula não viram termo", "\(Aprendizado.trocas(bruto: "Eu selicionei aqui. Tá bom o gil vai vir", final: "Eu selecionei aqui. Tá bom, o Gil vai vir."))", "[]")
     conferir("variável de ambiente não entra", "\(Historico.pareceSegredo("export OPENAI_KEY=chave-ficticia-AbCdEf0123456789xyzXYZ0123456789"))", "true")
     conferir("URL com senha não entra", "\(Historico.pareceSegredo("postgres://admin:senha@db.exemplo.com/app"))", "true")
-    conferir("link entra no histórico", "\(Historico.pareceSegredo("https://github.com/henriquebap/kanji/pull/12345678901234"))", "false")
+    conferir("link entra no histórico", "\(Historico.pareceSegredo("https://github.com/henriquebap/kanji-local-dictation/pull/12345678901234"))", "false")
     return falhas
 }

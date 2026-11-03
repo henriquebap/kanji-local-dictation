@@ -43,10 +43,10 @@ cask "kanji" do
   version "0.1.0"
   sha256 "SHA-256 impresso pelo make dist"
 
-  url "https://github.com/henriquebap/kanji/releases/download/v#{version}/Kanji-#{version}.zip"
+  url "https://github.com/henriquebap/kanji-local-dictation/releases/download/v#{version}/Kanji-#{version}.zip"
   name "Kanji"
   desc "Ditado com IA em português e inglês"
-  homepage "https://github.com/henriquebap/kanji"
+  homepage "https://github.com/henriquebap/kanji-local-dictation"
 
   depends_on arch: :arm64
 
