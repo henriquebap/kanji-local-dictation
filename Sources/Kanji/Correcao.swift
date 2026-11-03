@@ -55,7 +55,7 @@ enum Correcao {
             }
             return revisado
         } catch {
-            registro.error("revisão de trecho falhou: \(error, privacy: .public)")
+            registro.error("revisão de trecho falhou: \(error, privacy: .private)")  // o erro pode citar o trecho
             return trecho
         }
     }
@@ -99,10 +99,6 @@ enum Correcao {
     }
 
     private static func emIngles(_ palavra: String) -> Bool {
-        let checar = { (idioma: String) in
-            NSSpellChecker.shared.checkSpelling(of: palavra, startingAt: 0, language: idioma, wrap: false,
-                                                inSpellDocumentWithTag: 0, wordCount: nil).location == NSNotFound
-        }
-        return checar("en") && !checar("pt_BR")
+        Fusao.existe(palavra, "en") && !Fusao.existe(palavra, "pt_BR")
     }
 }

@@ -14,7 +14,7 @@ Nativo (Swift, sem Electron), gratuito e de código aberto. A transcrição acon
   - **Modelo da nuvem, com a sua chave** (opcional): Claude, OpenAI, Gemini, Groq, OpenRouter ou qualquer API compatível com a da OpenAI. Ele revisa o ditado inteiro ao parar, em ~1,5 s, e entende o contexto.
 - **Glossário que aprende.** Cada termo que a revisão da nuvem corrige duas vezes ("Cláudio" → Claude) passa a valer também no modelo do Mac, sem internet.
 - **Ignora o silêncio.** Um detector de voz da Apple impede que ruído e silêncio virem palavras que você não disse.
-- **Histórico pesquisável** de tudo que você ditou e copiou. Senhas e chaves de API ficam de fora.
+- **Histórico pesquisável** de tudo que você ditou e copiou. Ficam de fora as senhas marcadas pelos gerenciadores (1Password, Bitwarden, Chaves) e os textos com cara de chave de API ou token. Dá para desligar o histórico do clipboard.
 
 ## Instalar
 
@@ -62,11 +62,13 @@ Em Ajustes › Geral também ficam o modo "segurar enquanto fala" e o "escrever 
 - **O áudio nunca sai do Mac.** A transcrição é do `SpeechAnalyzer` da Apple, on-device.
 - **Com o modelo do Mac,** nada sai do computador.
 - **Com um provedor da nuvem,** só o **texto** do ditado vai para ele, usando a **sua** chave e conforme os termos dele. O Kanji não tem servidor.
-- **Chaves de API** ficam no Keychain. **Histórico e glossário** ficam em `~/Library/Application Support/Kanji`.
+- **Chaves de API** ficam no Keychain.
+- **Histórico** fica em `~/Library/Application Support/Kanji`; **ajustes e glossário** (inclusive os termos aprendidos), nas preferências do app.
+- **Histórico do clipboard:** vem ligado e guarda o que você copia, para achar depois. Uma senha que não venha de um gerenciador também entra nele. Se você copia senhas de outros lugares, desligue em Ajustes › Histórico.
 
 ## Idiomas
 
-Hoje: **português do Brasil com inglês misturado**. Português de Portugal, inglês e espanhol já funcionam como idioma principal (Ajustes › Geral); a fusão com o inglês vale quando o principal é português. Outros idiomas dependem só dos modelos de fala que a Apple oferece.
+Hoje: **português do Brasil com inglês misturado**. O reconhecimento de fala já aceita outros idiomas principais (Ajustes › Geral), mas as regras de lista e a revisão foram pensadas e testadas só para o português com inglês. Abrir para outros idiomas está no roadmap.
 
 ## Como funciona
 

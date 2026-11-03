@@ -26,7 +26,13 @@ final class Historico {
         try? FileManager.default.createDirectory(at: pasta, withIntermediateDirectories: true)
         arquivo = pasta.appending(path: "historico.json")
         if let dados = try? Data(contentsOf: arquivo) {
-            let lidas = (try? JSONDecoder().decode([Entrada].self, from: dados)) ?? []
+            guard let lidas = try? JSONDecoder().decode([Entrada].self, from: dados) else {
+                // Arquivo ilegível (corrompido ou de outra versão): guarda à parte em vez de sobrescrever no próximo item.
+                let copia = pasta.appending(path: "historico-ilegivel-\(Int(Date.now.timeIntervalSince1970)).json")
+                try? FileManager.default.moveItem(at: arquivo, to: copia)
+                registro.error("histórico ilegível; guardado em \(copia.lastPathComponent, privacy: .public)")
+                return
+            }
             // Apaga segredos que entraram antes deste filtro existir.
             entradas = lidas.filter { !($0.tipo == .clipboard && Self.pareceSegredo($0.texto)) }
             if entradas.count != lidas.count { salvar() }
@@ -67,7 +73,7 @@ final class Historico {
         do {
             try JSONEncoder().encode(entradas).write(to: arquivo, options: .atomic)
         } catch {
-            NSLog("Kanji: falha ao salvar histórico: \(error)")
+            registro.error("falha ao salvar o histórico: \(error.localizedDescription, privacy: .public)")
         }
     }
 

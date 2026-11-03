@@ -18,16 +18,17 @@ flowchart LR
         SD --> EN[SpeechTranscriber en-US]
         PT --> F[Fusão PT+EN<br/>palavra por palavra]
         EN --> F
-        F --> R[Regras<br/>listas, frases, glossário]
-        R --> L[Modelo do Mac<br/>Foundation Models ~3B]
+        F --> R[Regras<br/>listas, frases]
+        R --> L[Modelo do Mac<br/>Foundation Models ~3B<br/>só no modo ao vivo]
         D --> P[Painel flutuante<br/>onda e estado]
     end
     subgraph Nuvem["Opcional, com a sua chave"]
         N[Claude / OpenAI / Gemini<br/>Groq / OpenRouter / outro]
     end
-    R -- "ao parar: texto inteiro" --> N
+    F -- "ao parar: transcrição fundida inteira" --> N
     N -- "texto revisado" --> S
     L --> S[Saída<br/>⌘V ou Acessibilidade]
+    R -- "sem nuvem ou se ela falhar" --> S
     N -. "trocas que ele fez" .-> G[Glossário que aprende]
     G -.-> F
     G -.-> L
@@ -75,7 +76,7 @@ sequenceDiagram
     else modelo do Mac
         Note over K,LLM: os trechos já foram revisados durante a fala
     end
-    K->>App: ⌘V (o texto também fica no clipboard)
+    K->>App: ⌘V, e o texto também fica no clipboard (no modo ao vivo, troca pela Acessibilidade o que já foi escrito)
     K->>K: salva no histórico (cru + revisado)
 ```
 
@@ -92,7 +93,7 @@ A colagem com ⌘V funciona em qualquer app. A escrita pela Acessibilidade não:
 
 ## Os modelos
 
-### Reconhecimento de fala: `SpeechAnalyzer` (Apple, macOS 26+)
+### Reconhecimento de fala: `SpeechAnalyzer` (Apple)
 - Roda no Mac. Os modelos de cada idioma são baixados pelo sistema (`AssetInventory`) e compartilhados entre apps: o Kanji não empacota nenhum modelo.
 - **`SpeechDetector`:** detector de voz. Sem ele, silêncio e ruído viravam palavras ("Não.", "Oh.").
 - **Dois `SpeechTranscriber` no mesmo áudio.** O de português manda resultados voláteis (o rascunho cinza do painel) e firmes. O de inglês só manda os firmes, com o tempo de cada palavra, para a fusão.
@@ -113,7 +114,11 @@ A colagem com ⌘V funciona em qualquer app. A escrita pela Acessibilidade não:
   
   A transcrição vai **como dado, nunca como pedido**: um ditado que diz "revisa isso pra mim" não vira uma conversa com o modelo.
 - **Formatos:** Anthropic Messages para o Claude (`claude-haiku-5-5`, raciocínio desligado, esforço baixo) e Chat Completions para os outros. "Compatível com OpenAI" virou o padrão da indústria: um cliente só cobre OpenAI, Gemini, Groq e OpenRouter.
-- **Proteções:** timeout de 15 s; resposta muito menor ou maior que o ditado é descartada. Em qualquer falha, fica a revisão local e o painel avisa em laranja.
+- **Proteções:**
+  - o tempo de espera cresce com o tamanho do ditado (mínimo de 15 s), porque o ditado não tem limite de duração;
+  - só HTTPS (HTTP apenas para localhost), para a chave e o texto não viajarem abertos;
+  - resposta muito menor ou maior que o ditado é descartada.
+- **Se falhar,** o painel avisa em laranja e entra o texto local: no modo ao vivo, revisado pelo modelo do Mac; no modo "só no fim", a transcrição fundida com as regras locais (listas, glossário).
 - **A chave** é do usuário, guardada no Keychain, uma por provedor. O Kanji não tem servidor nem chave própria.
 
 ### Glossário que aprende

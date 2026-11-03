@@ -33,6 +33,9 @@ struct PrimeirosPassosView: View {
                       feito: Nuvem.pronto != nil) {
                     Button("Escolher") { Kanji.shared.janelas.mostrarAjustes() }
                 }
+                Text("O Kanji também guarda o que você copia, para achar depois no histórico. Senhas marcadas pelos gerenciadores e textos com cara de chave ficam de fora; dá para desligar em Ajustes › Histórico.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
                 Divider()
                 Text("Para ditar: clique num campo de texto em qualquer app, aperte **\(Acao.ditar.atalho.descricao)** e fale. Aperte de novo para parar; **esc** cancela.")
                 HStack {

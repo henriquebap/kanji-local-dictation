@@ -90,7 +90,7 @@ final class AtalhoGlobal {
         if status == noErr {
             refs[acao] = ref
         } else {
-            NSLog("Kanji: atalho \(atalho.descricao) indisponível (\(status))")
+            registro.error("atalho \(atalho.descricao, privacy: .public) indisponível (\(status))")
         }
     }
 

@@ -71,9 +71,12 @@ enum Nuvem {
         return salvo.isEmpty ? p.modeloPadrao : salvo
     }
 
+    /// Só HTTPS: a chave e o ditado não podem viajar abertos. HTTP só para o próprio Mac (localhost).
     static func endereco(_ p: Provedor) -> URL? {
-        (p == .personalizado ? UserDefaults.standard.string(forKey: Ajustes.enderecoPersonalizado) : p.endereco)
-            .flatMap { URL(string: $0.trimmingCharacters(in: .whitespaces)) }
+        guard let texto = p == .personalizado ? UserDefaults.standard.string(forKey: Ajustes.enderecoPersonalizado) : p.endereco,
+              let url = URL(string: texto.trimmingCharacters(in: .whitespaces)), let host = url.host() else { return nil }
+        let local = ["localhost", "127.0.0.1", "::1"].contains(host)
+        return url.scheme == "https" || (url.scheme == "http" && local) ? url : nil
     }
 
     /// O provedor da nuvem pronto para uso (escolhido, com chave, modelo e endereço), ou nil: aí revisa o Mac.
@@ -108,14 +111,16 @@ enum Nuvem {
         let termos = glossario.isEmpty ? "" : "\n\nGrafias corretas de palavras que a pessoa usa: \(glossario.joined(separator: ", "))."
         let comeco = Date.now
         do {
+            // Sem limite de duração no ditado: o tempo de espera cresce com o texto (~1,5 s a cada 500 caracteres, medido).
             let texto = try await enviar(p, chave: chave, sistema: regras + "\n\n" + estilo + termos,
-                                         mensagem: "<transcricao>\n\(bruto)\n</transcricao>", maximo: max(512, bruto.count))
+                                         mensagem: "<transcricao>\n\(bruto)\n</transcricao>", maximo: max(512, bruto.count),
+                                         espera: max(15, Double(bruto.count) / 100))
             registro.notice("\(p.rawValue, privacy: .public) revisou \(bruto.count) caracteres em \(Date.now.timeIntervalSince(comeco), format: .fixed(precision: 2)) s")
             // Mesma ideia da trava local: resposta muito menor ou maior que o ditado não é revisão.
             let razao = Double(texto.count) / Double(bruto.count)
             guard (0.5...1.8).contains(razao) else {
                 registro.notice("revisão da nuvem descartada: tamanho \(razao, format: .fixed(precision: 2))x o ditado")
-                return (nil, nil)
+                return (nil, "a resposta não parecia uma revisão")
             }
             return (texto, nil)
         } catch {
@@ -128,17 +133,18 @@ enum Nuvem {
     static func testar(_ p: Provedor, chave: String) async -> String {
         do {
             let resposta = try await enviar(p, chave: chave, sistema: regras,
-                                            mensagem: "<transcricao>\nteste do kanji\n</transcricao>", maximo: 64)
+                                            mensagem: "<transcricao>\nteste do kanji\n</transcricao>", maximo: 64, espera: 15)
             return "Funcionando: \"\(resposta)\""
         } catch {
             return error.localizedDescription
         }
     }
 
-    private static func enviar(_ p: Provedor, chave: String, sistema: String, mensagem: String, maximo: Int) async throws -> String {
-        guard let base = endereco(p) else { throw Falha(mensagem: "endereço da API inválido") }
+    private static func enviar(_ p: Provedor, chave: String, sistema: String, mensagem: String, maximo: Int,
+                               espera: Double) async throws -> String {
+        guard let base = endereco(p) else { throw Falha(mensagem: "endereço da API inválido (use https://)") }
         let claude = p == .anthropic
-        var pedido = URLRequest(url: claude ? base : base.appending(path: "chat/completions"), timeoutInterval: 15)
+        var pedido = URLRequest(url: claude ? base : base.appending(path: "chat/completions"), timeoutInterval: espera)
         pedido.httpMethod = "POST"
         pedido.setValue("application/json", forHTTPHeaderField: "content-type")
         let corpo: [String: Any]

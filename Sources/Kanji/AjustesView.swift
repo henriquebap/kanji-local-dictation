@@ -171,7 +171,7 @@ private struct ContaDaNuvem: View {
 
     var body: some View {
         if nuvem.provedor == .personalizado {
-            TextField("Endereço da API", text: $nuvem.endereco, prompt: Text("https://…/v1"))
+            TextField("Endereço da API (https)", text: $nuvem.endereco, prompt: Text("https://…/v1"))
         }
         TextField("Modelo", text: $nuvem.modelo, prompt: Text(nuvem.provedor.modeloPadrao.isEmpty ? "nome do modelo" : nuvem.provedor.modeloPadrao))
         if nuvem.salva {
