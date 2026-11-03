@@ -6,7 +6,7 @@ AI dictation for the Mac, in **Portuguese and English at the same time**. Press 
 
 Native (Swift, no Electron), free and open source. Transcription happens on your Mac.
 
-> The app's interface is in Brazilian Portuguese for now. This README keeps the exact Portuguese labels and gives the English meaning in parentheses.
+> The interface follows your Mac's language: English or Brazilian Portuguese. The labels below are the English ones.
 
 ## What it does
 
@@ -39,27 +39,27 @@ make install
 
 ## Getting started
 
-On first launch, Kanji opens the *Primeiros passos* (Getting started) window. A green ✓ shows what's already allowed:
+On first launch, Kanji opens the *Getting Started* window. A green ✓ shows what's already allowed:
 
-1. **Microphone:** click *Permitir* (Allow). Audio is transcribed on your Mac.
-2. **Accessibility:** click *Abrir Ajustes do Sistema* (Open System Settings) and turn Kanji on in the list. That's what lets it type into the app you're in.
+1. **Microphone:** click *Allow*. Audio is transcribed on your Mac.
+2. **Accessibility:** click *Open System Settings* and turn Kanji on in the list. That's what lets it type into the app you're in.
 3. **Apple Intelligence:** turn it on in *System Settings › Apple Intelligence & Siri* to get free correction.
-4. **Optional, cloud correction:** in *Ajustes › Correção* (Settings › Correction):
+4. **Optional, cloud correction:** in *Settings › Correction*:
    - pick the provider;
    - paste your key (it's stored in the macOS Keychain);
-   - click *Testar* (Test).
+   - click *Test*.
 
-Then just use it: click a text field, press **⌃⌥D**, speak and press it again. You can reopen the window from the Kanji menu › *Primeiros passos…*.
+Then just use it: click a text field, press **⌃⌥D**, speak and press it again. You can reopen the window from the Kanji menu › *Getting Started…*.
 
 | Shortcut | What it does | Where to change it |
 |---|---|---|
-| **⌃⌥D** (global) | Starts recording; press again to stop and type the text | *Ajustes › Geral* (Settings › General) |
+| **⌃⌥D** (global) | Starts recording; press again to stop and type the text | *Settings › General* |
 | **esc** (while recording) | Cancels | fixed |
-| **⌃⌥T** (global) | Opens the Kanji window | *Ajustes › Geral* |
-| **⌘Y** | *Histórico* (History) | fixed |
-| **⌘,** | *Ajustes* (Settings) | fixed |
+| **⌃⌥T** (global) | Opens the Kanji window | *Settings › General* |
+| **⌘Y** | *Show History* | fixed |
+| **⌘,** | *Settings* | fixed |
 
-*Ajustes › Geral* also holds the "segurar enquanto fala" (hold while you talk) mode and the "escrever enquanto você fala" (type while you talk) mode. In the latter, text appears in the field as you speak, corrected chunk by chunk by the on-Mac model. It's the default mode when no cloud provider is set.
+*Settings › General* also holds the "Hold while you talk" mode and the "Type while you talk" option. In the latter, text appears in the field as you speak, corrected chunk by chunk by the on-Mac model. It's the default mode when no cloud provider is set.
 
 ## Privacy
 
@@ -68,11 +68,11 @@ Then just use it: click a text field, press **⌃⌥D**, speak and press it agai
 - **With a cloud provider,** only the dictation **text** goes to it, using **your** key and under its terms. Kanji has no server.
 - **API keys** are stored in the Keychain.
 - **History** lives in `~/Library/Application Support/Kanji`; **settings and glossary** (including learned terms) live in the app's preferences.
-- **Clipboard history:** on by default, it keeps what you copy so you can find it later. A password that doesn't come from a password manager also ends up in it. If you copy passwords from other places, turn it off in *Ajustes › Histórico* (Settings › History).
+- **Clipboard history:** on by default, it keeps what you copy so you can find it later. A password that doesn't come from a password manager also ends up in it. If you copy passwords from other places, turn it off in *Settings › History*.
 
 ## Languages
 
-Today: **Brazilian Portuguese mixed with English**. Speech recognition already accepts other major languages (*Ajustes › Geral*), but the list rules and the correction were designed and tested only for Portuguese with English. Opening up to other languages is on the roadmap.
+Today: **Brazilian Portuguese mixed with English**. Speech recognition already accepts other major languages (*Settings › General*), but the list rules and the correction were designed and tested only for Portuguese with English. Opening up to other languages is on the roadmap.
 
 ## How it works
 

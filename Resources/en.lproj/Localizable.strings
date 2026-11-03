@@ -1,0 +1,160 @@
+/* Interface em inglês. A chave é o texto em português do código; %@ é o que entra no lugar da interpolação.
+   Conferido por scripts/check-localization.swift. */
+
+/* Menu e barra de menus */
+"Ajustes…" = "Settings…";
+"Ditado" = "Dictation";
+"Começar ou parar ditado" = "Start or Stop Dictation";
+"Mostrar histórico" = "Show History";
+"Parar e colar" = "Stop and Paste";
+"Começar a ditar  (%@)" = "Start Dictating  (%@)";
+"Recentes" = "Recent";
+"Abrir Kanji  (%@)" = "Open Kanji  (%@)";
+"Primeiros passos…" = "Getting Started…";
+"Sair do Kanji" = "Quit Kanji";
+
+/* Títulos de janela */
+"Kanji" = "Kanji";
+"Ajustes do Kanji" = "Kanji Settings";
+"Primeiros passos" = "Getting Started";
+
+/* Painel flutuante */
+"Ligando o microfone…" = "Turning on the microphone…";
+"Parar" = "Stop";
+"Revisando com %@…" = "Reviewing with %@…";
+"Revisando o último trecho…" = "Reviewing the last part…";
+"Pronto no %@" = "Done in %@";
+"Colado" = "Pasted";
+"Copiado. Use ⌘V para colar" = "Copied. Press ⌘V to paste";
+"Copiar de novo" = "Copy Again";
+"Ouvindo…" = "Listening…";
+"Pode falar…" = "Go ahead and speak…";
+"Escrevendo no %@  ·  " = "Typing in %@  ·  ";
+"Entra no %@ ao parar  ·  " = "Goes into %@ when you stop  ·  ";
+"%@%@ para parar  ·  esc para cancelar" = "%@%@ to stop  ·  esc to cancel";
+"campo selecionado" = "the selected field";
+
+/* Erros e avisos do ditado */
+"Sem acesso ao microfone. Libere em Ajustes do Sistema › Privacidade e Segurança › Microfone." = "No access to the microphone. Allow it in System Settings › Privacy & Security › Microphone.";
+"Microfone liberado. Aperte %@ de novo para gravar." = "Microphone allowed. Press %@ again to record.";
+"Não consegui começar a gravar: %@" = "Couldn't start recording: %@";
+"O microfone não captou som. Confira a entrada em Ajustes do Sistema › Som." = "The microphone didn't pick up any sound. Check the input in System Settings › Sound.";
+"Não entendi o que foi dito. Tente de novo, um pouco mais perto do microfone." = "Couldn't make out what was said. Try again, a bit closer to the microphone.";
+"Erro na transcrição: %@" = "Transcription error: %@";
+"Revisão na nuvem indisponível (%@). Ficou a revisão local." = "Cloud review unavailable (%@). Kept the local review.";
+"Revisão na nuvem indisponível (%@). Ficou o texto transcrito." = "Cloud review unavailable (%@). Kept the transcribed text.";
+
+/* Primeiros passos */
+"Bem-vindo ao Kanji" = "Welcome to Kanji";
+"Ditado em português e inglês, escrito onde está o cursor. Três liberações (e uma opcional) e pronto." = "Dictation in Portuguese and English, typed wherever the cursor is. Three permissions (and one optional step) and you're set.";
+"Microfone" = "Microphone";
+"Para ouvir só enquanto o atalho está ativo. O áudio é transcrito no próprio Mac." = "To listen only while the shortcut is active. The audio is transcribed on the Mac itself.";
+"Permitir" = "Allow";
+"Acessibilidade" = "Accessibility";
+"Para escrever no app em que você está. Ative o Kanji na lista que vai abrir." = "To type into the app you're in. Turn Kanji on in the list that opens.";
+"Abrir Ajustes do Sistema" = "Open System Settings";
+"Apple Intelligence" = "Apple Intelligence";
+"Revisão grátis e sem internet. Ative em Ajustes do Sistema › Apple Intelligence e Siri." = "Free review, no internet needed. Turn it on in System Settings › Apple Intelligence & Siri.";
+"Opcional: revisão na nuvem" = "Optional: cloud review";
+"Com uma chave sua (Claude, OpenAI, Gemini…), o texto inteiro é revisado ao parar: listas, nomes, jargão." = "With your own key (Claude, OpenAI, Gemini…), the whole text is reviewed when you stop: lists, names, jargon.";
+"Escolher" = "Choose";
+"O Kanji também guarda o que você copia, para achar depois no histórico. Senhas marcadas pelos gerenciadores e textos com cara de chave ficam de fora; dá para desligar em Ajustes › Histórico." = "Kanji also keeps what you copy, so you can find it later in the history. Passwords flagged by password managers and text that looks like a key are left out; you can turn this off in Settings › History.";
+"Para ditar: clique num campo de texto em qualquer app, aperte **%@** e fale. Aperte de novo para parar; **esc** cancela." = "To dictate: click a text field in any app, press **%@** and speak. Press it again to stop; **esc** cancels.";
+"Começar a usar" = "Start Using Kanji";
+
+/* Janela principal (histórico) */
+"Copiar" = "Copy";
+"Apagar" = "Delete";
+"Nada por aqui ainda" = "Nothing here yet";
+"Sem resultados" = "No results";
+"Buscar no histórico" = "Search history";
+"Filtro" = "Filter";
+"Tudo" = "All";
+"Ditados" = "Dictations";
+"Copiados" = "Copied";
+"Ajustes" = "Settings";
+"Transcrição original" = "Original transcription";
+"Aperte %@ em qualquer app e fale" = "Press %@ in any app and speak";
+"Aperte de novo para parar. O texto aparece na hora, é ajustado no próprio Mac e colado onde está o cursor." = "Press it again to stop. The text shows up right away, is polished on the Mac itself and pasted where the cursor is.";
+"Ditar agora" = "Dictate Now";
+"Apple Intelligence ativado" = "Apple Intelligence turned on";
+"Sem ele o texto sai como foi transcrito." = "Without it, the text comes out as transcribed.";
+"Permissão de Acessibilidade" = "Accessibility permission";
+"Para colar sozinho. Ajustes do Sistema › Privacidade › Acessibilidade." = "To paste on its own. System Settings › Privacy & Security › Accessibility.";
+
+/* Ajustes › Geral */
+"Geral" = "General";
+"Atalhos globais" = "Global shortcuts";
+"Começar e parar o ditado" = "Start and stop dictation";
+"Abrir o Kanji" = "Open Kanji";
+"Modo do ditado" = "Dictation mode";
+"Tocar para começar e parar" = "Press to start and stop";
+"Segurar enquanto fala" = "Hold while you talk";
+"Fala" = "Speech";
+"Idioma" = "Language";
+"Bilíngue: reconhecer inglês junto com o português" = "Bilingual: recognize English along with Portuguese";
+"Sons de início, fim e erro" = "Start, end and error sounds";
+"Escrever direto no campo de texto selecionado" = "Type straight into the selected text field";
+"Escrever enquanto você fala" = "Type while you talk";
+"Precisa de permissão de Acessibilidade" = "Needs Accessibility permission";
+"Abrir Ajustes" = "Open Settings";
+"O texto aparece no campo enquanto você fala, revisado pelo modelo do Mac. Sem campo selecionado, ele aparece no painel e é colado no fim." = "The text appears in the field while you talk, reviewed by the on-Mac model. With no field selected, it appears in the panel and is pasted at the end.";
+"Durante a fala o painel mostra só a onda. Ao parar, o texto revisado pela nuvem entra de uma vez no campo (com o modelo do Mac, o ditado escreve ao vivo)." = "While you talk, the panel only shows the waveform. When you stop, the text reviewed in the cloud goes into the field all at once (with the on-Mac model, dictation types live).";
+"Pressione as teclas…" = "Press the keys…";
+"Padrão" = "Default";
+"Espaço" = "Space";
+
+/* Ajustes › Correção */
+"Correção" = "Correction";
+"Quem revisa o ditado" = "Who reviews the dictation";
+"Revisão" = "Review";
+"Modelo do Mac (grátis, sem internet)" = "On-Mac model (free, no internet)";
+"Outro compatível com a API da OpenAI" = "Other OpenAI API–compatible";
+"O modelo do Mac (Apple Intelligence, ~3B) roda sem internet e sem custo, mas é pequeno: corrige palavras e pontuação trecho a trecho, e não entende o texto inteiro. Ele melhora com o glossário que aprende (abaixo). Para listas na ordem pedida e termos errados pelo contexto, use um modelo da nuvem com a sua chave." = "The on-Mac model (Apple Intelligence, ~3B) runs without internet and at no cost, but it's small: it fixes words and punctuation chunk by chunk and doesn't understand the whole text. It gets better with the glossary it learns (below). For lists in the order you asked and terms fixed from context, use a cloud model with your own key.";
+"Ao parar, o texto do ditado vai para %@ com a sua chave (o áudio nunca sai do Mac). Cada termo que ele corrige ensina o glossário local. Sem chave, rede ou crédito, o texto fica só com as correções locais e o painel avisa." = "When you stop, the dictated text goes to %@ with your key (the audio never leaves the Mac). Each term it fixes teaches the local glossary. Without a key, network or credits, the text keeps only the local fixes and the panel lets you know.";
+"o modelo do Mac" = "the on-Mac model";
+"o Claude" = "Claude";
+"a OpenAI" = "OpenAI";
+"o Gemini" = "Gemini";
+"a Groq" = "Groq";
+"o OpenRouter" = "OpenRouter";
+"o modelo escolhido" = "the chosen model";
+"Nada ainda. Quando a revisão da nuvem troca o mesmo termo duas vezes (\"Cláudio\" → Claude), ele aparece aqui." = "Nothing yet. When the cloud review replaces the same term twice (\"Cláudio\" → Claude), it shows up here.";
+"Esquecer" = "Forget";
+"Aprendido com a revisão" = "Learned from review";
+"Valem como o glossário abaixo, também sem internet. Ficam só neste Mac." = "They work like the glossary below, also without internet. They stay on this Mac only.";
+"Ajustar o texto com o modelo local da Apple" = "Polish the text with Apple's local model";
+"Apple Intelligence indisponível neste Mac: o texto sai como foi transcrito." = "Apple Intelligence isn't available on this Mac: the text comes out as transcribed.";
+"Palavras" = "Words";
+"Palavras que você usa" = "Words you use";
+"Separadas por vírgula. Quando a transcrição erra algo parecido (\"Cláudio\", \"superbase\"), troca por estas." = "Comma-separated. When the transcription gets something similar wrong (\"Cláudio\", \"superbase\"), it's replaced with these.";
+"Estilo de escrita" = "Writing style";
+"Poucas regras e diretas: o modelo é pequeno. Listas e pausas já são tratadas." = "Keep the rules few and direct: the model is small. Lists and pauses are already handled.";
+"Restaurar padrão" = "Restore Default";
+"Endereço da API (https)" = "API address (https)";
+"Modelo" = "Model";
+"nome do modelo" = "model name";
+"Chave salva no Keychain" = "Key saved in the Keychain";
+"Testar" = "Test";
+"Remover" = "Remove";
+"Chave da API" = "API key";
+"Salvar" = "Save";
+"A chave não pode ter espaços." = "The key can't contain spaces.";
+"A chave da API da Anthropic começa com sk-ant-." = "Anthropic API keys start with sk-ant-.";
+"Não consegui guardar a chave no Keychain." = "Couldn't save the key in the Keychain.";
+"Funcionando: \"%@\"" = "Working: \"%@\"";
+"endereço da API inválido (use https://)" = "invalid API address (use https://)";
+"chave inválida" = "invalid key";
+"resposta incompleta (%@)" = "incomplete response (%@)";
+"resposta vazia" = "empty response";
+"a resposta não parecia uma revisão" = "the response didn't look like a review";
+
+/* Ajustes › Histórico */
+"Histórico" = "History";
+"Guardar tudo que for copiado" = "Keep everything you copy";
+"Itens marcados como senha por gerenciadores (1Password, Bitwarden, Chaves) são ignorados. Tudo fica só neste Mac." = "Items marked as passwords by password managers (1Password, Bitwarden, Passwords) are skipped. Everything stays on this Mac only.";
+"Itens guardados" = "Saved items";
+"Apagar histórico…" = "Delete History…";
+"Apagar todo o histórico?" = "Delete the entire history?";
+"Ditados e itens copiados serão removidos deste Mac. Não dá para desfazer." = "Dictations and copied items will be removed from this Mac. This can't be undone.";
+"Cancelar" = "Cancel";

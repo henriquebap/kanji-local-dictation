@@ -50,8 +50,8 @@ private struct GeralView: View {
                 }
             } footer: {
                 Text(escreverAoVivo
-                     ? "O texto aparece no campo enquanto você fala, revisado pelo modelo do Mac. Sem campo selecionado, ele aparece no painel e é colado no fim."
-                     : "Durante a fala o painel mostra só a onda. Ao parar, o texto revisado pela nuvem entra de uma vez no campo (com o modelo do Mac, o ditado escreve ao vivo).")
+                     ? String(localized: "O texto aparece no campo enquanto você fala, revisado pelo modelo do Mac. Sem campo selecionado, ele aparece no painel e é colado no fim.")
+                     : String(localized: "Durante a fala o painel mostra só a onda. Ao parar, o texto revisado pela nuvem entra de uma vez no campo (com o modelo do Mac, o ditado escreve ao vivo)."))
             }
         }
         .formStyle(.grouped)
@@ -75,8 +75,8 @@ private struct CorrecaoView: View {
                 Text("Revisão")
             } footer: {
                 Text(nuvem.provedor == .apple
-                     ? "O modelo do Mac (Apple Intelligence, ~3B) roda sem internet e sem custo, mas é pequeno: corrige palavras e pontuação trecho a trecho, e não entende o texto inteiro. Ele melhora com o glossário que aprende (abaixo). Para listas na ordem pedida e termos errados pelo contexto, use um modelo da nuvem com a sua chave."
-                     : "Ao parar, o texto do ditado vai para \(nuvem.provedor.comArtigo) com a sua chave (o áudio nunca sai do Mac). Cada termo que ele corrige ensina o glossário local. Sem chave, rede ou crédito, o texto fica só com as correções locais e o painel avisa.")
+                     ? String(localized: "O modelo do Mac (Apple Intelligence, ~3B) roda sem internet e sem custo, mas é pequeno: corrige palavras e pontuação trecho a trecho, e não entende o texto inteiro. Ele melhora com o glossário que aprende (abaixo). Para listas na ordem pedida e termos errados pelo contexto, use um modelo da nuvem com a sua chave.")
+                     : String(localized: "Ao parar, o texto do ditado vai para \(nuvem.provedor.comArtigo) com a sua chave (o áudio nunca sai do Mac). Cada termo que ele corrige ensina o glossário local. Sem chave, rede ou crédito, o texto fica só com as correções locais e o painel avisa."))
             }
             Section {
                 if nuvem.aprendidos.isEmpty {
@@ -156,11 +156,11 @@ private struct HistoricoAjustesView: View {
 
     private func confirmarApagar() -> Bool {
         let alerta = NSAlert()
-        alerta.messageText = "Apagar todo o histórico?"
-        alerta.informativeText = "Ditados e itens copiados serão removidos deste Mac. Não dá para desfazer."
+        alerta.messageText = String(localized: "Apagar todo o histórico?")
+        alerta.informativeText = String(localized: "Ditados e itens copiados serão removidos deste Mac. Não dá para desfazer.")
         alerta.alertStyle = .warning
-        alerta.addButton(withTitle: "Apagar").hasDestructiveAction = true
-        alerta.addButton(withTitle: "Cancelar")
+        alerta.addButton(withTitle: String(localized: "Apagar")).hasDestructiveAction = true
+        alerta.addButton(withTitle: String(localized: "Cancelar"))
         return alerta.runModal() == .alertFirstButtonReturn
     }
 }
@@ -171,9 +171,9 @@ private struct ContaDaNuvem: View {
 
     var body: some View {
         if nuvem.provedor == .personalizado {
-            TextField("Endereço da API (https)", text: $nuvem.endereco, prompt: Text("https://…/v1"))
+            TextField("Endereço da API (https)", text: $nuvem.endereco, prompt: Text(verbatim: "https://…/v1"))
         }
-        TextField("Modelo", text: $nuvem.modelo, prompt: Text(nuvem.provedor.modeloPadrao.isEmpty ? "nome do modelo" : nuvem.provedor.modeloPadrao))
+        TextField("Modelo", text: $nuvem.modelo, prompt: Text(nuvem.provedor.modeloPadrao.isEmpty ? String(localized: "nome do modelo") : nuvem.provedor.modeloPadrao))
         if nuvem.salva {
             HStack {
                 Label("Chave salva no Keychain", systemImage: "key.fill")
@@ -227,9 +227,9 @@ private final class ConfigDaNuvem {
 
     func salvar() {
         let limpa = digitada.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !limpa.contains(where: \.isWhitespace) else { return status = "A chave não pode ter espaços." }
-        if provedor == .anthropic, !limpa.hasPrefix("sk-ant-") { return status = "A chave da API da Anthropic começa com sk-ant-." }
-        guard Chaveiro.salvar(limpa, provedor) else { return status = "Não consegui guardar a chave no Keychain." }
+        guard !limpa.contains(where: \.isWhitespace) else { return status = String(localized: "A chave não pode ter espaços.") }
+        if provedor == .anthropic, !limpa.hasPrefix("sk-ant-") { return status = String(localized: "A chave da API da Anthropic começa com sk-ant-.") }
+        guard Chaveiro.salvar(limpa, provedor) else { return status = String(localized: "Não consegui guardar a chave no Keychain.") }
         digitada = ""
         salva = true
         testar()

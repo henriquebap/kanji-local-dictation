@@ -6,6 +6,8 @@ Ditado com IA para o Mac, em **português e inglês ao mesmo tempo**. Aperte um 
 
 Nativo (Swift, sem Electron), gratuito e de código aberto. A transcrição acontece no próprio Mac.
 
+> A interface segue o idioma do Mac: inglês ou português do Brasil. Os nomes abaixo são os da interface em português.
+
 ## O que ele faz
 
 - **Escreve onde está o cursor.** Ao parar, o texto revisado entra no campo selecionado. Sem campo, ele fica no clipboard e no histórico.

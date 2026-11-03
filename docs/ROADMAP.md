@@ -60,6 +60,7 @@ Live typing into the focused field (Accessibility) with a compact panel, or text
 - Voice detector against words invented during silence.
 - Getting-started window with the permissions.
 - Filter for keys and tokens in the clipboard history.
+- UI localization: English and Brazilian Portuguese, following the Mac's language (`.lproj` tables; prompts and rule word lists stay in Portuguese).
 
 ### v0.2: polish (what separates a toy from a product)
 - Correction timeout

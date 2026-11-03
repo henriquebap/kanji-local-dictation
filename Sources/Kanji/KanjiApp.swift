@@ -85,7 +85,8 @@ struct MenuView: View {
     @Environment(Historico.self) private var historico
 
     var body: some View {
-        Button(ditado.fase == .gravando ? "Parar e colar" : "Começar a ditar  (\(Acao.ditar.atalho.descricao))") {
+        Button(ditado.fase == .gravando ? String(localized: "Parar e colar")
+               : String(localized: "Começar a ditar  (\(Acao.ditar.atalho.descricao))")) {
             ditado.alternar()
         }
         .disabled(ditado.fase == .preparando || ditado.fase == .ajustando)

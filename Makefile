@@ -3,12 +3,15 @@ APP := build/Kanji.app
 # Identidade estável mantém as permissões entre builds (scripts/dev-certificate.sh); sem ela, ad-hoc.
 IDENTIDADE := $(shell security find-certificate -c "Kanji Dev" >/dev/null 2>&1 && echo "Kanji Dev" || echo -)
 SRC := $(wildcard Sources/Kanji/*.swift)
+# Interface em pt-BR (chaves no código) e en; sem pt-BR.lproj o macOS mostraria inglês para todo mundo.
+TEXTOS := $(wildcard Resources/*.lproj/*.strings)
 
 app: $(APP)
 
-$(APP): $(SRC) Resources/Info.plist Resources/AppIcon.icns
+$(APP): $(SRC) $(TEXTOS) Resources/Info.plist Resources/AppIcon.icns
 	mkdir -p "$(APP)/Contents/MacOS" "$(APP)/Contents/Resources"
 	cp Resources/AppIcon.icns "$(APP)/Contents/Resources/"
+	cp -R Resources/en.lproj Resources/pt-BR.lproj "$(APP)/Contents/Resources/"
 	cp Resources/Info.plist "$(APP)/Contents/Info.plist"
 	swiftc -O -parse-as-library -swift-version 6 -target arm64-apple-macosx27.0 $(SRC) -o "$(APP)/Contents/MacOS/Kanji"
 	codesign --force --sign "$(IDENTIDADE)" "$(APP)"

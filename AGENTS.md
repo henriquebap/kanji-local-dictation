@@ -21,6 +21,7 @@ Free app, open source (Apache 2.0). The name and icon are reserved (`NOTICE`).
 make app       # compila build/Kanji.app com swiftc
 make install   # copia para /Applications e abre
 make teste     # testes das regras puras (sem microfone nem modelo)
+swift scripts/check-localization.swift  # toda string da interface tem inglês; .strings válidos; lê o bundle se houver build
 make dist      # release assinado e notarizado (precisa de Developer ID; docs/DISTRIBUTION.md)
 ```
 
@@ -77,7 +78,13 @@ For each dictation, the history stores the raw transcription (`bruto`) and the f
 
 ## Conventions
 
-- **The codebase is in Portuguese (pt-BR) by design:** Swift identifiers, code comments, log messages and the app's UI strings. New code follows the same convention, with correct accents. English technical terms stay as they are.
+- **The codebase is in Portuguese (pt-BR) by design:** Swift identifiers, code comments, log messages and the UI source strings. New code follows the same convention, with correct accents. English technical terms stay as they are.
+- **The UI is localized (pt-BR + en)** and follows the Mac's language:
+  - The Portuguese text in the code **is the key**. `Resources/en.lproj/Localizable.strings` maps it to English; `Resources/pt-BR.lproj/` stays empty but must exist (with `CFBundleDevelopmentRegion` = `pt-BR` in `Info.plist`), or a Mac in Portuguese would get English. The `Makefile` copies both `.lproj` folders into the bundle. No String Catalog: `.xcstrings` needs Xcode to compile.
+  - **Every new user-facing string needs an entry in `en.lproj/Localizable.strings`.** Interpolations become `%@` in the key (`"Pronto no %@"`).
+  - SwiftUI literals (`Text("…")`, `Button("…")`, `Toggle`, `Section`, `Picker`…) are localized on their own. A **`String` value** shown in the UI is not: ternaries (`Text(a ? "x" : "y")`), properties like `Provedor.nome`, messages passed to `falhar`, `aviso`, window titles, `NSAlert`. Use `String(localized: "…")` for those.
+  - **Never localize** what is persisted or sent to a model: LLM prompts (`Nuvem.regras`, `Correcao.regras`, `Ajustes.instrucoesPadrao`, the default glossary), the word lists used by the rules, log messages, `UserDefaults` keys, Keychain accounts, enum raw values, `Codable` fields.
+  - Run `swift scripts/check-localization.swift` after touching UI text: it extracts the UI literals from `Sources/Kanji`, fails on any key missing from the English table (or an unused one), and runs `plutil -lint` on the `.strings` files.
 - **Docs are English-first.** README and ARCHITECTURE have pt-BR copies (`README.pt-BR.md`, `docs/ARCHITECTURE.pt-BR.md`); when you change the English version, update the pt-BR copy too.
 - **Comments explain the why**, usually the observation or test that led to the decision ("visto nos testes", "reproduzido com áudio sintetizado"). Don't describe what the code already says.
 - **`// ponytail:`** marks a deliberate simplification with a known ceiling and says when to replace it. Respect it, or resolve the ceiling.
