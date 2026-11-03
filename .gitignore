@@ -5,3 +5,5 @@ build/
 /ditar
 # protótipo de linha de comando, anterior ao app
 /ditar.swift
+# worktrees e estado local de agentes de código
+/.claude/
