@@ -22,7 +22,8 @@ make app       # compila build/Kanji.app com swiftc
 make install   # copia para /Applications e abre
 make teste     # testes das regras puras (sem microfone nem modelo)
 swift scripts/check-localization.swift  # toda string da interface tem inglês; .strings válidos; lê o bundle se houver build
-make dist      # release assinado e notarizado (precisa de Developer ID; docs/DISTRIBUTION.md)
+make zip       # free release zip signed with "Kanji Dev" (docs/DISTRIBUTION.md)
+make dist      # notarized release, later: needs the paid Developer ID
 ```
 
 **Environment constraints.** The build uses neither Xcode nor SwiftPM, only `swiftc` (Command Line Tools):

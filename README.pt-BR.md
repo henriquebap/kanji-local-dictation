@@ -22,34 +22,59 @@ Nativo (Swift, sem Electron), gratuito e de código aberto. A transcrição acon
 
 ## Instalar
 
-> Requisitos: Mac com Apple Silicon, **macOS 27** ou mais recente e Apple Intelligence ativado. Sem a Apple Intelligence, o ditado funciona, mas sem a revisão local.
+O Kanji é gratuito. Ele ainda não faz parte do programa pago de desenvolvedor da Apple (US$ 99/ano), então não pode ser notarizado pela Apple. A notarização é a checagem que deixa um app abrir sem avisos. Até lá, há dois jeitos grátis de instalar: compilar você mesmo (sem aviso nenhum) ou baixar o app pronto e liberar uma vez.
 
-**Homebrew** (quando a primeira versão notarizada sair):
-```bash
-brew install --cask henriquebap/tap/kanji
-```
+> **Requisitos:** Mac com Apple Silicon e **macOS 27** ou mais recente. Ative a Apple Intelligence para ter a revisão local grátis; sem ela, o ditado funciona, só que sem revisão.
 
-**Download direto:** baixe o `.zip` em [Releases](https://github.com/henriquebap/kanji-local-dictation/releases), descompacte e arraste o `Kanji.app` para Aplicativos.
+### Opção A: compilar você mesmo (recomendado)
 
-**Compilando** (só precisa das Command Line Tools: `xcode-select --install`):
-```bash
-git clone https://github.com/henriquebap/kanji-local-dictation.git && cd kanji-local-dictation
-make install
-```
+**Objetivo:** gerar o Kanji no seu próprio Mac. O macOS confia no que você mesmo compilou, então não aparece aviso de segurança, e atualizar é um comando só.
+
+1. **Instale as ferramentas de linha de comando da Apple.** Elas trazem o compilador Swift (cerca de 1 GB; não precisa do Xcode completo).
+   ```bash
+   xcode-select --install
+   ```
+2. **Baixe o código.**
+   ```bash
+   git clone https://github.com/henriquebap/kanji-local-dictation.git && cd kanji-local-dictation
+   ```
+3. **Crie um certificado local de assinatura.** É opcional, mas recomendado. O macOS prende as permissões de Microfone e Acessibilidade à assinatura do app. Com o certificado, cada atualização mantém as permissões; sem ele, o macOS pede de novo a cada atualização. O script pede a senha do Mac uma vez.
+   ```bash
+   ./scripts/dev-certificate.sh
+   ```
+4. **Compile e instale.** Isso compila o app, copia para Aplicativos e abre.
+   ```bash
+   make install
+   ```
+
+**Para atualizar depois:** `git pull && make install`.
+
+### Opção B: baixar o app pronto
+
+**Objetivo:** pular a compilação. Como o app não é notarizado, o macOS bloqueia a primeira abertura e você libera uma vez.
+
+1. **Baixe** o `Kanji-X.Y.Z.zip` em [Releases](https://github.com/henriquebap/kanji-local-dictation/releases), descompacte e arraste o `Kanji.app` para Aplicativos.
+2. **Abra o Kanji.** O macOS diz que não consegue verificar o desenvolvedor. Clique em **OK**, não em *Mover para o Lixo*. Isso é o Gatekeeper, que bloqueia todo app baixado que a Apple não notarizou.
+3. **Libere.** Abra *Ajustes do Sistema › Privacidade e Segurança*, desça até **Segurança** e clique em **Abrir Mesmo Assim** ao lado de "O Kanji foi bloqueado". Confirme com a sua senha. Isso diz ao macOS que você confia neste app específico, e só precisa ser feito uma vez por versão baixada.
+
+   O botão só aparece por um tempo depois da abertura bloqueada. Se não estiver lá, abra o Kanji de novo e volte direto para os Ajustes.
+
+> **Homebrew:** desde o Homebrew 5, os casks precisam ser notarizados pela Apple. Por isso o `brew install` só vai existir quando o Kanji entrar no programa da Apple.
 
 ## Primeiros passos
 
-Na primeira vez, o Kanji abre a janela **Primeiros passos**. Ela mostra, com ✓ verde, o que já está liberado:
+Na primeira vez, o Kanji abre a janela **Primeiros passos**. Ela lista o que o macOS precisa liberar e por quê; o ✓ verde marca cada passo concluído:
 
-1. **Microfone:** clique em *Permitir*. O áudio é transcrito no próprio Mac.
-2. **Acessibilidade:** clique em *Abrir Ajustes do Sistema* e ative o Kanji na lista. É isso que deixa ele escrever no app em que você está.
-3. **Apple Intelligence:** ative em *Ajustes do Sistema › Apple Intelligence e Siri* para ter a revisão grátis.
-4. **Opcional, revisão na nuvem:** em *Ajustes › Correção*:
+1. **Microfone.** *Objetivo:* deixar o Kanji ouvir você, só enquanto o atalho está ativo. Clique em *Permitir*. O áudio é transcrito no próprio Mac e nunca sai dele.
+2. **Acessibilidade.** *Objetivo:* deixar o Kanji pôr o texto no app que você está usando. Clique em *Abrir Ajustes do Sistema* e ative o Kanji na lista.
+3. **Apple Intelligence.** *Objetivo:* revisão grátis e sem internet do que você dita. Ative em *Ajustes do Sistema › Apple Intelligence e Siri*.
+4. **Revisão na nuvem (opcional).** *Objetivo:* uma revisão melhor do texto inteiro (listas na ordem pedida, nomes, jargão) com a sua própria chave de API. Em *Ajustes › Correção*:
    - escolha o provedor;
    - cole a sua chave (ela fica no Keychain do macOS);
    - clique em *Testar*.
+5. **Teste.** *Objetivo:* conferir que tudo funciona. Clique em qualquer campo de texto, aperte **⌃⌥D**, fale e aperte **⌃⌥D** de novo; o texto aparece onde está o cursor.
 
-Depois, é só usar: clique num campo de texto, aperte **⌃⌥D**, fale e aperte de novo. A janela volta pelo menu do Kanji › *Primeiros passos…*.
+A janela volta quando quiser pelo menu do Kanji › *Primeiros passos…*.
 
 | Atalho | O que faz | Onde muda |
 |---|---|---|
@@ -89,7 +114,7 @@ make teste     # testes das regras (listas, junção de frases, fidelidade, glos
 - O build usa `swiftc` direto e funciona sem o Xcode. Por isso o estado das telas fica em classes `@Observable`, sem as macros `@State` e `@Generable`.
 - As permissões do macOS ficam presas à assinatura do app. Para não pedir de novo a cada build, crie um certificado local uma vez com `./scripts/dev-certificate.sh`.
 - Logs: `/usr/bin/log show --last 10m --predicate 'subsystem == "io.github.henriquebap.kanji"' --info`
-- Release assinado e notarizado: [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md) (em inglês).
+- Como publicar uma versão gratuita (e o caminho pago da Apple, para depois): [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md) (em inglês).
 - Próximos passos: [docs/ROADMAP.md](docs/ROADMAP.md) (em inglês).
 
 PRs são bem-vindos. Para mudança grande, abra uma issue antes.

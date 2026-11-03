@@ -46,7 +46,7 @@ Nobody dominates, but the space isn't empty. **The differentiator has to come fr
 - **Cheap subscription in the future (R$ 5–10/month):** cloud review without needing a key, plus new features.
   - Requires our own server (proxy with accounts, per-user limits and billing), because the author's key never ships inside the app.
   - The API credits that come with the Max plan can power a product that is sold, but the service can't depend on them alone: when they run out, the API stops. It needs purchased credits or auto-reload behind it.
-- **Distribution:** notarized download + Homebrew first, Mac App Store and iPhone later ([DISTRIBUTION.md](DISTRIBUTION.md)).
+- **Distribution:** free for now (build from source and GitHub Releases); Developer ID, Homebrew, Mac App Store and iPhone once the paid Apple membership makes sense ([DISTRIBUTION.md](DISTRIBUTION.md)).
 
 ## Phases
 
