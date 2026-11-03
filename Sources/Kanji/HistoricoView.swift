@@ -31,7 +31,7 @@ struct HistoricoView: View {
             .navigationSplitViewColumnWidth(min: 260, ideal: 320)
             .overlay {
                 if filtradas.isEmpty {
-                    ContentUnavailableView(ui.busca.isEmpty ? "Nada por aqui ainda" : "Sem resultados",
+                    ContentUnavailableView(ui.busca.isEmpty ? String(localized: "Nada por aqui ainda") : String(localized: "Sem resultados"),
                                            systemImage: "clock.arrow.circlepath")
                 }
             }
@@ -122,7 +122,7 @@ private struct Inicio: View {
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 420)
             }
-            Button(ditado.fase == .gravando ? "Parar" : "Ditar agora", systemImage: ditado.fase == .gravando ? "stop.fill" : "mic.fill") {
+            Button(ditado.fase == .gravando ? String(localized: "Parar") : String(localized: "Ditar agora"), systemImage: ditado.fase == .gravando ? "stop.fill" : "mic.fill") {
                 ditado.alternar()
             }
             .buttonStyle(.glassProminent)
@@ -143,8 +143,8 @@ private struct Inicio: View {
 
 private struct Requisito: View {
     let ok: Bool
-    let texto: String
-    let ajuda: String
+    let texto: LocalizedStringKey
+    let ajuda: LocalizedStringKey
 
     var body: some View {
         Label {

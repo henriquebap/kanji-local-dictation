@@ -97,13 +97,15 @@ private struct Cabecalho: View {
                 Image(systemName: "sparkles")
                     .foregroundStyle(.tint)
                     .symbolEffect(.pulse)
-                Text(ditado.revisandoCom.map { "Revisando com \($0.comArtigo)…" } ?? "Revisando o último trecho…")
+                Text(ditado.revisandoCom.map { String(localized: "Revisando com \($0.comArtigo)…") }
+                     ?? String(localized: "Revisando o último trecho…"))
                     .foregroundStyle(.secondary)
                 Spacer()
                 ProgressView().controlSize(.small)
             case .pronto(let colado):
                 Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
-                Text(colado ? (ditado.escrevendoEm.map { "Pronto no \($0)" } ?? "Colado") : "Copiado. Use ⌘V para colar")
+                Text(colado ? (ditado.escrevendoEm.map { String(localized: "Pronto no \($0)") } ?? String(localized: "Colado"))
+                     : String(localized: "Copiado. Use ⌘V para colar"))
                     .foregroundStyle(.secondary)
                 Spacer()
                 if !colado {
@@ -135,7 +137,7 @@ private struct Corpo: View {
         case .gravando where !ditado.aoVivo:
             EmptyView()  // só a onda: o texto entra pronto quando a pessoa para
         case .gravando where ditado.escrevendoEm != nil:
-            Text(ditado.rascunho.isEmpty ? "Ouvindo…" : ditado.rascunho)
+            Text(ditado.rascunho.isEmpty ? String(localized: "Ouvindo…") : ditado.rascunho)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .truncationMode(.head)
@@ -167,7 +169,9 @@ private struct Rodape: View {
                 .font(.caption)
                 .foregroundStyle(.orange)
         } else if ditado.fase == .gravando || ditado.fase == .preparando {
-            let destino = ditado.escrevendoEm.map { ditado.aoVivo ? "Escrevendo no \($0)  ·  " : "Entra no \($0) ao parar  ·  " }
+            let destino = ditado.escrevendoEm.map {
+                ditado.aoVivo ? String(localized: "Escrevendo no \($0)  ·  ") : String(localized: "Entra no \($0) ao parar  ·  ")
+            }
             Text("\(destino ?? "")\(Acao.ditar.atalho.descricao) para parar  ·  esc para cancelar")
                 .font(.caption)
                 .foregroundStyle(.tertiary)

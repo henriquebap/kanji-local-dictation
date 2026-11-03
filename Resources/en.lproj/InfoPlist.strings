@@ -1,0 +1,3 @@
+/* Textos dos pedidos de permissão do macOS em inglês; em português valem os do Info.plist. */
+"NSMicrophoneUsageDescription" = "Kanji records your voice only while the dictation shortcut is active, to transcribe it on the Mac itself.";
+"NSSpeechRecognitionUsageDescription" = "Transcription happens on the Mac itself; no audio leaves the computer.";

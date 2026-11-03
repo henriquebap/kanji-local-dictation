@@ -105,11 +105,11 @@ final class Ditado {
         Task {
             let primeiraVez = AVCaptureDevice.authorizationStatus(for: .audio) == .notDetermined
             guard await AVCaptureDevice.requestAccess(for: .audio) else {
-                return falhar("Sem acesso ao microfone. Libere em Ajustes do Sistema › Privacidade e Segurança › Microfone.")
+                return falhar(String(localized: "Sem acesso ao microfone. Libere em Ajustes do Sistema › Privacidade e Segurança › Microfone."))
             }
             // Logo depois de o macOS conceder o microfone, a primeira captura sai muda (visto nos testes).
             guard !primeiraVez else {
-                return falhar("Microfone liberado. Aperte \(Acao.ditar.atalho.descricao) de novo para gravar.", som: .pronto)
+                return falhar(String(localized: "Microfone liberado. Aperte \(Acao.ditar.atalho.descricao) de novo para gravar."), som: .pronto)
             }
             registro.notice("microfone liberado")
             do {
@@ -131,7 +131,7 @@ final class Ditado {
                 // Modo segurar: a tecla pode ter sido solta enquanto o microfone ligava.
                 if defaults.bool(forKey: Ajustes.modoSegurar), !segurando { parar() }
             } catch {
-                falhar("Não consegui começar a gravar: \(error.localizedDescription)")
+                falhar(String(localized: "Não consegui começar a gravar: \(error.localizedDescription)"))
             }
         }
     }
@@ -154,8 +154,8 @@ final class Ditado {
                 }
                 guard !revisado.isEmpty else {
                     return falhar(maiorNivel < 0.15
-                        ? "O microfone não captou som. Confira a entrada em Ajustes do Sistema › Som."
-                        : "Não entendi o que foi dito. Tente de novo, um pouco mais perto do microfone.", som: .vazio)
+                        ? String(localized: "O microfone não captou som. Confira a entrada em Ajustes do Sistema › Som.")
+                        : String(localized: "Não entendi o que foi dito. Tente de novo, um pouco mais perto do microfone."), som: .vazio)
                 }
                 await revisarNaNuvem()
                 guard fase == .ajustando else { return }  // cancelado enquanto a nuvem revisava
@@ -167,7 +167,7 @@ final class Ditado {
                 Som.tocar(.pronto)
                 fecharPainel(em: colado && aviso == nil ? 1.2 : 4)  // o aviso precisa de tempo para ser lido
             } catch {
-                falhar("Erro na transcrição: \(error.localizedDescription)")
+                falhar(String(localized: "Erro na transcrição: \(error.localizedDescription)"))
             }
         }
     }
@@ -207,7 +207,10 @@ final class Ditado {
             Aprendizado.registrar(bruto: bruto, final: texto)
         }
         // No modo só no fim, o modelo do Mac não revisou os trechos: o que fica é a transcrição com as regras locais.
-        aviso = falha.map { "Revisão na nuvem indisponível (\($0)). \(aoVivo ? "Ficou a revisão local." : "Ficou o texto transcrito.")" }
+        aviso = falha.map {
+            aoVivo ? String(localized: "Revisão na nuvem indisponível (\($0)). Ficou a revisão local.")
+                   : String(localized: "Revisão na nuvem indisponível (\($0)). Ficou o texto transcrito.")
+        }
     }
 
     /// O glossário dos Ajustes mais os termos que a revisão da nuvem já ensinou.
@@ -292,7 +295,7 @@ final class Ditado {
 
     private func mirarNoCampo() {
         alvo = Alvo.emFoco()
-        escrevendoEm = alvo.map { $0.app ?? "campo selecionado" }
+        escrevendoEm = alvo.map { $0.app ?? String(localized: "campo selecionado") }
     }
 
     private func pararFila() {

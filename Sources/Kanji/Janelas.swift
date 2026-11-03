@@ -28,7 +28,7 @@ final class Janelas {
 
     func mostrarAjustes() {
         let janela = ajustes ?? criar(
-            titulo: "Ajustes do Kanji",
+            titulo: String(localized: "Ajustes do Kanji"),
             conteudo: AjustesView().environment(historico),
             estilo: [.titled, .closable],
             tamanho: NSSize(width: 560, height: 460),
@@ -39,7 +39,7 @@ final class Janelas {
 
     func mostrarPrimeirosPassos() {
         let janela = primeirosPassos ?? criar(
-            titulo: "Primeiros passos",
+            titulo: String(localized: "Primeiros passos"),
             conteudo: PrimeirosPassosView { [weak self] in
                 UserDefaults.standard.set(true, forKey: Ajustes.viuPrimeirosPassos)
                 self?.primeirosPassos?.close()

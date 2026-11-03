@@ -62,8 +62,8 @@ struct PrimeirosPassosView: View {
 
 private struct Passo<Acao: View>: View {
     let numero: Int
-    let titulo: String
-    let detalhe: String
+    let titulo: LocalizedStringKey
+    let detalhe: LocalizedStringKey
     let feito: Bool
     @ViewBuilder let acao: () -> Acao
 

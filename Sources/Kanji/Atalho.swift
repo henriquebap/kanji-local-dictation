@@ -10,7 +10,8 @@ struct Atalho: Codable, Equatable {
 
     var descricao: String {
         [(controlKey, "⌃"), (optionKey, "⌥"), (shiftKey, "⇧"), (cmdKey, "⌘")]
-            .filter { modificadores & UInt32($0.0) != 0 }.map(\.1).joined() + tecla
+            .filter { modificadores & UInt32($0.0) != 0 }.map(\.1).joined()
+            + (tecla == "Espaço" ? String(localized: "Espaço") : tecla)  // "Espaço" fica gravado assim no UserDefaults
     }
 
     init(keyCode: Int, modificadores: Int, tecla: String) {
@@ -156,7 +157,7 @@ struct CampoDeAtalho: View {
                 Button("Padrão") { gravador.aplicar(gravador.acao.padrao) }
                     .buttonStyle(.borderless)
             }
-            Button(gravador.gravando ? "Pressione as teclas…" : gravador.atalho.descricao) { gravador.alternar() }
+            Button(gravador.gravando ? String(localized: "Pressione as teclas…") : gravador.atalho.descricao) { gravador.alternar() }
                 .frame(minWidth: 150)
         }
         .onDisappear { if gravador.gravando { gravador.parar() } }

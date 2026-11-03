@@ -10,26 +10,26 @@ enum Provedor: String, CaseIterable, Identifiable {
 
     var nome: String {
         switch self {
-        case .apple: "Modelo do Mac (grátis, sem internet)"
+        case .apple: String(localized: "Modelo do Mac (grátis, sem internet)")
         case .anthropic: "Claude (Anthropic)"
         case .openai: "OpenAI"
         case .gemini: "Google Gemini"
         case .groq: "Groq"
         case .openrouter: "OpenRouter"
-        case .personalizado: "Outro compatível com a API da OpenAI"
+        case .personalizado: String(localized: "Outro compatível com a API da OpenAI")
         }
     }
 
     /// Para o painel: "Revisando com o Claude…".
     var comArtigo: String {
         switch self {
-        case .apple: "o modelo do Mac"
-        case .anthropic: "o Claude"
-        case .openai: "a OpenAI"
-        case .gemini: "o Gemini"
-        case .groq: "a Groq"
-        case .openrouter: "o OpenRouter"
-        case .personalizado: "o modelo escolhido"
+        case .apple: String(localized: "o modelo do Mac")
+        case .anthropic: String(localized: "o Claude")
+        case .openai: String(localized: "a OpenAI")
+        case .gemini: String(localized: "o Gemini")
+        case .groq: String(localized: "a Groq")
+        case .openrouter: String(localized: "o OpenRouter")
+        case .personalizado: String(localized: "o modelo escolhido")
         }
     }
 
@@ -120,7 +120,7 @@ enum Nuvem {
             let razao = Double(texto.count) / Double(bruto.count)
             guard (0.5...1.8).contains(razao) else {
                 registro.notice("revisão da nuvem descartada: tamanho \(razao, format: .fixed(precision: 2))x o ditado")
-                return (nil, "a resposta não parecia uma revisão")
+                return (nil, String(localized: "a resposta não parecia uma revisão"))
             }
             return (texto, nil)
         } catch {
@@ -134,7 +134,7 @@ enum Nuvem {
         do {
             let resposta = try await enviar(p, chave: chave, sistema: regras,
                                             mensagem: "<transcricao>\nteste do kanji\n</transcricao>", maximo: 64, espera: 15)
-            return "Funcionando: \"\(resposta)\""
+            return String(localized: "Funcionando: \"\(resposta)\"")
         } catch {
             return error.localizedDescription
         }
@@ -142,7 +142,7 @@ enum Nuvem {
 
     private static func enviar(_ p: Provedor, chave: String, sistema: String, mensagem: String, maximo: Int,
                                espera: Double) async throws -> String {
-        guard let base = endereco(p) else { throw Falha(mensagem: "endereço da API inválido (use https://)") }
+        guard let base = endereco(p) else { throw Falha(mensagem: String(localized: "endereço da API inválido (use https://)")) }
         let claude = p == .anthropic
         var pedido = URLRequest(url: claude ? base : base.appending(path: "chat/completions"), timeoutInterval: espera)
         pedido.httpMethod = "POST"
@@ -169,12 +169,12 @@ enum Nuvem {
         let status = (http as? HTTPURLResponse)?.statusCode ?? 0
         guard status == 200 else {
             let detalhe = (json["error"] as? [String: Any])?["message"] as? String ?? "HTTP \(status)"
-            throw Falha(mensagem: status == 401 ? "chave inválida" : detalhe)
+            throw Falha(mensagem: status == 401 ? String(localized: "chave inválida") : detalhe)
         }
         let (texto, fim) = claude ? lerClaude(json) : lerOpenAI(json)
-        guard fim == (claude ? "end_turn" : "stop") else { throw Falha(mensagem: "resposta incompleta (\(fim ?? "?"))") }
+        guard fim == (claude ? "end_turn" : "stop") else { throw Falha(mensagem: String(localized: "resposta incompleta (\(fim ?? "?"))")) }
         let limpo = texto.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !limpo.isEmpty else { throw Falha(mensagem: "resposta vazia") }
+        guard !limpo.isEmpty else { throw Falha(mensagem: String(localized: "resposta vazia")) }
         return limpo
     }
 
