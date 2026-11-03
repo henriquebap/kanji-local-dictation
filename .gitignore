@@ -1,0 +1,7 @@
+build/
+.build/
+.swiftpm/
+.DS_Store
+/ditar
+# protótipo de linha de comando, anterior ao app
+/ditar.swift
