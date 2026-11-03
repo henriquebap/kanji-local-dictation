@@ -44,7 +44,14 @@ dist: $(APP)
 	ditto -c -k --keepParent "$(APP)" "$(ZIP)"  # de novo, agora com o ticket grampeado
 	shasum -a 256 "$(ZIP)"
 
+# Release gratuito, sem Apple Developer Program: o zip sai assinado com o certificado "Kanji Dev"
+# (scripts/dev-certificate.sh). Com a mesma assinatura em todas as versões, quem atualiza mantém as permissões.
+zip: $(APP)
+	@[ "$(IDENTIDADE)" != "-" ] || echo "aviso: sem o certificado Kanji Dev o zip sai com assinatura ad-hoc e quem atualizar terá de liberar Microfone e Acessibilidade de novo"
+	ditto -c -k --keepParent "$(APP)" "$(ZIP)"
+	shasum -a 256 "$(ZIP)"
+
 clean:
 	rm -rf build
 
-.PHONY: app run install teste dist clean
+.PHONY: app run install teste zip dist clean
