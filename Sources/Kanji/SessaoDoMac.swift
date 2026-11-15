@@ -14,6 +14,7 @@ final class SessaoDoMac {
     private(set) var trechos = 0
 
     @ObservationIgnored private let captura = CapturaAoVivo()
+    @ObservationIgnored private let microfone = CanalDoMicrofone()
     @ObservationIgnored private var transcricao: Transcricao?
     @ObservationIgnored private var fila: Task<Void, Never>?  // trechos entram um de cada vez, em ordem
     @ObservationIgnored private var soIngles: [(texto: String, palavras: [Palavra])] = []  // esperando o português
@@ -75,6 +76,7 @@ final class SessaoDoMac {
                     aoTrechoIngles: { self.soEmIngles($0, $1) },
                     memoria: memoria)
                 fase = .gravando
+                microfone.vigiar(desde: .now) { texto, palavras in self.enfileirarDoMicrofone(texto, palavras) }
                 registro.notice("sessão do Mac gravando\(self.voz == nil ? "" : ", separando locutores", privacy: .public)")
                 Som.tocar(.inicio)  // o tap exclui o Kanji: o som não entra na transcrição
             } catch {
@@ -89,6 +91,8 @@ final class SessaoDoMac {
         fase = .finalizando
         Task {
             let resultado = try? await captura.parar()  // os últimos trechos entram na fila durante a finalização
+            await microfone.parar()
+            try? await Task.sleep(for: .milliseconds(300))  // a fusão dos últimos trechos do microfone espera 150 ms
             await fila?.value
             await resolverIngles(ate: .infinity)
             // Nada firmou sozinho (fala curta, sem pausa): fica o texto inteiro como um trecho.
@@ -148,7 +152,8 @@ final class SessaoDoMac {
         soIngles = soIngles.filter { ($0.palavras.last?.fim ?? 0) > limite }
         for (texto, palavras) in prontos {
             let (inicio, fim) = (palavras.first?.inicio ?? 0, palavras.last?.fim ?? 0)
-            guard transcricao?.trechos.contains(where: { $0.fim > inicio && $0.inicio < fim }) == false else { continue }
+            guard transcricao?.trechos.contains(where: { $0.canal == .mac && $0.fim > inicio && $0.inicio < fim }) == false
+            else { continue }
             await registrar(texto, palavras, fundir: false)
         }
     }
@@ -215,12 +220,22 @@ final class SessaoDoMac {
         return partes
     }
 
-    private func adicionar(_ texto: String, _ palavras: [Palavra], locutor: Int? = nil) {
+    /// O que o microfone ouviu numa chamada: entra como "Você", sem separar vozes.
+    private func enfileirarDoMicrofone(_ texto: String, _ palavras: [Palavra]) {
+        let anterior = fila
+        fila = Task {
+            await anterior?.value
+            adicionar(texto, palavras, canal: .microfone)
+            salvar()
+        }
+    }
+
+    private func adicionar(_ texto: String, _ palavras: [Palavra], locutor: Int? = nil, canal: Trecho.Canal = .mac) {
         // O reconhecedor às vezes abre o trecho com a pontuação do anterior (". o desenho que eu fiz…", num podcast).
         let texto = String(texto.drop { $0.isPunctuation || $0.isWhitespace })
         guard !texto.isEmpty else { return }
         let inicio = palavras.first?.inicio ?? 0
-        transcricao?.adicionar(Trecho(inicio: inicio, fim: palavras.last?.fim ?? inicio, canal: .mac,
+        transcricao?.adicionar(Trecho(inicio: inicio, fim: palavras.last?.fim ?? inicio, canal: canal,
                                       locutor: locutor.map { "Locutor \($0)" }, texto: texto))
         trechos += 1
     }

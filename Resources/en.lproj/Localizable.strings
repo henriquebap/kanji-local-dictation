@@ -19,7 +19,6 @@
 
 /* Transcrição do áudio do Mac */
 "O macOS não criou a captura do áudio do Mac." = "macOS didn't create the Mac audio capture.";
-"Nenhuma saída de som ativa no Mac." = "No active sound output on the Mac.";
 "Formato de áudio do Mac não reconhecido." = "Unrecognized Mac audio format.";
 "O macOS não criou o dispositivo de captura." = "macOS didn't create the capture device.";
 "O áudio do Mac não começou (erro %@)." = "Mac audio didn't start (error %@).";

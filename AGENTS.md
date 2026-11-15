@@ -47,6 +47,7 @@ For each dictation, the history stores the raw transcription (`bruto`) and the f
 | `Captura.swift` | Microphone or Mac audio → `SpeechDetector` + PT and EN `SpeechTranscriber` |
 | `AudioDoMac.swift` | Core Audio process tap (everything the Mac plays, minus Kanji) |
 | `SessaoDoMac.swift`, `Transcricao.swift` | Long Mac-audio transcription session, saved as JSON + Markdown per segment |
+| `CanalDoMicrofone.swift` | "You" channel: microphone turns on by itself while another app (a call) uses it |
 | `Vozes.swift`, `Locutores.swift` | Optional speaker separation: CoreML voice embeddings, model download, online clustering |
 | `Fusao.swift` | Picks PT or EN word by word; glossary; capitalization |
 | `Revisao.swift` | Pure rules: dictated lists, joining sentences by pause |

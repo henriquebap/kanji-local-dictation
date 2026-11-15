@@ -29,7 +29,8 @@ final class CapturaAoVivo {
     /// - aoNivel: 0…1, várias vezes por segundo (para a onda).
     /// - aoTexto: (texto já firmado, rascunho que ainda pode mudar), do idioma principal.
     /// - aoTrecho: cada trecho que o reconhecedor firma (em geral a cada pausa), com as palavras e seus tempos.
-    func iniciar(idioma: String, ingles: Bool, origem: Origem = .microfone,
+    /// - semEco: cancelamento de eco do microfone (voice processing), para a caixa de som não entrar como fala.
+    func iniciar(idioma: String, ingles: Bool, origem: Origem = .microfone, semEco: Bool = false,
                  aoNivel: @escaping @MainActor (Float) -> Void,
                  aoTexto: @escaping @MainActor (String, String) -> Void,
                  aoTrecho: @escaping @MainActor (String, [Palavra]) -> Void,
@@ -96,7 +97,12 @@ final class CapturaAoVivo {
             // ponytail: installTap foi deprecado no 27, mas a versão nova (com error:) ainda não tem refinamento em Swift
             let engine = AVAudioEngine()
             let mic = engine.inputNode
-            mic.installTap(onBus: 0, bufferSize: 1024, format: mic.outputFormat(forBus: 0)) { buffer, _ in receber(buffer) }
+            if semEco {
+                try mic.setVoiceProcessingEnabled(true)
+                // Por padrão o voice processing abaixa o som dos outros apps, e a chamada ficaria baixa.
+                mic.voiceProcessingOtherAudioDuckingConfiguration = .init(enableAdvancedDucking: false, duckingLevel: .min)
+            }
+            mic.installTap(onBus: 0, bufferSize: 1024, format: mic.outputFormat(forBus: 0), block: Self.blocoDoMicrofone(receber))
             engine.prepare()
             self.engine = engine
             try engine.start()
@@ -177,28 +183,48 @@ final class CapturaAoVivo {
                                              entrada: AsyncStream<AnalyzerInput>.Continuation,
                                              memoria: MemoriaDeAudio?,
                                              aoNivel: @escaping @Sendable (Float) -> Void) -> @Sendable (AVAudioPCMBuffer) -> Void {
-        nonisolated(unsafe) let conversor = conversor  // usado só pela thread de áudio da origem
-        nonisolated(unsafe) var paraMemoria: AVAudioConverter?  // idem; criado no primeiro buffer, quando o formato aparece
+        // Tudo abaixo é usado só pela thread de áudio da origem.
+        nonisolated(unsafe) let conversor = conversor
+        nonisolated(unsafe) var formatoInicial: AVAudioFormat?
+        nonisolated(unsafe) var normalizador: AVAudioConverter?
+        nonisolated(unsafe) var paraMemoria: AVAudioConverter?
+        let formatoDaMemoria = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: ImpressaoDeVoz.taxa,
+                                             channels: 1, interleaved: false)
         return { buffer in
             aoNivel(nivel(buffer))
-            do {
-                for pedaco in try conversor.convert(buffer, at: nil) { entrada.yield(pedaco) }
-            } catch {
-                registro.error("conversão de áudio falhou: \(error, privacy: .public)")
+            // O conversor do reconhecedor fica preso ao formato do primeiro buffer: quando a saída mudou de 48 para
+            // 24 kHz numa chamada, ele não devolveu nada nem deu erro, e a fala da chamada sumia. Todo buffer chega
+            // a ele no formato inicial.
+            let inicial = formatoInicial ?? buffer.format
+            formatoInicial = inicial
+            if let pronto = buffer.format == inicial ? buffer : reamostrar(buffer, para: inicial, conversor: &normalizador) {
+                do {
+                    for pedaco in try conversor.convert(pronto, at: nil) { entrada.yield(pedaco) }
+                } catch {
+                    registro.error("conversão de áudio falhou: \(error, privacy: .public)")
+                }
             }
-            if let memoria { guardar(buffer, em: memoria, conversor: &paraMemoria) }
+            if let memoria, let formatoDaMemoria,
+               let copia = reamostrar(buffer, para: formatoDaMemoria, conversor: &paraMemoria),
+               let dados = copia.floatChannelData {
+                memoria.anexar(UnsafeBufferPointer(start: dados[0], count: Int(copia.frameLength)))
+            }
         }
     }
 
-    /// Cópia a 16 kHz mono para tirar a voz de cada trecho depois. O conversor guarda estado entre os buffers,
-    /// então a reamostragem é contínua e o tempo de cada amostra continua batendo com o do reconhecedor.
-    nonisolated private static func guardar(_ buffer: AVAudioPCMBuffer, em memoria: MemoriaDeAudio,
-                                           conversor: inout AVAudioConverter?) {
-        guard let formato = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: ImpressaoDeVoz.taxa,
-                                          channels: 1, interleaved: false) else { return }
-        if conversor == nil { conversor = AVAudioConverter(from: buffer.format, to: formato) }
+    /// Um bloco escrito dentro de `iniciar` herda o MainActor e derruba o app na primeira chamada, na thread de áudio
+    /// (crash visto ao ligar o microfone da sessão): por isso ele nasce aqui, fora do ator.
+    nonisolated private static func blocoDoMicrofone(_ receber: @escaping @Sendable (AVAudioPCMBuffer) -> Void) -> AVAudioNodeTapBlock {
+        { buffer, _ in receber(buffer) }
+    }
+
+    /// Reamostra um buffer. O conversor guarda estado entre os buffers, então a reamostragem é contínua e o tempo de
+    /// cada amostra continua batendo com o do reconhecedor; ele é refeito quando o formato de entrada muda.
+    nonisolated private static func reamostrar(_ buffer: AVAudioPCMBuffer, para formato: AVAudioFormat,
+                                              conversor: inout AVAudioConverter?) -> AVAudioPCMBuffer? {
+        if conversor?.inputFormat != buffer.format { conversor = AVAudioConverter(from: buffer.format, to: formato) }
         let capacidade = AVAudioFrameCount(Double(buffer.frameLength) * formato.sampleRate / buffer.format.sampleRate) + 64
-        guard let conversor, let saida = AVAudioPCMBuffer(pcmFormat: formato, frameCapacity: capacidade) else { return }
+        guard let conversor, let saida = AVAudioPCMBuffer(pcmFormat: formato, frameCapacity: capacidade) else { return nil }
         nonisolated(unsafe) var entregue = false
         var erro: NSError?
         conversor.convert(to: saida, error: &erro) { _, status in
@@ -207,8 +233,7 @@ final class CapturaAoVivo {
             status.pointee = .haveData
             return buffer
         }
-        guard erro == nil, let dados = saida.floatChannelData else { return }
-        memoria.anexar(UnsafeBufferPointer(start: dados[0], count: Int(saida.frameLength)))
+        return erro == nil ? saida : nil
     }
 
     /// RMS em dB mapeado para 0…1 (−50 dB = silêncio, 0 dB = máximo).
