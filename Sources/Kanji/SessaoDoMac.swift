@@ -16,7 +16,8 @@ final class SessaoDoMac {
     @ObservationIgnored private let captura = CapturaAoVivo()
     @ObservationIgnored private var transcricao: Transcricao?
     @ObservationIgnored private var fila: Task<Void, Never>?  // trechos entram um de cada vez, em ordem
-    @ObservationIgnored private var soIngles: [Task<Void, Never>] = []
+    @ObservationIgnored private var soIngles: [(texto: String, palavras: [Palavra])] = []  // esperando o português
+    @ObservationIgnored private var firmouAte: Double = 0  // fim do último trecho em português, em segundos do áudio
     @ObservationIgnored private var maiorNivel: Float = 0
 
     var ativa: Bool { fase == .preparando || fase == .gravando || fase == .finalizando }
@@ -32,7 +33,7 @@ final class SessaoDoMac {
     func iniciar() {
         guard !ativa else { return }
         fase = .preparando
-        (inicio, trechos, maiorNivel, fila, soIngles) = (.now, 0, 0, nil, [])
+        (inicio, trechos, maiorNivel, fila, soIngles, firmouAte) = (.now, 0, 0, nil, [], 0)
         transcricao = Transcricao(inicio: inicio)
         Task {
             do {
@@ -61,7 +62,7 @@ final class SessaoDoMac {
         Task {
             let resultado = try? await captura.parar()  // os últimos trechos entram na fila durante a finalização
             await fila?.value
-            for tarefa in soIngles { await tarefa.value }
+            resolverIngles(ate: .infinity)
             // Nada firmou sozinho (fala curta, sem pausa): fica o texto inteiro como um trecho.
             if trechos == 0, let resultado, !resultado.texto.isEmpty {
                 adicionar(resultado.texto, resultado.principal)
@@ -97,25 +98,35 @@ final class SessaoDoMac {
         fila = Task {
             await anterior?.value
             adicionar(await captura.textoFinal(texto, palavras, glossario: Ditado.glossario), palavras)
+            firmouAte = max(firmouAte, palavras.last?.fim ?? 0)
+            resolverIngles(ate: firmouAte)
             salvar()
         }
     }
 
     /// O reconhecedor de português não firma nada para uma fala toda em inglês: a frase sumia (testado com `say`).
-    /// Trecho em inglês sem trecho em português no mesmo intervalo entra sozinho.
-    // ponytail: um trecho em inglês que encosta num de português fica de fora; separar por palavra se aparecer no uso.
+    /// O de inglês, por outro lado, devolve lixo para fala em português ("You don't pretty see the German", uma
+    /// fileira de vírgulas, visto num podcast). Por isso o trecho em inglês espera o português firmar além do fim
+    /// dele, o que leva de 30 s a 1 min sem forçar o fim do trecho, e só entra se nada em português cobriu o mesmo tempo.
     private func soEmIngles(_ texto: String, _ palavras: [Palavra]) {
-        guard let inicio = palavras.first?.inicio, let fim = palavras.last?.fim else { return }
-        soIngles.append(Task {
-            try? await Task.sleep(for: .seconds(2))  // o português do mesmo trecho, se houver, firma antes disso
-            await fila?.value
-            guard transcricao?.trechos.contains(where: { $0.fim > inicio && $0.inicio < fim }) == false else { return }
+        guard !palavras.isEmpty, texto.contains(where: \.isLetter) else { return }
+        soIngles.append((texto, palavras))
+    }
+
+    // ponytail: um trecho em inglês que encosta num de português fica de fora; separar por palavra se aparecer no uso.
+    private func resolverIngles(ate limite: Double) {
+        let prontos = soIngles.filter { ($0.palavras.last?.fim ?? 0) <= limite }
+        soIngles = soIngles.filter { ($0.palavras.last?.fim ?? 0) > limite }
+        for (texto, palavras) in prontos {
+            let (inicio, fim) = (palavras.first?.inicio ?? 0, palavras.last?.fim ?? 0)
+            guard transcricao?.trechos.contains(where: { $0.fim > inicio && $0.inicio < fim }) == false else { continue }
             adicionar(Fusao.aplicarGlossario(texto.trimmingCharacters(in: .whitespaces), Ditado.glossario), palavras)
-            salvar()
-        })
+        }
     }
 
     private func adicionar(_ texto: String, _ palavras: [Palavra]) {
+        // O reconhecedor às vezes abre o trecho com a pontuação do anterior (". o desenho que eu fiz…", num podcast).
+        let texto = String(texto.drop { $0.isPunctuation || $0.isWhitespace })
         guard !texto.isEmpty else { return }
         let inicio = palavras.first?.inicio ?? 0
         transcricao?.adicionar(Trecho(inicio: inicio, fim: palavras.last?.fim ?? inicio, canal: .mac, texto: texto))
