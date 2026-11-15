@@ -34,7 +34,6 @@ final class Ditado {
     @ObservationIgnored private var revisao: RevisaoAoVivo?
     @ObservationIgnored private var fila: Task<Void, Never>?  // trechos são revisados um de cada vez, em ordem
     @ObservationIgnored private var brutos: [String] = []    // transcrição sem revisão, para o histórico
-    @ObservationIgnored private var usarIngles = false
     @ObservationIgnored private var ultimaFala = Date.distantPast
     @ObservationIgnored private var falouDesdeQueFirmou = false
     @ObservationIgnored private var fimDoUltimoTrecho: Double?  // em segundos do áudio, para medir a pausa
@@ -114,10 +113,9 @@ final class Ditado {
             registro.notice("microfone liberado")
             do {
                 let idioma = defaults.string(forKey: Ajustes.idioma) ?? "pt_BR"
-                usarIngles = defaults.bool(forKey: Ajustes.misturarIngles) && idioma.hasPrefix("pt")
                 try await captura.iniciar(
                     idioma: idioma,
-                    ingles: usarIngles,
+                    ingles: defaults.bool(forKey: Ajustes.misturarIngles) && idioma.hasPrefix("pt"),
                     aoNivel: { self.registrarNivel($0) },
                     aoTexto: { self.rascunho = $1 },
                     aoTrecho: { self.enfileirar($0, $1) })
@@ -213,9 +211,11 @@ final class Ditado {
         }
     }
 
+    private var glossario: [String] { Self.glossario }
+
     /// O glossário dos Ajustes mais os termos que a revisão da nuvem já ensinou.
-    private var glossario: [String] {
-        let manual = (defaults.string(forKey: Ajustes.glossario) ?? "")
+    static var glossario: [String] {
+        let manual = (UserDefaults.standard.string(forKey: Ajustes.glossario) ?? "")
             .split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
         return manual + Aprendizado.termos.filter { termo in
             !manual.contains { $0.caseInsensitiveCompare(termo) == .orderedSame }
@@ -261,28 +261,13 @@ final class Ditado {
         let anterior = fila
         fila = Task {
             await anterior?.value
-            let bruto = await fundir(texto, palavras)
+            let bruto = await captura.textoFinal(texto, palavras, glossario: glossario)
             guard let revisao, !bruto.isEmpty else { return }
             brutos.append(bruto)
             await revisao.processar(bruto, pausa: pausa)
             revisado = revisao.texto
             escreverNoCampo()
         }
-    }
-
-    private func fundir(_ texto: String, _ palavras: [Palavra]) async -> String {
-        let limpo = Fusao.aplicarGlossario(texto.trimmingCharacters(in: .whitespaces), glossario)
-        return Fusao.semMaiusculaNoMeio(await comIngles(limpo, palavras), glossario: glossario)
-    }
-
-    private func comIngles(_ limpo: String, _ palavras: [Palavra]) async -> String {
-        guard usarIngles, let inicio = palavras.first?.inicio, let fim = palavras.last?.fim else { return limpo }
-        try? await Task.sleep(for: .milliseconds(150))  // o reconhecedor de inglês firma o mesmo trecho logo depois
-        let ingles = captura.ingles(de: inicio, ate: fim)
-        guard !ingles.isEmpty else { return limpo }
-        let fundido = Fusao.aplicarGlossario(Fusao.fundir(pt: palavras, en: ingles, glossario: glossario), glossario)
-        if fundido != limpo { registro.notice("fusão PT+EN ajustou um trecho") }
-        return fundido
     }
 
     /// O campo recebe só texto revisado. Se recusar logo de cara, o ditado segue pelo painel.

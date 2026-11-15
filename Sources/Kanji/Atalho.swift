@@ -34,13 +34,14 @@ struct Atalho: Codable, Equatable {
 
 /// O que cada atalho global faz.
 enum Acao: UInt32, CaseIterable {
-    case ditar = 1, abrir = 2, cancelar = 3
+    case ditar = 1, abrir = 2, cancelar = 3, transcrever = 4
 
     var padrao: Atalho {
         switch self {
         case .ditar: Atalho(keyCode: kVK_ANSI_D, modificadores: controlKey | optionKey, tecla: "D")
         case .abrir: Atalho(keyCode: kVK_ANSI_T, modificadores: controlKey | optionKey, tecla: "T")
         case .cancelar: Atalho(keyCode: kVK_Escape, modificadores: 0, tecla: "esc")
+        case .transcrever: Atalho(keyCode: kVK_ANSI_M, modificadores: controlKey | optionKey, tecla: "M")  // M de Mac
         }
     }
 
@@ -106,6 +107,7 @@ final class AtalhoGlobal {
 final class GravadorDeAtalho {
     static let ditar = GravadorDeAtalho(.ditar)
     static let abrir = GravadorDeAtalho(.abrir)
+    static let transcrever = GravadorDeAtalho(.transcrever)
 
     let acao: Acao
     private(set) var atalho: Atalho

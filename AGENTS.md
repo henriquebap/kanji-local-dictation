@@ -44,7 +44,9 @@ For each dictation, the history stores the raw transcription (`bruto`) and the f
 |---|---|
 | `KanjiApp.swift` | App entry point, menu bar, composition (`Kanji.shared`) |
 | `Ditado.swift` | Dictation state machine and the segment queue. **Start here** |
-| `Captura.swift` | Microphone → `SpeechDetector` + PT and EN `SpeechTranscriber` |
+| `Captura.swift` | Microphone or Mac audio → `SpeechDetector` + PT and EN `SpeechTranscriber` |
+| `AudioDoMac.swift` | Core Audio process tap (everything the Mac plays, minus Kanji) |
+| `SessaoDoMac.swift`, `Transcricao.swift` | Long Mac-audio transcription session, saved as JSON + Markdown per segment |
 | `Fusao.swift` | Picks PT or EN word by word; glossary; capitalization |
 | `Revisao.swift` | Pure rules: dictated lists, joining sentences by pause |
 | `Correcao.swift` | Local model (Foundation Models) + fidelity guard |

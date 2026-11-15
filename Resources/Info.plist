@@ -14,6 +14,7 @@
 	<key>LSMinimumSystemVersion</key><string>27.0</string>
 	<key>LSUIElement</key><false/>
 	<key>NSMicrophoneUsageDescription</key><string>O Kanji grava sua voz só enquanto o atalho de ditado está ativo, para transcrever no próprio Mac.</string>
+	<key>NSAudioCaptureUsageDescription</key><string>O Kanji ouve o áudio que o Mac está tocando só enquanto a transcrição do Mac está ligada, para transcrever no próprio Mac.</string>
 	<key>NSSpeechRecognitionUsageDescription</key><string>A transcrição acontece no próprio Mac; nenhum áudio sai do computador.</string>
 </dict>
 </plist>

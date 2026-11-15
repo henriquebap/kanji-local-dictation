@@ -12,6 +12,20 @@
 "Abrir Kanji  (%@)" = "Open Kanji  (%@)";
 "Primeiros passos…" = "Getting Started…";
 "Sair do Kanji" = "Quit Kanji";
+"Transcrever o áudio do Mac  (%@)" = "Transcribe Mac Audio  (%@)";
+"Parar a transcrição do Mac (%@ trechos)" = "Stop Mac Transcription (%@ segments)";
+"Transcrever ou parar o áudio do Mac" = "Transcribe or Stop Mac Audio";
+"Abrir transcrições" = "Open Transcripts";
+
+/* Transcrição do áudio do Mac */
+"O macOS não criou a captura do áudio do Mac." = "macOS didn't create the Mac audio capture.";
+"Nenhuma saída de som ativa no Mac." = "No active sound output on the Mac.";
+"Formato de áudio do Mac não reconhecido." = "Unrecognized Mac audio format.";
+"O macOS não criou o dispositivo de captura." = "macOS didn't create the capture device.";
+"O áudio do Mac não começou (erro %@)." = "Mac audio didn't start (error %@).";
+"Não consegui ouvir o áudio do Mac: %@" = "Couldn't listen to the Mac's audio: %@";
+"Nenhum som do Mac chegou. Libere o Kanji em Ajustes do Sistema › Privacidade e Segurança › Gravação de Áudio do Sistema." = "No sound from the Mac came through. Allow Kanji in System Settings › Privacy & Security › System Audio Recording.";
+"Ouvi o áudio do Mac, mas não reconheci fala." = "I heard the Mac's audio but didn't recognize any speech.";
 
 /* Títulos de janela */
 "Kanji" = "Kanji";
@@ -83,6 +97,7 @@
 "Para colar sozinho. Ajustes do Sistema › Privacidade › Acessibilidade." = "To paste on its own. System Settings › Privacy & Security › Accessibility.";
 
 /* Ajustes › Geral */
+"Transcrever o áudio do Mac" = "Transcribe Mac audio";
 "Geral" = "General";
 "Atalhos globais" = "Global shortcuts";
 "Começar e parar o ditado" = "Start and stop dictation";

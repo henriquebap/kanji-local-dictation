@@ -61,5 +61,29 @@ import Foundation
     conferir("variável de ambiente não entra", "\(Historico.pareceSegredo("export OPENAI_KEY=chave-ficticia-AbCdEf0123456789xyzXYZ0123456789"))", "true")
     conferir("URL com senha não entra", "\(Historico.pareceSegredo("postgres://admin:senha@db.exemplo.com/app"))", "true")
     conferir("link entra no histórico", "\(Historico.pareceSegredo("https://github.com/henriquebap/kanji-local-dictation/pull/12345678901234"))", "false")
+    var sessao = Transcricao(inicio: Date(timeIntervalSince1970: 0))
+    sessao.adicionar(Trecho(inicio: 4, fim: 9, canal: .mac, texto: "Bem-vindos ao episódio."))
+    sessao.adicionar(Trecho(inicio: 15, fim: 17, canal: .mac, texto: "Hoje é deploy."))
+    sessao.adicionar(Trecho(inicio: 11, fim: 14, canal: .microfone, texto: "Oi, pessoal."))  // firmou depois, falou antes
+    sessao.adicionar(Trecho(inicio: 18, fim: 20, canal: .mac, locutor: "Locutor 2", texto: "Obrigado."))
+    let md = sessao.markdown().split(separator: "\n", omittingEmptySubsequences: true).dropFirst().joined(separator: "\n")
+    conferir("transcrição em turnos, na ordem da fala", md, """
+        **[00:00:04] Outros:** Bem-vindos ao episódio.
+        **[00:00:11] Você:** Oi, pessoal.
+        **[00:00:15] Outros:** Hoje é deploy.
+        **[00:00:18] Locutor 2:** Obrigado.
+        """)
+    var fala = Transcricao(inicio: Date(timeIntervalSince1970: 0))
+    for (inicio, fim, texto) in [(0.0, 3.0, "Um."), (3.8, 6.0, "Dois."), (10.0, 12.0, "Três."),
+                                 (12.5, 40.0, "Quatro."), (40.5, 70.0, "Cinco.")] {
+        fala.adicionar(Trecho(inicio: inicio, fim: fim, canal: .mac, texto: texto))
+    }
+    let paragrafos = fala.markdown().split(separator: "\n", omittingEmptySubsequences: true).dropFirst().joined(separator: "\n")
+    conferir("turno quebra na pausa e no monólogo longo", paragrafos, """
+        **[00:00:00] Outros:** Um. Dois.
+        **[00:00:10] Outros:** Três. Quatro.
+        **[00:00:40] Outros:** Cinco.
+        """)
+    conferir("relógio de mais de uma hora", Transcricao.relogio(3725.4), "01:02:05")
     return falhas
 }

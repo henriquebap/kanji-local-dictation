@@ -24,6 +24,7 @@ private struct GeralView: View {
             Section("Atalhos globais") {
                 LabeledContent("Começar e parar o ditado") { CampoDeAtalho(gravador: .ditar) }
                 LabeledContent("Abrir o Kanji") { CampoDeAtalho(gravador: .abrir) }
+                LabeledContent("Transcrever o áudio do Mac") { CampoDeAtalho(gravador: .transcrever) }
                 Picker("Modo do ditado", selection: $modoSegurar) {
                     Text("Tocar para começar e parar").tag(false)
                     Text("Segurar enquanto fala").tag(true)
