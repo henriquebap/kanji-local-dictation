@@ -68,6 +68,8 @@ Live typing into the focused field (Accessibility) with a compact panel, or text
 - Benchmark: 30–50 real pt-BR recordings, measuring WER against Whisper large-v3 and Parakeet. It would be a number no competitor publishes.
 
 ### v0.3: transcribe what the Mac is playing (meetings, videos)
+**Status (2026-11-14):** capture, long sessions saved as JSON + Markdown, and optional speaker separation work; tested on 5 min of a pt-BR podcast (two speakers, both turn changes caught). Still missing: Me × Others with the microphone, a notch indicator.
+- **Speakers (built):** there's no native diarization, so each segment is split into ~3 s word windows; each window becomes a WeSpeaker ResNet34 embedding (CoreML, optional ~15 MB download, CC BY 4.0) taken inside 10 s of real audio context, and an online clustering (cosine ≥ 0.5) names "Speaker 1, 2…". Feeding the window padded with zeros instead of real context made different voices look alike (0.65–0.80 vs 0.01–0.20).
 - **Capture:** Core Audio process taps (`AudioHardwareCreateProcessTap`, Swift API `AudioHardwareSystem.shared.makeProcessTap`). Only asks for the "System Audio Recording" permission, narrower than Screen Recording, and can filter by app (`bundleIDs`). Avoid ScreenCaptureKit (requires screen permission) and virtual drivers.
 - **Live:** `SpeechAnalyzer.start(inputSequence:)` with `AsyncStream<AnalyzerInput>` and the `.progressiveTranscription` preset. Volatile text shows in gray and final text in black. On macOS 27, `AnalyzerInputConverter` removes the need for a manual `AVAudioConverter`.
 - **Me × Others:** two transcribers, one on the microphone and one on the tap, interleaved by `audioTimeRange`. There's no native diarization.

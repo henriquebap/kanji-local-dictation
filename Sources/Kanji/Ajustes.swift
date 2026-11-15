@@ -13,6 +13,7 @@ enum Ajustes {
     static let enderecoPersonalizado = "enderecoPersonalizado"
     static let viuPrimeirosPassos = "viuPrimeirosPassos"
     static let escreverAoVivo = "escreverAoVivo"
+    static let separarLocutores = "separarLocutores"
 
     static var padroes: [String: Any] { [
         idioma: "pt_BR",
@@ -25,6 +26,7 @@ enum Ajustes {
         misturarIngles: true,
         glossario: glossarioPadrao,
         escreverAoVivo: false,
+        separarLocutores: false,
     ] }
 
     static let glossarioPadrao = "Claude, Claude Code, LLM, prompt, deploy, commit, pull request, branch, bug, bugado, feature, API, app, backend, frontend, speech to text, running, checking, Supabase, GitHub, Siri"

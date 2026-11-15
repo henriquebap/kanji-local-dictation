@@ -98,6 +98,15 @@
 
 /* Ajustes › Geral */
 "Transcrever o áudio do Mac" = "Transcribe Mac audio";
+"Transcrição do áudio do Mac" = "Mac Audio Transcription";
+"Separar quem fala" = "Tell speakers apart";
+"Usa pesos externos: um modelo de voz de ~15 MB (WeSpeaker ResNet34, CC-BY-4.0), baixado uma vez do Hugging Face. O áudio continua no Mac." = "Uses external weights: a ~15 MB voice model (WeSpeaker ResNet34, CC-BY-4.0), downloaded once from Hugging Face. Audio stays on the Mac.";
+"Modelo de voz baixado e conferido" = "Voice model downloaded and verified";
+"Baixando o modelo de voz…" = "Downloading the voice model…";
+"Baixar o modelo de voz (~15 MB)" = "Download the voice model (~15 MB)";
+"Tentar de novo" = "Try Again";
+"Não consegui baixar o modelo de locutores: %@" = "Couldn't download the speaker model: %@";
+"o arquivo %@ veio diferente do esperado" = "the file %@ didn't match the expected one";
 "Geral" = "General";
 "Atalhos globais" = "Global shortcuts";
 "Começar e parar o ditado" = "Start and stop dictation";

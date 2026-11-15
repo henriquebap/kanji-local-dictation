@@ -84,6 +84,20 @@ import Foundation
         **[00:00:10] Outros:** Três. Quatro.
         **[00:00:40] Outros:** Cinco.
         """)
+    var vozes = Locutores(limiar: 0.6)
+    let quem = [[1, 0, 0], [0.9, 0.1, 0], [0, 1, 0], [0.05, 1, 0], [1, 0.05, 0], [0, 0, 1]].map { vozes.identificar($0) }
+    conferir("vozes viram locutores na ordem em que aparecem", "\(quem)", "[1, 1, 2, 2, 1, 3]")
+    conferir("janela curta não abre locutor novo", "\(vozes.identificar([0.2, 0.4, -0.6], confiavel: false))", "2")
+    conferir("janela curta entre duas iguais herda o vizinho",
+             "\(Locutores.suavizar([1, 1, 2, 1, 2, 2], duracoes: [3, 3, 1, 3, 3, 3]))", "[1, 1, 1, 1, 2, 2]")
+    conferir("janela longa não é ruído", "\(Locutores.suavizar([1, 2, 1], duracoes: [3, 3, 3]))", "[1, 2, 1]")
+    let p = { (i: Double, f: Double) in Palavra(texto: " x", inicio: i, fim: f, confianca: 1) }
+    // 0–1,6 s fecha na pausa de 0,4 s; 2,0–5,0 s passa de 3 s; a sobra de 0,5 s junta com a anterior.
+    let palavras = [p(0, 0.4), p(0.5, 1.0), p(1.1, 1.6), p(2.0, 2.6), p(2.7, 3.5), p(3.6, 4.4), p(4.5, 5.0), p(5.1, 5.6)]
+    conferir("janelas fecham na pausa e no máximo", "\(Locutores.janelas(palavras).map { [$0.lowerBound, $0.upperBound] })",
+             "[[0, 3], [3, 8]]")
+    conferir("pausa longa fecha a janela mesmo curta", "\(Locutores.janelas([p(0, 0.5), p(2.0, 3.0), p(3.1, 4.5)]).map { [$0.lowerBound, $0.upperBound] })",
+             "[[0, 1], [1, 3]]")
     conferir("relógio de mais de uma hora", Transcricao.relogio(3725.4), "01:02:05")
     return falhas
 }

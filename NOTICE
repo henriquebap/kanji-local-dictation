@@ -5,3 +5,9 @@ This product includes software developed by Henrique Baptista (https://github.co
 
 The name "Kanji" and the application icon are trademarks of the author and are not covered by the Apache License 2.0
 (section 6 of the license). Derived distributions must use a different name and a different icon.
+
+Optional speaker separation ("Tell speakers apart" in Settings) downloads, on first use, model weights that are
+not part of this repository nor of the app bundle: modified Core ML conversions by Fluid Inference
+(https://huggingface.co/FluidInference/speaker-diarization-coreml, revision 7eab74f) of the pyannote
+speaker-diarization-community-1 FBANK frontend and WeSpeaker ResNet34 speaker embedding (pyannote, CNRS; WeSpeaker,
+WeNet community). Licensed under CC BY 4.0: https://creativecommons.org/licenses/by/4.0/

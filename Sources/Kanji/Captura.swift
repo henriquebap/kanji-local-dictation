@@ -33,7 +33,8 @@ final class CapturaAoVivo {
                  aoNivel: @escaping @MainActor (Float) -> Void,
                  aoTexto: @escaping @MainActor (String, String) -> Void,
                  aoTrecho: @escaping @MainActor (String, [Palavra]) -> Void,
-                 aoTrechoIngles: (@MainActor (String, [Palavra]) -> Void)? = nil) async throws {
+                 aoTrechoIngles: (@MainActor (String, [Palavra]) -> Void)? = nil,
+                 memoria: MemoriaDeAudio? = nil) async throws {
         let atributos: Set<SpeechTranscriber.ResultAttributeOption> = [.audioTimeRange, .transcriptionConfidence]
         let principal = SpeechTranscriber(locale: Locale(identifier: idioma), transcriptionOptions: [],
                                           reportingOptions: [.volatileResults, .fastResults], attributeOptions: atributos)
@@ -89,7 +90,7 @@ final class CapturaAoVivo {
 
         self.analyzer = analyzer
         self.entrada = entrada
-        let receber = Self.receptor(conversor: conversor, entrada: entrada) { n in Task { @MainActor in aoNivel(n) } }
+        let receber = Self.receptor(conversor: conversor, entrada: entrada, memoria: memoria) { n in Task { @MainActor in aoNivel(n) } }
         switch origem {
         case .microfone:
             // ponytail: installTap foi deprecado no 27, mas a versão nova (com error:) ainda não tem refinamento em Swift
@@ -174,8 +175,10 @@ final class CapturaAoVivo {
     /// (o que derruba o app com assert de isolamento na primeira chamada).
     nonisolated private static func receptor(conversor: AnalyzerInputConverter,
                                              entrada: AsyncStream<AnalyzerInput>.Continuation,
+                                             memoria: MemoriaDeAudio?,
                                              aoNivel: @escaping @Sendable (Float) -> Void) -> @Sendable (AVAudioPCMBuffer) -> Void {
         nonisolated(unsafe) let conversor = conversor  // usado só pela thread de áudio da origem
+        nonisolated(unsafe) var paraMemoria: AVAudioConverter?  // idem; criado no primeiro buffer, quando o formato aparece
         return { buffer in
             aoNivel(nivel(buffer))
             do {
@@ -183,7 +186,29 @@ final class CapturaAoVivo {
             } catch {
                 registro.error("conversão de áudio falhou: \(error, privacy: .public)")
             }
+            if let memoria { guardar(buffer, em: memoria, conversor: &paraMemoria) }
         }
+    }
+
+    /// Cópia a 16 kHz mono para tirar a voz de cada trecho depois. O conversor guarda estado entre os buffers,
+    /// então a reamostragem é contínua e o tempo de cada amostra continua batendo com o do reconhecedor.
+    nonisolated private static func guardar(_ buffer: AVAudioPCMBuffer, em memoria: MemoriaDeAudio,
+                                           conversor: inout AVAudioConverter?) {
+        guard let formato = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: ImpressaoDeVoz.taxa,
+                                          channels: 1, interleaved: false) else { return }
+        if conversor == nil { conversor = AVAudioConverter(from: buffer.format, to: formato) }
+        let capacidade = AVAudioFrameCount(Double(buffer.frameLength) * formato.sampleRate / buffer.format.sampleRate) + 64
+        guard let conversor, let saida = AVAudioPCMBuffer(pcmFormat: formato, frameCapacity: capacidade) else { return }
+        nonisolated(unsafe) var entregue = false
+        var erro: NSError?
+        conversor.convert(to: saida, error: &erro) { _, status in
+            if entregue { status.pointee = .noDataNow; return nil }
+            entregue = true
+            status.pointee = .haveData
+            return buffer
+        }
+        guard erro == nil, let dados = saida.floatChannelData else { return }
+        memoria.anexar(UnsafeBufferPointer(start: dados[0], count: Int(saida.frameLength)))
     }
 
     /// RMS em dB mapeado para 0…1 (−50 dB = silêncio, 0 dB = máximo).

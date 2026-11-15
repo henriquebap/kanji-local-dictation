@@ -18,6 +18,7 @@ private struct GeralView: View {
     @AppStorage(Ajustes.colarSozinho) private var colarSozinho = true
     @AppStorage(Ajustes.misturarIngles) private var misturarIngles = true
     @AppStorage(Ajustes.escreverAoVivo) private var escreverAoVivo = false
+    @AppStorage(Ajustes.separarLocutores) private var separarLocutores = false
 
     var body: some View {
         Form {
@@ -38,6 +39,15 @@ private struct GeralView: View {
                     Toggle("Bilíngue: reconhecer inglês junto com o português", isOn: $misturarIngles)
                 }
                 Toggle("Sons de início, fim e erro", isOn: $sons)
+            }
+            Section {
+                Toggle("Separar quem fala", isOn: $separarLocutores)
+                    .onChange(of: separarLocutores) { _, ligado in if ligado { ModeloDeVozes.shared.baixar() } }
+                if separarLocutores { EstadoDoModelo(modelo: .shared) }
+            } header: {
+                Text("Transcrição do áudio do Mac")
+            } footer: {
+                Text("Usa pesos externos: um modelo de voz de ~15 MB (WeSpeaker ResNet34, CC-BY-4.0), baixado uma vez do Hugging Face. O áudio continua no Mac.")
             }
             Section {
                 Toggle("Escrever direto no campo de texto selecionado", isOn: $colarSozinho)
@@ -262,5 +272,20 @@ private final class ConfigDaNuvem {
 
     func atualizarAprendidos() {
         aprendidos = Aprendizado.termos
+    }
+}
+
+/// Download do modelo de voz da separação de locutores.
+private struct EstadoDoModelo: View {
+    let modelo: ModeloDeVozes
+
+    var body: some View {
+        switch modelo.estado {
+        case .pronto: Label("Modelo de voz baixado e conferido", systemImage: "checkmark.circle")
+        case .baixando(let progresso): ProgressView(value: progresso) { Text("Baixando o modelo de voz…") }
+        case .ausente: Button("Baixar o modelo de voz (~15 MB)") { modelo.baixar() }
+        case .erro(let mensagem):
+            LabeledContent(mensagem) { Button("Tentar de novo") { modelo.baixar() } }
+        }
     }
 }

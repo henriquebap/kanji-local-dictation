@@ -47,6 +47,7 @@ For each dictation, the history stores the raw transcription (`bruto`) and the f
 | `Captura.swift` | Microphone or Mac audio → `SpeechDetector` + PT and EN `SpeechTranscriber` |
 | `AudioDoMac.swift` | Core Audio process tap (everything the Mac plays, minus Kanji) |
 | `SessaoDoMac.swift`, `Transcricao.swift` | Long Mac-audio transcription session, saved as JSON + Markdown per segment |
+| `Vozes.swift`, `Locutores.swift` | Optional speaker separation: CoreML voice embeddings, model download, online clustering |
 | `Fusao.swift` | Picks PT or EN word by word; glossary; capitalization |
 | `Revisao.swift` | Pure rules: dictated lists, joining sentences by pause |
 | `Correcao.swift` | Local model (Foundation Models) + fidelity guard |
@@ -78,6 +79,7 @@ For each dictation, the history stores the raw transcription (`bruto`) and the f
    - Text must never disappear: if there's no field, it stays in the clipboard and in the history.
 6. **Audio never leaves the Mac.** Only text goes to the cloud, and only to the provider the user chose.
 7. **No third-party dependencies.** Apple frameworks only. Open an issue before adding one.
+   - The one exception is data, not code: the optional speaker-separation weights (CC BY 4.0, credited in `NOTICE`), downloaded at a pinned revision and checked by SHA-256 (`ModeloDeVozes`). Never bundle them or load an unchecked file.
 
 ## Conventions
 
