@@ -112,7 +112,7 @@ struct MenuView: View {
         }
         .disabled(sessao.fase == .preparando || sessao.fase == .finalizando)
         if case .erro(let mensagem) = sessao.fase { Text(mensagem) }
-        Button("Abrir transcrições") { sessao.abrirPasta() }
+        Button("Abrir transcrições") { FiltroHistorico.shared.mostrarTranscricoes() }
 
         Divider()
         Section("Recentes") {

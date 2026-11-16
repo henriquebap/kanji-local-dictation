@@ -99,5 +99,18 @@ import Foundation
     conferir("pausa longa fecha a janela mesmo curta", "\(Locutores.janelas([p(0, 0.5), p(2.0, 3.0), p(3.1, 4.5)]).map { [$0.lowerBound, $0.upperBound] })",
              "[[0, 1], [1, 3]]")
     conferir("relógio de mais de uma hora", Transcricao.relogio(3725.4), "01:02:05")
+    conferir("quem fala, na ordem", sessao.locutores.joined(separator: ", "), "Outros, Você, Locutor 2")
+    conferir("duração vai até o fim do último trecho", "\(sessao.duracao)", "20.0")
+    var renomeada = sessao
+    conferir("renomear troca em todos os trechos", "\(renomeada.renomear("Outros", para: "  Lando\n"))", "true")
+    conferir("nome novo nos turnos", renomeada.turnos().map(\.quem).joined(separator: ", "), "Lando, Você, Lando, Locutor 2")
+    conferir("renomear o microfone", "\(renomeada.renomear("Você", para: "Henrique"))", "true")
+    conferir("nome de outra voz é recusado", "\(renomeada.renomear("Henrique", para: "Lando"))", "false")
+    conferir("voz do Mac não vira Você", "\(fala.renomear("Outros", para: "Você"))", "false")
+    conferir("nome vazio é recusado", "\(renomeada.renomear("Lando", para: "   "))", "false")
+    conferir("renomeado sobrevive ao JSON", try! {
+        let dados = try JSONEncoder().encode(renomeada)
+        return try JSONDecoder().decode(Transcricao.self, from: dados).locutores.joined(separator: ", ")
+    }(), "Lando, Henrique, Locutor 2")
     return falhas
 }

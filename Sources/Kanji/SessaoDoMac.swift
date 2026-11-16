@@ -30,6 +30,9 @@ final class SessaoDoMac {
     // ponytail: limiar fixo, calibrado num podcast; virar ajuste se variar muito entre gravações.
     static let limiar: Float = 0.5
 
+    /// A transcrição desta sessão, para a janela não mexer no arquivo enquanto ele ainda está sendo gravado.
+    var transcricaoAtual: Transcricao.ID? { ativa ? transcricao?.id : nil }
+
     var ativa: Bool { fase == .preparando || fase == .gravando || fase == .finalizando }
 
     func alternar() {
@@ -118,12 +121,8 @@ final class SessaoDoMac {
                          simbolo: "checkmark.circle.fill", cor: "verde", expira: 8,
                          prioridade: "baixa")  // o som de pronto já avisa; a ilha não precisa descer
             fase = .parada
+            Transcricoes.shared.carregar()  // a janela do Kanji mostra a sessão nova
         }
-    }
-
-    func abrirPasta() {
-        try? FileManager.default.createDirectory(at: Self.pasta, withIntermediateDirectories: true)
-        NSWorkspace.shared.open(Self.pasta)
     }
 
     // MARK: - Apoio
@@ -247,18 +246,10 @@ final class SessaoDoMac {
         trechos += 1
     }
 
-    /// ponytail: reescreve os dois arquivos inteiros a cada trecho; numa sessão de horas são poucos MB.
-    /// Anexar (JSON Lines) se o tempo de escrita aparecer no perfil.
     private func salvar() {
         guard let transcricao, !transcricao.trechos.isEmpty else { return }
         do {
-            try FileManager.default.createDirectory(at: Self.pasta, withIntermediateDirectories: true)
-            let base = Self.pasta.appending(path: transcricao.nomeDoArquivo)
-            let codificador = JSONEncoder()
-            codificador.dateEncodingStrategy = .iso8601
-            codificador.outputFormatting = [.prettyPrinted, .sortedKeys]
-            try codificador.encode(transcricao).write(to: base.appendingPathExtension("json"), options: .atomic)
-            try Data(transcricao.markdown().utf8).write(to: base.appendingPathExtension("md"), options: .atomic)
+            try transcricao.gravar(base: Self.pasta.appending(path: transcricao.nomeDoArquivo))
         } catch {
             registro.error("falha ao salvar a transcrição: \(error.localizedDescription, privacy: .public)")
         }

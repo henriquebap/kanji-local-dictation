@@ -12,8 +12,8 @@ Kanji is a native macOS app for dictation in **Brazilian Portuguese mixed with E
 
 Free app, open source (Apache 2.0). The name and icon are reserved (`NOTICE`).
 
-**Current scope:** microphone dictation, review, a glossary that learns, dictation and clipboard history, and transcribing what the Mac plays (videos, podcasts, meetings; optional speakers).
-**Out of scope for now:** meeting summaries and agent mode (v0.4), iPhone, App Store and our own server. See [docs/ROADMAP.md](docs/ROADMAP.md).
+**Current scope:** microphone dictation, review, a glossary that learns, dictation and clipboard history, and transcribing what the Mac plays (videos, podcasts, meetings; optional speakers; read, rename and summarize in the Transcripts section).
+**Out of scope for now:** agent mode (v0.4), iPhone, App Store and our own server. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Build and tests
 
@@ -49,6 +49,7 @@ For each dictation, the history stores the raw transcription (`bruto`) and the f
 | `SessaoDoMac.swift`, `Transcricao.swift` | Long Mac-audio transcription session, saved as JSON + Markdown per segment |
 | `CanalDoMicrofone.swift` | "You" channel: microphone turns on by itself while another app (a call) uses it |
 | `Vozes.swift`, `Locutores.swift` | Optional speaker separation: CoreML voice embeddings, model download, online clustering |
+| `Transcricoes.swift`, `TranscricoesView.swift` | Transcripts section of the main window: list, read, rename speakers, summarize, Trash |
 | `Ilha.swift` | Transcription state on the Kizami island (sibling notch app), by distributed notification; never the text |
 | `Fusao.swift` | Picks PT or EN word by word; glossary; capitalization |
 | `Revisao.swift` | Pure rules: dictated lists, joining sentences by pause |

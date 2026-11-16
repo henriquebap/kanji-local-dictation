@@ -56,6 +56,7 @@ flowchart LR
 | Mac session | `SessaoDoMac.swift`, `Transcricao.swift` | `@Observable`, JSON + Markdown | Long transcription saved segment by segment; turns; English-only segments |
 | "You" channel | `CanalDoMicrofone.swift` | `AudioHardwareProcess.isRunningInput`, voice processing | Microphone joins the session while another app (a call) holds it |
 | Speakers | `Vozes.swift`, `Locutores.swift` | Core ML (optional download), plain Swift (tested) | Voice embedding per ~3 s window, online clustering |
+| Transcripts | `Transcricoes.swift`, `TranscricoesView.swift` | SwiftUI, files in Application Support | Reads the saved sessions; rename speakers, summarize (cloud), Trash |
 | Notch | `Ilha.swift` | `DistributedNotificationCenter` | Transcription state on the Kizami island; never the text |
 
 ## One dictation, step by step
@@ -121,6 +122,7 @@ Decisions and why:
 - **Sample-rate changes.** AirPods drop from 48 to 24 kHz while a call holds the microphone. The aggregate device holds only the tap (no output device as clock), a listener updates the format, and every buffer is resampled to the first format: `AnalyzerInputConverter` stays on the format it started with and silently returns nothing for another one.
 - **"You".** A call is detected as another process with input running (`isRunningInput`), minus macOS speech services. Voice processing cancels the speaker echo.
 - **Speakers.** No native diarization exists. Each segment is split into ~1.5–3 s word windows (a 1 s pause always closes one). Each window becomes a WeSpeaker ResNet34 embedding taken inside 10 s of real audio context with a mask: padded with zeros, different voices looked alike (0.65–0.80 vs 0.01–0.20). Online greedy clustering, cosine ≥ 0.5; a window under 1 s never creates a speaker, and a short window between two of the same speaker is smoothed.
+- **The files are the source.** The Transcripts section reads the `.json` files and rewrites them when a speaker is renamed, so the Finder and the app never disagree. The summary is a separate `… resumo.md`, leaving the transcript untouched.
 - **Kizami.** The state (transcribing, on a call, saved, error) goes to the sibling notch app as a distributed notification. Any process can read those, so the text never goes there.
 
 ## The models

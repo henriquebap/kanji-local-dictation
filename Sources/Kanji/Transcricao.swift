@@ -7,11 +7,12 @@ struct Trecho: Codable, Equatable, Sendable {
     let inicio: Double
     let fim: Double
     let canal: Canal
-    var locutor: String?  // "Locutor 1", "Locutor 2"… quando a separação de vozes estiver ligada
+    /// "Locutor 1", "Locutor 2"… com a separação de vozes ligada, ou o nome que a pessoa deu ao renomear.
+    var locutor: String?
     let texto: String
 
     /// Quem fala no arquivo. Fica em português: é conteúdo salvo, não interface.
-    var quem: String { canal == .microfone ? "Você" : locutor ?? "Outros" }
+    var quem: String { locutor ?? (canal == .microfone ? "Você" : "Outros") }
 }
 
 /// Uma sessão de transcrição do áudio do Mac. O JSON é a fonte; o Markdown sai dele para ler e levar
@@ -32,20 +33,79 @@ struct Transcricao: Codable, Identifiable, Sendable {
         trechos.insert(trecho, at: posicao)
     }
 
+    struct Turno: Equatable {
+        let inicio: Double
+        let quem: String
+        var texto: String
+    }
+
     /// Um parágrafo por turno: trechos seguidos do mesmo turno viram um parágrafo só, com a hora do primeiro.
-    func markdown() -> String {
-        var turnos: [(primeiro: Trecho, texto: String)] = []
+    func turnos() -> [Turno] {
+        var turnos: [Turno] = []
         var anterior: Trecho?
         for trecho in trechos {
-            if let anterior, let turno = turnos.last, Self.mesmoTurno(anterior, trecho, desde: turno.primeiro.inicio) {
+            if let anterior, let turno = turnos.last, Self.mesmoTurno(anterior, trecho, desde: turno.inicio) {
                 turnos[turnos.count - 1].texto += " " + trecho.texto
             } else {
-                turnos.append((trecho, trecho.texto))
+                turnos.append(Turno(inicio: trecho.inicio, quem: trecho.quem, texto: trecho.texto))
             }
             anterior = trecho
         }
-        let corpo = turnos.map { "**[\(Self.relogio($0.0.inicio))] \($0.0.quem):** \($0.1)" }
-        return (["# Transcrição — \(Self.titulo.string(from: inicio))"] + corpo).joined(separator: "\n\n") + "\n"
+        return turnos
+    }
+
+    func markdown() -> String {
+        let corpo = turnos().map { "**[\(Self.relogio($0.inicio))] \($0.quem):** \($0.texto)" }
+        return ([titulo] + corpo).joined(separator: "\n\n") + "\n"
+    }
+
+    var titulo: String { "# Transcrição — \(data)" }
+
+    /// "16/11/2026 16:36", para títulos.
+    var data: String { Self.titulo.string(from: inicio) }
+
+    /// Quem fala, na ordem em que aparece.
+    var locutores: [String] {
+        trechos.reduce(into: []) { lista, trecho in if !lista.contains(trecho.quem) { lista.append(trecho.quem) } }
+    }
+
+    /// Segundos de áudio até o último trecho.
+    var duracao: Double { trechos.map(\.fim).max() ?? 0 }
+
+    /// Troca o nome de quem fala em todos os trechos. Devolve false para um nome vazio ou que já é de outra pessoa,
+    /// para duas vozes não virarem uma sem querer.
+    mutating func renomear(_ antigo: String, para novo: String) -> Bool {
+        let nome = String(novo.filter { !$0.isNewline }.trimmingCharacters(in: .whitespaces).prefix(40))
+        // "Você" é quem gravou (o resumo trata assim): uma voz do Mac não vira "Você".
+        guard !nome.isEmpty, nome == antigo || !locutores.contains(nome), nome != "Você" || antigo == "Você" else { return false }
+        for i in trechos.indices where trechos[i].quem == antigo { trechos[i].locutor = nome }
+        return true
+    }
+
+    // MARK: - Arquivos
+
+    /// JSON (a fonte) e Markdown, reescritos inteiros e de forma atômica.
+    /// - base: o caminho sem extensão. Para um arquivo que já existe, o de onde ele foi lido: a pessoa pode ter
+    ///   renomeado no Finder, e gravar pelo nome da data criaria uma segunda cópia ao lado.
+    // ponytail: reescreve tudo a cada trecho; numa sessão de horas são poucos MB. JSON Lines se aparecer no perfil.
+    func gravar(base: URL) throws {
+        try FileManager.default.createDirectory(at: base.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let codificador = JSONEncoder()
+        codificador.dateEncodingStrategy = .iso8601
+        codificador.outputFormatting = [.prettyPrinted, .sortedKeys]
+        try codificador.encode(self).write(to: base.appendingPathExtension("json"), options: .atomic)
+        try Data(markdown().utf8).write(to: base.appendingPathExtension("md"), options: .atomic)
+    }
+
+    static func ler(_ url: URL) throws -> Transcricao {
+        let decodificador = JSONDecoder()
+        decodificador.dateDecodingStrategy = .iso8601
+        return try decodificador.decode(Transcricao.self, from: Data(contentsOf: url))
+    }
+
+    /// O resumo fica ao lado, com o mesmo nome: no Finder os três arquivos aparecem juntos.
+    static func resumo(de base: URL) -> URL {
+        base.deletingLastPathComponent().appending(path: "\(base.lastPathComponent) resumo.md")
     }
 
     /// Se `atual` continua a fala de quem disse `anterior` ou começa um parágrafo novo no arquivo.
