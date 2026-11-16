@@ -81,10 +81,12 @@ A janela volta quando quiser pelo menu do Kanji › *Primeiros passos…*.
 |---|---|---|
 | **⌃⌥D** (global) | Começa a gravar; de novo, para e escreve o texto | Ajustes › Geral |
 | **esc** (gravando) | Cancela | fixo |
-| **⌃⌥T** (global) | Abre a janela do Kanji | Ajustes › Geral |
+| **⌃⌥K** (global) | Abre a janela do Kanji | Ajustes › Geral |
 | **⌃⌥M** (global) | Começa a transcrever o áudio do Mac; de novo para parar e salvar | Ajustes › Geral |
 | **⌘Y** | Histórico | fixo |
 | **⌘,** | Ajustes | fixo |
+
+Todo atalho global é **⌃⌥ + uma letra**: **D** de ditar, **M** de Mac, **K** de Kanji. O macOS não usa ⌃⌥ + letra, então eles não tiram o atalho de outro app. Ao gravar um novo, os Ajustes só aceitam combinações com ⌃⌥.
 
 Em Ajustes › Geral também ficam o modo "segurar enquanto fala" e o "escrever enquanto você fala". Neste último, o texto aparece no campo durante a fala, revisado trecho a trecho pelo modelo do Mac. É o modo padrão quando não há provedor da nuvem.
 

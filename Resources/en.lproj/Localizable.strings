@@ -123,7 +123,7 @@
 "Abrir Ajustes" = "Open Settings";
 "O texto aparece no campo enquanto você fala, revisado pelo modelo do Mac. Sem campo selecionado, ele aparece no painel e é colado no fim." = "The text appears in the field while you talk, reviewed by the on-Mac model. With no field selected, it appears in the panel and is pasted at the end.";
 "Durante a fala o painel mostra só a onda. Ao parar, o texto revisado pela nuvem entra de uma vez no campo (com o modelo do Mac, o ditado escreve ao vivo)." = "While you talk, the panel only shows the waveform. When you stop, the text reviewed in the cloud goes into the field all at once (with the on-Mac model, dictation types live).";
-"Pressione as teclas…" = "Press the keys…";
+"Pressione ⌃⌥ e uma letra…" = "Press ⌃⌥ and a letter…";
 "Padrão" = "Default";
 "Espaço" = "Space";
 

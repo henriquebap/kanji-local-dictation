@@ -20,10 +20,20 @@ struct Atalho: Codable, Equatable {
         self.tecla = tecla
     }
 
-    /// nil se não houver ⌘, ⌃ ou ⌥: atalho global só com Shift ou sem modificador roubaria a digitação normal.
+    /// Atalho global só com ⌃⌥ (⇧ e ⌘ podem somar). Os outros brigam com algo que a pessoa usa:
+    /// - ⌘ e ⇧⌘ são dos menus dos apps, e o atalho global ganha deles: com ⇧⌘T gravado, "reabrir aba" parou nos
+    ///   navegadores, e o ⇧⌘D gravado aqui é "enviar" no Mail;
+    /// - ⌃ sozinho edita texto (⌃D apaga, ⌃K corta até o fim da linha);
+    /// - ⌥ sozinho digita acentos e símbolos.
+    /// O macOS não usa ⌃⌥ + letra, e nenhum app instalado neste Mac registrava uma.
+    var semConflito: Bool {
+        modificadores & UInt32(controlKey | optionKey) == UInt32(controlKey | optionKey)
+    }
+
+    /// nil sem ⌃⌥ (veja `semConflito`): o gravador continua esperando.
     init?(evento: NSEvent) {
         let f = evento.modifierFlags
-        guard !f.intersection([.command, .control, .option]).isEmpty else { return nil }
+        guard f.contains([.control, .option]) else { return nil }
         let pares: [(NSEvent.ModifierFlags, Int)] = [(.command, cmdKey), (.option, optionKey), (.control, controlKey), (.shift, shiftKey)]
         let mods = pares.filter { f.contains($0.0) }.reduce(0) { $0 | $1.1 }
         // ponytail: F-keys e setas aparecem como caractere privado; mapear se alguém usar
@@ -38,8 +48,8 @@ enum Acao: UInt32, CaseIterable {
 
     var padrao: Atalho {
         switch self {
-        case .ditar: Atalho(keyCode: kVK_ANSI_D, modificadores: controlKey | optionKey, tecla: "D")
-        case .abrir: Atalho(keyCode: kVK_ANSI_T, modificadores: controlKey | optionKey, tecla: "T")
+        case .ditar: Atalho(keyCode: kVK_ANSI_D, modificadores: controlKey | optionKey, tecla: "D")  // D de ditar
+        case .abrir: Atalho(keyCode: kVK_ANSI_K, modificadores: controlKey | optionKey, tecla: "K")  // K de Kanji
         case .cancelar: Atalho(keyCode: kVK_Escape, modificadores: 0, tecla: "esc")
         case .transcrever: Atalho(keyCode: kVK_ANSI_M, modificadores: controlKey | optionKey, tecla: "M")  // M de Mac
         }
@@ -47,8 +57,11 @@ enum Acao: UInt32, CaseIterable {
 
     private var chave: String { "atalho.\(rawValue)" }
 
+    /// Um atalho gravado antes da regra do ⌃⌥ (⇧⌘D, ⇧⌘T) volta para o padrão.
     var atalho: Atalho {
-        UserDefaults.standard.data(forKey: chave).flatMap { try? JSONDecoder().decode(Atalho.self, from: $0) } ?? padrao
+        UserDefaults.standard.data(forKey: chave)
+            .flatMap { try? JSONDecoder().decode(Atalho.self, from: $0) }
+            .flatMap { $0.semConflito ? $0 : nil } ?? padrao
     }
 
     func salvar(_ atalho: Atalho) {
@@ -159,7 +172,7 @@ struct CampoDeAtalho: View {
                 Button("Padrão") { gravador.aplicar(gravador.acao.padrao) }
                     .buttonStyle(.borderless)
             }
-            Button(gravador.gravando ? String(localized: "Pressione as teclas…") : gravador.atalho.descricao) { gravador.alternar() }
+            Button(gravador.gravando ? String(localized: "Pressione ⌃⌥ e uma letra…") : gravador.atalho.descricao) { gravador.alternar() }
                 .frame(minWidth: 150)
         }
         .onDisappear { if gravador.gravando { gravador.parar() } }

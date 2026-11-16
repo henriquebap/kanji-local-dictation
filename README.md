@@ -81,10 +81,12 @@ You can reopen this window anytime from the Kanji menu › *Getting Started…*.
 |---|---|---|
 | **⌃⌥D** (global) | Starts recording; press again to stop and type the text | *Settings › General* |
 | **esc** (while recording) | Cancels | fixed |
-| **⌃⌥T** (global) | Opens the Kanji window | *Settings › General* |
+| **⌃⌥K** (global) | Opens the Kanji window | *Settings › General* |
 | **⌃⌥M** (global) | Starts transcribing the Mac's audio; press again to stop and save | *Settings › General* |
 | **⌘Y** | *Show History* | fixed |
 | **⌘,** | *Settings* | fixed |
+
+Every global shortcut is **⌃⌥ + a letter**: **D** for dictate, **M** for Mac audio, **K** for Kanji. macOS doesn't use ⌃⌥ + letter, so they don't take a shortcut away from another app. When you record a new one, Settings only accepts combinations with ⌃⌥.
 
 *Settings › General* also holds the "Hold while you talk" mode and the "Type while you talk" option. In the latter, text appears in the field as you speak, corrected chunk by chunk by the on-Mac model. It's the default mode when no cloud provider is set.
 
