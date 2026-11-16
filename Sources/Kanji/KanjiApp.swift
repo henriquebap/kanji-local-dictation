@@ -38,6 +38,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Kanji.shared.iniciar()
     }
 
+    /// Sem isso o "transcrevendo" ficaria na ilha do Kizami depois de o Kanji fechar.
+    // ponytail: numa queda o aviso fica; o "Limpar a ilha" do Kizami tira.
+    func applicationWillTerminate(_ notification: Notification) {
+        if Kanji.shared.sessao.ativa { Ilha.remover() }
+    }
+
     /// Clique no ícone do Dock com a janela fechada: abre de novo.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
         if !hasVisibleWindows { Kanji.shared.janelas.mostrarPrincipal() }

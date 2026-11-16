@@ -181,3 +181,13 @@
 "Apagar todo o histórico?" = "Delete the entire history?";
 "Ditados e itens copiados serão removidos deste Mac. Não dá para desfazer." = "Dictations and copied items will be removed from this Mac. This can't be undone.";
 "Cancelar" = "Cancel";
+
+/* Mac audio: Kizami island and recording notice */
+"%@ trechos em %@ min" = "%@ segments in %@ min";
+"A transcrição do Mac parou" = "Mac transcription stopped";
+"Antes de transcrever o áudio do Mac" = "Before transcribing the Mac's audio";
+"Numa chamada: o seu microfone também entra" = "On a call: your microphone is included too";
+"O Kanji vai transcrever tudo o que o Mac tocar. Numa chamada, o seu microfone também entra, como “Você”. Avise as pessoas antes de transcrever uma reunião: gravar uma conversa sem consentimento pode ferir a LGPD e as regras da sua empresa.\n\nO áudio não sai do Mac. O texto fica em Application Support › Kanji › Transcricoes." = "Kanji will transcribe everything the Mac plays. On a call, your microphone is included too, as “Você” (“You”). Tell people before you transcribe a meeting: recording a conversation without consent may break privacy laws (such as the LGPD) and your company's rules.\n\nThe audio never leaves the Mac. The text is saved in Application Support › Kanji › Transcricoes.";
+"Transcrevendo o áudio do Mac" = "Transcribing the Mac's audio";
+"Transcrever" = "Transcribe";
+"Transcrição salva" = "Transcript saved";

@@ -36,7 +36,7 @@ final class SessaoDoMac {
         switch fase {
         case .gravando: parar()
         case .preparando, .finalizando: break
-        case .parada, .erro: iniciar()
+        case .parada, .erro: if Self.consentiu() { iniciar() }
         }
     }
 
@@ -76,7 +76,10 @@ final class SessaoDoMac {
                     aoTrechoIngles: { self.soEmIngles($0, $1) },
                     memoria: memoria)
                 fase = .gravando
-                microfone.vigiar(desde: .now) { texto, palavras in self.enfileirarDoMicrofone(texto, palavras) }
+                mostrarNaIlha(chamada: false)
+                microfone.vigiar(desde: .now, aoMudar: { self.mostrarNaIlha(chamada: $0) }) { texto, palavras in
+                    self.enfileirarDoMicrofone(texto, palavras)
+                }
                 registro.notice("sessão do Mac gravando\(self.voz == nil ? "" : ", separando locutores", privacy: .public)")
                 Som.tocar(.inicio)  // o tap exclui o Kanji: o som não entra na transcrição
             } catch {
@@ -110,6 +113,9 @@ final class SessaoDoMac {
                     ? String(localized: "Nenhum som do Mac chegou. Libere o Kanji em Ajustes do Sistema › Privacidade e Segurança › Gravação de Áudio do Sistema.")
                     : String(localized: "Ouvi o áudio do Mac, mas não reconheci fala."))
             }
+            Ilha.mostrar(String(localized: "Transcrição salva"),
+                         detalhe: String(localized: "\(String(trechos)) trechos em \(String(max(1, Int(Date.now.timeIntervalSince(inicio) / 60)))) min"),
+                         simbolo: "checkmark.circle.fill", cor: "verde", expira: 8)
             fase = .parada
         }
     }
@@ -200,7 +206,7 @@ final class SessaoDoMac {
             let semelhanca = locutores.centros.map { Locutores.cosseno($0, vetor) }.max() ?? 0
             let grupo = locutores.identificar(vetor, confiavel: intervalo.1 - intervalo.0 >= 1)
             ultimoGrupo = grupo
-            registro.notice("janela: semelhança \(semelhanca, format: .fixed(precision: 2), privacy: .public) → grupo \(grupo, privacy: .public)")
+            registro.debug("janela: semelhança \(semelhanca, format: .fixed(precision: 2), privacy: .public) → grupo \(grupo, privacy: .public)")
             return grupo
         }
         // Janelas sem áudio no começo da sessão ficam com o primeiro locutor que aparecer no trecho.
@@ -261,5 +267,29 @@ final class SessaoDoMac {
         registro.error("\(mensagem, privacy: .public)")
         fase = .erro(mensagem)
         Som.tocar(.erro)
+        Ilha.mostrar(String(localized: "A transcrição do Mac parou"), detalhe: mensagem,
+                     simbolo: "exclamationmark.triangle.fill", cor: "laranja", expira: 15)
+    }
+
+    /// Fica na ilha do Kizami enquanto grava. Uma chamada aparece à parte porque aí a sua voz também entra.
+    private func mostrarNaIlha(chamada: Bool) {
+        guard fase == .gravando else { return }  // o microfone desliga ao parar: não volta a dizer "transcrevendo"
+        Ilha.mostrar(String(localized: "Transcrevendo o áudio do Mac"),
+                     detalhe: chamada ? String(localized: "Numa chamada: o seu microfone também entra") : nil,
+                     simbolo: chamada ? "mic.fill" : "waveform", cor: "vermelho")
+    }
+
+    /// Na primeira vez, lembra que transcrever uma reunião pede o consentimento de quem está nela.
+    private static func consentiu() -> Bool {
+        guard !UserDefaults.standard.bool(forKey: Ajustes.viuAvisoDeGravacao) else { return true }
+        let alerta = NSAlert()
+        alerta.messageText = String(localized: "Antes de transcrever o áudio do Mac")
+        alerta.informativeText = String(localized: "O Kanji vai transcrever tudo o que o Mac tocar. Numa chamada, o seu microfone também entra, como “Você”. Avise as pessoas antes de transcrever uma reunião: gravar uma conversa sem consentimento pode ferir a LGPD e as regras da sua empresa.\n\nO áudio não sai do Mac. O texto fica em Application Support › Kanji › Transcricoes.")
+        alerta.addButton(withTitle: String(localized: "Transcrever"))
+        alerta.addButton(withTitle: String(localized: "Cancelar"))
+        NSApp.activate()  // pelo atalho global o Kanji não está na frente, e o alerta ficaria atrás
+        guard alerta.runModal() == .alertFirstButtonReturn else { return false }
+        UserDefaults.standard.set(true, forKey: Ajustes.viuAvisoDeGravacao)
+        return true
     }
 }

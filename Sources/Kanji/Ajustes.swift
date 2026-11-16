@@ -14,6 +14,7 @@ enum Ajustes {
     static let viuPrimeirosPassos = "viuPrimeirosPassos"
     static let escreverAoVivo = "escreverAoVivo"
     static let separarLocutores = "separarLocutores"
+    static let viuAvisoDeGravacao = "viuAvisoDeGravacao"
 
     static var padroes: [String: Any] { [
         idioma: "pt_BR",

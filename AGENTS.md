@@ -49,6 +49,7 @@ For each dictation, the history stores the raw transcription (`bruto`) and the f
 | `SessaoDoMac.swift`, `Transcricao.swift` | Long Mac-audio transcription session, saved as JSON + Markdown per segment |
 | `CanalDoMicrofone.swift` | "You" channel: microphone turns on by itself while another app (a call) uses it |
 | `Vozes.swift`, `Locutores.swift` | Optional speaker separation: CoreML voice embeddings, model download, online clustering |
+| `Ilha.swift` | Transcription state on the Kizami island (sibling notch app), by distributed notification; never the text |
 | `Fusao.swift` | Picks PT or EN word by word; glossary; capitalization |
 | `Revisao.swift` | Pure rules: dictated lists, joining sentences by pause |
 | `Correcao.swift` | Local model (Foundation Models) + fidelity guard |

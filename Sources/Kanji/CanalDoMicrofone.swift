@@ -13,10 +13,12 @@ final class CanalDoMicrofone {
     private var ocupado = false  // ligando ou desligando
     private var semChamadaDesde: Date?
     private var aoTrecho: (String, [Palavra]) -> Void = { _, _ in }
+    private var aoMudar: (Bool) -> Void = { _ in }
 
+    /// - aoMudar: true quando o microfone liga numa chamada, false quando desliga.
     /// - aoTrecho: texto final (fusão PT+EN e glossário) e palavras já no tempo da sessão.
-    func vigiar(desde relogio: Date, aoTrecho: @escaping (String, [Palavra]) -> Void) {
-        (self.relogio, self.aoTrecho, semChamadaDesde) = (relogio, aoTrecho, nil)
+    func vigiar(desde relogio: Date, aoMudar: @escaping (Bool) -> Void, aoTrecho: @escaping (String, [Palavra]) -> Void) {
+        (self.relogio, self.aoMudar, self.aoTrecho, semChamadaDesde) = (relogio, aoMudar, aoTrecho, nil)
         vigia = .scheduledTimer(withTimeInterval: 2, repeats: true) { _ in
             MainActor.assumeIsolated { self.verificar() }
         }
@@ -61,6 +63,7 @@ final class CanalDoMicrofone {
                 aoTexto: { _, _ in },
                 aoTrecho: { [weak self] texto, palavras in self?.entregar(texto, palavras, desde: inicio) })
             deslocamento = inicio
+            aoMudar(true)
             registro.notice("microfone ligado: \(app, privacy: .public) está usando o microfone")
         } catch {
             await captura.cancelar()
@@ -75,6 +78,7 @@ final class CanalDoMicrofone {
         _ = try? await captura.parar()  // os últimos trechos chegam por `entregar` durante a finalização
         deslocamento = nil
         semChamadaDesde = nil
+        aoMudar(false)
         registro.notice("microfone desligado: nenhuma chamada usando o microfone")
     }
 
