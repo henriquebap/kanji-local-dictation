@@ -19,6 +19,7 @@ Native (Swift, no Electron), free and open source. Transcription happens on your
 - **A glossary that learns.** Every term the cloud correction fixes twice ("Cláudio" → Claude) also starts applying to the on-Mac model, offline.
 - **Ignores silence.** An Apple voice detector keeps noise and silence from turning into words you never said.
 - **Searchable history** of everything you dictated and copied. Passwords flagged by password managers (1Password, Bitwarden, Keychain) and text that looks like an API key or token are left out. Clipboard history can be turned off.
+- **Transcribes what the Mac plays.** A video, a podcast or a meeting, in the background, into a Markdown and a JSON file. On a call your own voice joins as "Você" ("You"); with the optional voice model, the other voices become "Locutor 1, 2…" ("Speaker 1, 2…"). See [Transcribing the Mac's audio](#transcribing-the-macs-audio).
 
 ## Install
 
@@ -81,10 +82,22 @@ You can reopen this window anytime from the Kanji menu › *Getting Started…*.
 | **⌃⌥D** (global) | Starts recording; press again to stop and type the text | *Settings › General* |
 | **esc** (while recording) | Cancels | fixed |
 | **⌃⌥T** (global) | Opens the Kanji window | *Settings › General* |
+| **⌃⌥M** (global) | Starts transcribing the Mac's audio; press again to stop and save | *Settings › General* |
 | **⌘Y** | *Show History* | fixed |
 | **⌘,** | *Settings* | fixed |
 
 *Settings › General* also holds the "Hold while you talk" mode and the "Type while you talk" option. In the latter, text appears in the field as you speak, corrected chunk by chunk by the on-Mac model. It's the default mode when no cloud provider is set.
+
+## Transcribing the Mac's audio
+
+Press **⌃⌥M** (or *Transcribe Mac Audio* in the menu) and Kanji transcribes everything the Mac plays, minus its own sounds, whether you use headphones or speakers. Press it again to stop.
+
+- **First time:** a notice reminds you to tell people before transcribing a meeting, and macOS asks for *System Audio Recording* (*System Settings › Privacy & Security*). It's narrower than Screen Recording: Kanji never sees the screen.
+- **Files:** one `.md` and one `.json` per session in `~/Library/Application Support/Kanji/Transcricoes` (*Open Transcripts* in the menu). They're saved segment by segment, so a crash keeps what was already transcribed. Each paragraph has the time and who spoke.
+- **Calls:** when another app (Zoom, Meet, Teams, FaceTime) opens the microphone, Kanji adds the microphone to the session by itself, with echo cancellation, and labels it "Você". It turns it off 10 s after the call releases the microphone. A video doesn't open the microphone, so the room's sound stays out.
+- **Who spoke (optional):** *Settings › General › Mac Audio Transcription › Tell speakers apart* downloads a ~15 MB voice model once (WeSpeaker ResNet34 converted to Core ML, CC BY 4.0, from Hugging Face), checked by SHA-256. Without it, everything the Mac plays is labeled "Outros" ("Others").
+- **Notch:** if Kizami (a sibling app that draws an island around the notch) is running, its island shows that Kanji is transcribing, when a call adds your microphone, and when the transcript is saved. Only the state and counts go there, never the text.
+- **Resources:** on a 5-minute podcast, Kanji used ~8.5% of one core and ~70 MB; Apple's speech service, another ~11% and up to ~200 MB.
 
 ## Privacy
 
@@ -92,6 +105,7 @@ You can reopen this window anytime from the Kanji menu › *Getting Started…*.
 - **With the on-Mac model,** nothing leaves your computer.
 - **With a cloud provider,** only the dictation **text** goes to it, using **your** key and under its terms. Kanji has no server.
 - **API keys** are stored in the Keychain.
+- **Mac audio transcripts** stay in `~/Library/Application Support/Kanji/Transcricoes`. The audio is never saved or sent; the voice model is downloaded only if you turn on *Tell speakers apart*.
 - **History** lives in `~/Library/Application Support/Kanji`; **settings and glossary** (including learned terms) live in the app's preferences.
 - **Clipboard history:** on by default, it keeps what you copy so you can find it later. A password that doesn't come from a password manager also ends up in it. If you copy passwords from other places, turn it off in *Settings › History*.
 

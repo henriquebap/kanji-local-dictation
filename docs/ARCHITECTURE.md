@@ -52,6 +52,11 @@ flowchart LR
 | Output | `Saida.swift`, `Alvo.swift` | `CGEvent` (⌘V), Accessibility API | Pastes into the focused app or types live into the field |
 | Interface | `Painel.swift`, `AjustesView.swift`, `PrimeirosPassos.swift`, `HistoricoView.swift` | SwiftUI + `NSPanel` | Panel that doesn't steal focus, Settings, onboarding, history |
 | Data | `Historico.swift` | JSON in Application Support | Dictations and clipboard (polling `changeCount`); ignores passwords and keys |
+| Mac audio | `AudioDoMac.swift` | Core Audio process tap (`AudioHardwareSystem`) | Everything the Mac plays, minus Kanji, as mono buffers; follows sample-rate changes |
+| Mac session | `SessaoDoMac.swift`, `Transcricao.swift` | `@Observable`, JSON + Markdown | Long transcription saved segment by segment; turns; English-only segments |
+| "You" channel | `CanalDoMicrofone.swift` | `AudioHardwareProcess.isRunningInput`, voice processing | Microphone joins the session while another app (a call) holds it |
+| Speakers | `Vozes.swift`, `Locutores.swift` | Core ML (optional download), plain Swift (tested) | Voice embedding per ~3 s window, online clustering |
+| Notch | `Ilha.swift` | `DistributedNotificationCenter` | Transcription state on the Kizami island; never the text |
 
 ## One dictation, step by step
 
@@ -92,6 +97,31 @@ sequenceDiagram
 | Why it exists | Better quality, ~2 s after stopping | Instant response, offline |
 
 Pasting with ⌘V works in any app. Typing via Accessibility doesn't: web and Electron editors (the Claude chat, for example) answer "ok" and ignore the text. That's why "only at the end" mode always pastes.
+
+## Transcribing the Mac's audio
+
+A second path, separate from dictation, for long audio: a video, a podcast, a meeting.
+
+```mermaid
+flowchart LR
+    T[Core Audio tap<br/>everything the Mac plays] --> C[Captura<br/>PT + EN transcribers]
+    M[Microphone<br/>only during a call] --> C2[Captura<br/>'Você']
+    C --> S[SessaoDoMac]
+    C2 --> S
+    T -. 16 kHz copy .-> V[Voice embeddings<br/>Core ML, optional]
+    V --> S
+    S --> F[.md + .json<br/>per segment]
+    S -. state only .-> K[Kizami island]
+```
+
+Decisions and why:
+- **Process tap, not ScreenCaptureKit.** It asks only for *System Audio Recording* and excludes Kanji by bundle ID. Without `NSAudioCaptureUsageDescription` the tap records silence with no error.
+- **The session never forces `finalize`.** After `finalize`, the tap's digital silence made the result streams end with `RecogRejected`, and nothing was transcribed after the first pause. The recognizer closes segments on its own, 30 s to 1 min later; for a file that's fine.
+- **English-only segments wait.** The Portuguese recognizer drops a sentence said entirely in English; the English one returns noise for Portuguese. An English segment is added only after Portuguese has finalized past its end and nothing in Portuguese covered the same time.
+- **Sample-rate changes.** AirPods drop from 48 to 24 kHz while a call holds the microphone. The aggregate device holds only the tap (no output device as clock), a listener updates the format, and every buffer is resampled to the first format: `AnalyzerInputConverter` stays on the format it started with and silently returns nothing for another one.
+- **"You".** A call is detected as another process with input running (`isRunningInput`), minus macOS speech services. Voice processing cancels the speaker echo.
+- **Speakers.** No native diarization exists. Each segment is split into ~1.5–3 s word windows (a 1 s pause always closes one). Each window becomes a WeSpeaker ResNet34 embedding taken inside 10 s of real audio context with a mask: padded with zeros, different voices looked alike (0.65–0.80 vs 0.01–0.20). Online greedy clustering, cosine ≥ 0.5; a window under 1 s never creates a speaker, and a short window between two of the same speaker is smoothed.
+- **Kizami.** The state (transcribing, on a call, saved, error) goes to the sibling notch app as a distributed notification. Any process can read those, so the text never goes there.
 
 ## The models
 
@@ -139,19 +169,24 @@ The second time the same term shows up, it goes into the glossary. From then on 
   - items flagged as passwords by password managers (nspasteboard.org convention);
   - any text that looks like a key or token.
 - Logs (`os.Logger`) don't record dictation content.
+- Mac audio is never saved: only the text, in `Application Support/Kanji/Transcricoes`. The Kizami island gets only the state and counts.
+- The optional voice model is data, not code: downloaded at a pinned revision, each file checked by SHA-256 at download and again before loading.
 
 ## Open tools used
 
 Apple frameworks only:
 - `SpeechAnalyzer` / `Speech`, `FoundationModels`, `AVFoundation`, `NaturalLanguage`, `AppKit` / `SwiftUI`, `Security` (Keychain), `ApplicationServices` (Accessibility);
 - `Accelerate` (audio volume);
-- `Carbon` (global shortcuts).
+- `Carbon` (global shortcuts);
+- `CoreAudio` (process tap), `CoreML` (voice embeddings).
 
-No third-party dependencies, no model downloaded by the app.
+No third-party dependencies. The only download is optional: the speaker-separation weights (pyannote community-1 / WeSpeaker ResNet34, converted to Core ML by FluidInference, CC BY 4.0, credited in `NOTICE`).
 
 ## Known limitations
 
 - Requires macOS 27 and Apple Silicon; local correction requires Apple Intelligence.
 - The on-Mac model doesn't understand the whole text: lists in the requested order and terms that are wrong in context need a cloud model.
 - Typing live via Accessibility doesn't work in web and Electron editors. In those apps, the text is pasted at the end.
-- No diarization (who said what) and no system audio capture for now: see the [ROADMAP](ROADMAP.md).
+- Speakers: similar voices may merge, overlapping speech gets one label, and a speaker born from a noisy window stays (no end-of-session re-clustering yet).
+- Mac audio during a call on AirPods is transcribed a little worse: Bluetooth call mode carries only 24 kHz.
+- English words the Portuguese recognizer swallowed can't be recovered by the merge.

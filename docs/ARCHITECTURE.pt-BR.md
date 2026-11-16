@@ -52,6 +52,11 @@ flowchart LR
 | Saída | `Saida.swift`, `Alvo.swift` | `CGEvent` (⌘V), API de Acessibilidade | Cola no app em foco ou escreve ao vivo no campo |
 | Interface | `Painel.swift`, `AjustesView.swift`, `PrimeirosPassos.swift`, `HistoricoView.swift` | SwiftUI + `NSPanel` | Painel que não rouba o foco, Ajustes, onboarding, histórico |
 | Dados | `Historico.swift` | JSON em Application Support | Ditados e clipboard (polling do `changeCount`); ignora senhas e chaves |
+| Áudio do Mac | `AudioDoMac.swift` | Process tap do Core Audio (`AudioHardwareSystem`) | Tudo o que o Mac toca, menos o Kanji, em mono; acompanha a troca de taxa |
+| Sessão do Mac | `SessaoDoMac.swift`, `Transcricao.swift` | `@Observable`, JSON + Markdown | Transcrição longa salva trecho a trecho; turnos; trechos só em inglês |
+| Canal "Você" | `CanalDoMicrofone.swift` | `AudioHardwareProcess.isRunningInput`, voice processing | O microfone entra na sessão enquanto outro app (uma chamada) o usa |
+| Locutores | `Vozes.swift`, `Locutores.swift` | Core ML (download opcional), Swift puro (testado) | Vetor de voz por janela de ~3 s, agrupamento ao vivo |
+| Notch | `Ilha.swift` | `DistributedNotificationCenter` | Estado da transcrição na ilha do Kizami; nunca o texto |
 
 ## Um ditado, passo a passo
 
@@ -92,6 +97,31 @@ sequenceDiagram
 | Por que existe | Melhor qualidade, ~2 s depois de parar | Resposta imediata, sem internet |
 
 A colagem com ⌘V funciona em qualquer app. A escrita pela Acessibilidade não: editores web e Electron (o chat do Claude, por exemplo) respondem "ok" e ignoram o texto. Por isso o modo "só no fim" sempre cola.
+
+## Transcrever o áudio do Mac
+
+Um segundo caminho, separado do ditado, para áudio longo: um vídeo, um podcast, uma reunião.
+
+```mermaid
+flowchart LR
+    T[Tap do Core Audio<br/>tudo o que o Mac toca] --> C[Captura<br/>transcritores PT + EN]
+    M[Microfone<br/>só numa chamada] --> C2[Captura<br/>'Você']
+    C --> S[SessaoDoMac]
+    C2 --> S
+    T -. cópia a 16 kHz .-> V[Vetores de voz<br/>Core ML, opcional]
+    V --> S
+    S --> F[.md + .json<br/>a cada trecho]
+    S -. só o estado .-> K[Ilha do Kizami]
+```
+
+Decisões e por quê:
+- **Process tap, e não ScreenCaptureKit.** Pede só a *Gravação de Áudio do Sistema* e exclui o Kanji pelo bundle ID. Sem `NSAudioCaptureUsageDescription` o tap grava silêncio, sem erro.
+- **A sessão nunca força o `finalize`.** Depois de um `finalize`, o silêncio digital do tap fazia os resultados terminarem com `RecogRejected`, e nada mais era transcrito depois da primeira pausa. O reconhecedor fecha os trechos sozinho, 30 s a 1 min depois; num arquivo, tanto faz.
+- **Trechos só em inglês esperam.** O reconhecedor de português perde uma frase toda em inglês; o de inglês devolve ruído para português. O trecho em inglês só entra depois que o português firmou além do fim dele, e se nada em português cobriu o mesmo tempo.
+- **Troca de taxa.** O AirPods cai de 48 para 24 kHz enquanto uma chamada usa o microfone. O dispositivo agregado tem só o tap (nenhuma saída como relógio), um aviso atualiza o formato, e todo buffer é reamostrado para o primeiro formato: o `AnalyzerInputConverter` fica no formato com que começou e não devolve nada, sem erro, para outro.
+- **"Você".** A chamada é outro processo com a entrada ligada (`isRunningInput`), fora os serviços de fala do macOS. O voice processing cancela o eco da caixa de som.
+- **Locutores.** Não há diarização nativa. Cada trecho vira janelas de ~1,5–3 s de palavras (uma pausa de 1 s sempre fecha a janela). Cada janela vira um vetor do WeSpeaker ResNet34, tirado dentro de 10 s de áudio de verdade com uma máscara: completada com zeros, vozes diferentes pareciam iguais (0,65–0,80 contra 0,01–0,20). Agrupamento guloso ao vivo, cosseno ≥ 0,5; janela com menos de 1 s nunca cria locutor, e uma janela curta entre duas do mesmo locutor fica com ele.
+- **Kizami.** O estado (transcrevendo, numa chamada, salva, erro) vai para o app irmão do notch por notificação distribuída. Qualquer processo lê essas notificações, então o texto nunca vai.
 
 ## Os modelos
 
@@ -139,19 +169,24 @@ Na segunda vez que o mesmo termo aparece, ele entra no glossário. A partir daí
   - itens marcados como senha pelos gerenciadores (convenção nspasteboard.org);
   - qualquer texto com cara de chave ou token.
 - Os logs (`os.Logger`) não registram o conteúdo dos ditados.
+- O áudio do Mac nunca é salvo: só o texto, em `Application Support/Kanji/Transcricoes`. A ilha do Kizami recebe só o estado e contagens.
+- O modelo de voz opcional é dado, não código: baixado numa revisão fixa, cada arquivo conferido por SHA-256 no download e de novo antes de carregar.
 
 ## Ferramentas abertas usadas
 
 Só frameworks da Apple:
 - `SpeechAnalyzer` / `Speech`, `FoundationModels`, `AVFoundation`, `NaturalLanguage`, `AppKit` / `SwiftUI`, `Security` (Keychain), `ApplicationServices` (Acessibilidade);
 - `Accelerate` (volume do áudio);
-- `Carbon` (atalhos globais).
+- `Carbon` (atalhos globais);
+- `CoreAudio` (process tap), `CoreML` (vetores de voz).
 
-Nenhuma dependência de terceiros, nenhum modelo baixado pelo app.
+Nenhuma dependência de terceiros. O único download é opcional: os pesos da separação de locutores (pyannote community-1 / WeSpeaker ResNet34, convertidos para Core ML pela FluidInference, CC BY 4.0, creditados no `NOTICE`).
 
 ## Limites conhecidos
 
 - Exige macOS 27 e Apple Silicon; a revisão local exige Apple Intelligence.
 - O modelo do Mac não entende o texto inteiro: listas na ordem pedida e termos errados pelo contexto pedem um modelo da nuvem.
 - Escrever ao vivo pela Acessibilidade não funciona em editores web e Electron. Nesses apps, o texto entra colado no fim.
-- Sem diarização (quem falou o quê) e sem captura do áudio do sistema por enquanto: veja o [ROADMAP](ROADMAP.md).
+- Locutores: vozes parecidas podem se juntar, fala sobreposta fica com um rótulo só, e um locutor que nasce de uma janela com ruído fica (ainda sem reagrupar no fim da sessão).
+- O áudio do Mac numa chamada com AirPods sai um pouco pior: o modo de chamada do Bluetooth leva só 24 kHz.
+- Palavras em inglês que o reconhecedor de português engoliu não voltam pela fusão.

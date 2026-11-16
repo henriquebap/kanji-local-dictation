@@ -19,6 +19,7 @@ Nativo (Swift, sem Electron), gratuito e de código aberto. A transcrição acon
 - **Glossário que aprende.** Cada termo que a revisão da nuvem corrige duas vezes ("Cláudio" → Claude) passa a valer também no modelo do Mac, sem internet.
 - **Ignora o silêncio.** Um detector de voz da Apple impede que ruído e silêncio virem palavras que você não disse.
 - **Histórico pesquisável** de tudo que você ditou e copiou. Ficam de fora as senhas marcadas pelos gerenciadores (1Password, Bitwarden, Chaves) e os textos com cara de chave de API ou token. Dá para desligar o histórico do clipboard.
+- **Transcreve o que o Mac toca.** Um vídeo, um podcast ou uma reunião, em segundo plano, num arquivo Markdown e num JSON. Numa chamada, a sua voz entra como "Você"; com o modelo de voz opcional, as outras vozes viram "Locutor 1, 2…". Veja [Transcrever o áudio do Mac](#transcrever-o-áudio-do-mac).
 
 ## Instalar
 
@@ -81,10 +82,22 @@ A janela volta quando quiser pelo menu do Kanji › *Primeiros passos…*.
 | **⌃⌥D** (global) | Começa a gravar; de novo, para e escreve o texto | Ajustes › Geral |
 | **esc** (gravando) | Cancela | fixo |
 | **⌃⌥T** (global) | Abre a janela do Kanji | Ajustes › Geral |
+| **⌃⌥M** (global) | Começa a transcrever o áudio do Mac; de novo para parar e salvar | Ajustes › Geral |
 | **⌘Y** | Histórico | fixo |
 | **⌘,** | Ajustes | fixo |
 
 Em Ajustes › Geral também ficam o modo "segurar enquanto fala" e o "escrever enquanto você fala". Neste último, o texto aparece no campo durante a fala, revisado trecho a trecho pelo modelo do Mac. É o modo padrão quando não há provedor da nuvem.
+
+## Transcrever o áudio do Mac
+
+Aperte **⌃⌥M** (ou *Transcrever o áudio do Mac* no menu) e o Kanji transcreve tudo o que o Mac tocar, menos os sons dele mesmo, com fone ou com caixa de som. Aperte de novo para parar.
+
+- **Na primeira vez:** um aviso lembra de avisar as pessoas antes de transcrever uma reunião, e o macOS pede a *Gravação de Áudio do Sistema* (*Ajustes do Sistema › Privacidade e Segurança*). Ela é mais estreita que a Gravação de Tela: o Kanji nunca vê a tela.
+- **Arquivos:** um `.md` e um `.json` por sessão em `~/Library/Application Support/Kanji/Transcricoes` (*Abrir transcrições* no menu). Salvos trecho a trecho: se o app cair, o que já foi transcrito fica. Cada parágrafo tem a hora e quem falou.
+- **Chamadas:** quando outro app (Zoom, Meet, Teams, FaceTime) abre o microfone, o Kanji põe o microfone na sessão sozinho, com cancelamento de eco, como "Você". Desliga 10 s depois que a chamada solta o microfone. Um vídeo não abre o microfone, então o som da sala fica de fora.
+- **Quem falou (opcional):** *Ajustes › Geral › Transcrição do áudio do Mac › Separar quem fala* baixa uma vez um modelo de voz de ~15 MB (WeSpeaker ResNet34 convertido para Core ML, CC BY 4.0, do Hugging Face), conferido por SHA-256. Sem ele, tudo o que o Mac toca sai como "Outros".
+- **Notch:** com o Kizami (app irmão que desenha uma ilha em volta do notch) aberto, a ilha dele mostra que o Kanji está transcrevendo, quando uma chamada põe o seu microfone e quando a transcrição foi salva. Só vão o estado e contagens, nunca o texto.
+- **Recursos:** num podcast de 5 minutos, o Kanji usou ~8,5% de um núcleo e ~70 MB; o serviço de fala da Apple, mais ~11% e até ~200 MB.
 
 ## Privacidade
 
@@ -92,6 +105,7 @@ Em Ajustes › Geral também ficam o modo "segurar enquanto fala" e o "escrever 
 - **Com o modelo do Mac,** nada sai do computador.
 - **Com um provedor da nuvem,** só o **texto** do ditado vai para ele, usando a **sua** chave e conforme os termos dele. O Kanji não tem servidor.
 - **Chaves de API** ficam no Keychain.
+- **Transcrições do áudio do Mac** ficam em `~/Library/Application Support/Kanji/Transcricoes`. O áudio nunca é salvo nem enviado; o modelo de voz só é baixado se você ligar *Separar quem fala*.
 - **Histórico** fica em `~/Library/Application Support/Kanji`; **ajustes e glossário** (inclusive os termos aprendidos), nas preferências do app.
 - **Histórico do clipboard:** vem ligado e guarda o que você copia, para achar depois. Uma senha que não venha de um gerenciador também entra nele. Se você copia senhas de outros lugares, desligue em Ajustes › Histórico.
 

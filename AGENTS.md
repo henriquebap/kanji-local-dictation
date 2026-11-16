@@ -12,8 +12,8 @@ Kanji is a native macOS app for dictation in **Brazilian Portuguese mixed with E
 
 Free app, open source (Apache 2.0). The name and icon are reserved (`NOTICE`).
 
-**Current scope:** microphone dictation, review, a glossary that learns, and dictation and clipboard history.
-**Out of scope for now:** system audio/meetings (v0.3), agent mode (v0.4), iPhone, App Store and our own server. See [docs/ROADMAP.md](docs/ROADMAP.md).
+**Current scope:** microphone dictation, review, a glossary that learns, dictation and clipboard history, and transcribing what the Mac plays (videos, podcasts, meetings; optional speakers).
+**Out of scope for now:** meeting summaries and agent mode (v0.4), iPhone, App Store and our own server. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Build and tests
 
