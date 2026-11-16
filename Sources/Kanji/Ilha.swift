@@ -12,6 +12,7 @@ enum Ilha {
         let simbolo: String
         let cor: String
         let expira: Double
+        let prioridade: String
     }
 
     private static let id = "kanji-transcricao"
@@ -20,8 +21,12 @@ enum Ilha {
     /// Reenviar com o mesmo id troca a atividade, mas a ilha desce de novo para avisar: só nas mudanças de estado.
     /// - cor: uma das cores do Kizami (vermelho, laranja, amarelo, verde, azul, roxo, rosa, cinza).
     /// - expira: segundos na ilha; 0 fica até `remover`.
-    static func mostrar(_ titulo: String, detalhe: String? = nil, simbolo: String, cor: String, expira: Double = 0) {
-        let atividade = Atividade(id: id, titulo: titulo, detalhe: detalhe, simbolo: simbolo, cor: cor, expira: expira)
+    /// - prioridade: baixa, normal, alta ou urgente. A ilha ordena por ela, e "baixa" entra sem descer.
+    ///   Um Kizami anterior ao campo ignora e trata como normal.
+    static func mostrar(_ titulo: String, detalhe: String? = nil, simbolo: String, cor: String, expira: Double = 0,
+                        prioridade: String) {
+        let atividade = Atividade(id: id, titulo: titulo, detalhe: detalhe, simbolo: simbolo, cor: cor, expira: expira,
+                                  prioridade: prioridade)
         guard let json = try? JSONEncoder().encode(atividade) else { return }
         postar("enviar", String(decoding: json, as: UTF8.self))
     }

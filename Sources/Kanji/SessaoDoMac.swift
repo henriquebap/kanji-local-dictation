@@ -115,7 +115,8 @@ final class SessaoDoMac {
             }
             Ilha.mostrar(String(localized: "Transcrição salva"),
                          detalhe: String(localized: "\(String(trechos)) trechos em \(String(max(1, Int(Date.now.timeIntervalSince(inicio) / 60)))) min"),
-                         simbolo: "checkmark.circle.fill", cor: "verde", expira: 8)
+                         simbolo: "checkmark.circle.fill", cor: "verde", expira: 8,
+                         prioridade: "baixa")  // o som de pronto já avisa; a ilha não precisa descer
             fase = .parada
         }
     }
@@ -268,7 +269,7 @@ final class SessaoDoMac {
         fase = .erro(mensagem)
         Som.tocar(.erro)
         Ilha.mostrar(String(localized: "A transcrição do Mac parou"), detalhe: mensagem,
-                     simbolo: "exclamationmark.triangle.fill", cor: "laranja", expira: 15)
+                     simbolo: "exclamationmark.triangle.fill", cor: "laranja", expira: 15, prioridade: "alta")
     }
 
     /// Fica na ilha do Kizami enquanto grava. Uma chamada aparece à parte porque aí a sua voz também entra.
@@ -276,7 +277,8 @@ final class SessaoDoMac {
         guard fase == .gravando else { return }  // o microfone desliga ao parar: não volta a dizer "transcrevendo"
         Ilha.mostrar(String(localized: "Transcrevendo o áudio do Mac"),
                      detalhe: chamada ? String(localized: "Numa chamada: o seu microfone também entra") : nil,
-                     simbolo: chamada ? "mic.fill" : "waveform", cor: "vermelho")
+                     simbolo: chamada ? "mic.fill" : "waveform", cor: "vermelho",
+                     prioridade: "alta")  // gravando: fica à frente da música e de avisos comuns
     }
 
     /// Na primeira vez, lembra que transcrever uma reunião pede o consentimento de quem está nela.
