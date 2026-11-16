@@ -95,10 +95,10 @@ final class Transcricoes {
         erros[t.id] = nil
         defer { resumindo.remove(t.id) }
         do {
-            let texto = try await Nuvem.resumir(t.markdown())
+            let texto = try await Nuvem.resumir(t.markdown(), idioma: t.idiomaPrincipal)
             // A pessoa pode ter recarregado a lista durante os até 2 min de espera.
             guard let base = bases[t.id] else { return }
-            let conteudo = "# Resumo — \(t.data)\n\n\(texto)\n"
+            let conteudo = "# \(t.data)\n\n\(texto)\n"  // sem "Resumo": a palavra seria em português num resumo em inglês
             try Data(conteudo.utf8).write(to: Transcricao.resumo(de: base), options: .atomic)
             resumos[t.id] = conteudo
         } catch {

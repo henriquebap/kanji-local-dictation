@@ -1,4 +1,5 @@
 import Foundation
+import NaturalLanguage
 
 /// Um trecho firmado de uma sessão longa, com o tempo em segundos desde o começo da sessão.
 struct Trecho: Codable, Equatable, Sendable {
@@ -67,6 +68,14 @@ struct Transcricao: Codable, Identifiable, Sendable {
     /// Quem fala, na ordem em que aparece.
     var locutores: [String] {
         trechos.reduce(into: []) { lista, trecho in if !lista.contains(trecho.quem) { lista.append(trecho.quem) } }
+    }
+
+    /// Idioma em que a maior parte foi falada ("pt", "en"…): o que for gerado a partir dela sai nesse idioma, sem
+    /// traduzir. Pelo texto dos trechos, sem os rótulos de quem fala, que são do Kanji e sempre em português.
+    var idiomaPrincipal: String? {
+        let reconhecedor = NLLanguageRecognizer()
+        reconhecedor.processString(trechos.map(\.texto).joined(separator: " "))
+        return reconhecedor.dominantLanguage?.rawValue
     }
 
     /// Segundos de áudio até o último trecho.

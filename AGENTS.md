@@ -76,6 +76,7 @@ For each dictation, the history stores the raw transcription (`bruto`) and the f
    - Don't concatenate user text into the system instructions. Style and glossary come from Settings, which the user wrote themselves.
 4. **Never translate.**
    - What was said in English stays in English.
+   - Anything generated from a transcript (summaries, and whatever comes next) is written in the transcript's **main language**, detected on the Mac (`Transcricao.idiomaPrincipal`, `NLLanguageRecognizer`), never in the Mac's or the dictation's language. An all-English podcast gets an English summary; a Portuguese meeting full of English terms stays in Portuguese and keeps the terms as they were said.
    - The ~3B local model translates often. The `Correcao.fiel` guard discards the review when that happens, and any change to the local model must keep the fidelity tests in `Tests/CorrecaoTeste.swift` passing.
 5. **Failure degrades, it doesn't break.**
    - Without a key, network or credits, dictation delivers the local text and the panel shows a warning.
