@@ -59,6 +59,7 @@ flowchart LR
 | Transcrições | `Transcricoes.swift`, `TranscricoesView.swift` | SwiftUI, arquivos em Application Support | Lê as sessões salvas; renomear quem fala, resumir e feedback de entrevista (nuvem), Lixo |
 | Notas da entrevista | `Notas.swift`, `EntrevistaView.swift` | Arquivos numa pasta que a pessoa escolhe, nuvem com cache de prompt | Monta o pacote de notas (sem ocultos, `_`, `arquivo`/`archive`, arquivos de agente, `status: obsoleto`) e responde a uma pergunta com tópicos que citam a nota |
 | Detector de perguntas | `Pergunta.swift`, `PerguntaNoModelo.swift` | Regra pura, depois Foundation Models | Decide se o turno do entrevistador pede resposta: "?" na última frase, uma tag ("né", "right"), um pedido ("tell me", "me conta") ou uma palavra de pergunta que não abre uma afirmação ("o que a gente faz aqui é…"). O que a regra recusa vai ao modelo do Mac (perguntas de sim ou não ditas como afirmação). Precisão e recall impressos pelo `make teste`, e com o modelo pelo `./build/teste --modelo` |
+| Modo entrevista ao vivo | `ModoEntrevista.swift` | Sessão do áudio do Mac, NSPanel com `sharingType = .none` | Guarda o turno do entrevistador (palavras PT e EN desde a última fala do candidato, fundidas por `Fusao.fundir`), roda o detector quando o português firma e mostra tópicos das notas num painel no canto que nunca pega o foco. ⌃⌥P pede tópicos para o turno atual. Lê as notas e a chave uma vez por sessão |
 | Notch | `Ilha.swift` | `DistributedNotificationCenter` | Estado da transcrição na ilha do Kizami; nunca o texto |
 
 ## Um ditado, passo a passo
@@ -132,7 +133,7 @@ Decisões e por quê:
 ### Reconhecimento de fala: `SpeechAnalyzer` (Apple)
 - Roda no Mac. Os modelos de cada idioma são baixados pelo sistema (`AssetInventory`) e compartilhados entre apps: o Kanji não empacota nenhum modelo.
 - **`SpeechDetector`:** detector de voz. Sem ele, silêncio e ruído viravam palavras ("Não.", "Oh.").
-- **Dois `SpeechTranscriber` no mesmo áudio.** O de português manda resultados voláteis (o rascunho cinza do painel) e firmes. O de inglês só manda os firmes, com o tempo de cada palavra, para a fusão.
+- **Dois `SpeechTranscriber` no mesmo áudio.** O de português manda resultados voláteis (o rascunho cinza do painel) e firmes. O de inglês só manda os firmes, com o tempo de cada palavra, para a fusão. Os dois usam `.fastResults`: sem ele, o de inglês firmava 6,4 s depois do fim da fala no áudio do Mac, contra ~1 s com ele (medido com `say`), tarde para a fusão e para o modo entrevista.
 - **Pausas:** quando o volume cai por 0,35 s depois de fala, o Kanji pede ao reconhecedor para firmar o trecho. Assim o texto não fica preso por 10 s.
 
 ### Modelo do Mac: Foundation Models (Apple Intelligence)

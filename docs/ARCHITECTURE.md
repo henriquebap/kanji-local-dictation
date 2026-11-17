@@ -59,6 +59,7 @@ flowchart LR
 | Transcripts | `Transcricoes.swift`, `TranscricoesView.swift` | SwiftUI, files in Application Support | Reads the saved sessions; rename speakers, summarize and interview feedback (cloud), Trash |
 | Interview notes | `Notas.swift`, `EntrevistaView.swift` | Files in a folder the user picks, cloud with prompt caching | Builds the notes pack (skips hidden, `_`, `arquivo`/`archive`, agent files, `status: obsoleto`) and answers a question with bullets that cite the note |
 | Question detector | `Pergunta.swift`, `PerguntaNoModelo.swift` | Pure rule, then Foundation Models | Decides whether the interviewer's turn asks for an answer: a "?" on the last sentence, a tag ("né", "right"), a request ("tell me", "me conta"), or a question word that isn't opening a statement ("what we do here is…"). What the rule rejects goes to the Mac's model (yes/no questions spoken as statements). Precision and recall printed by `make teste`, and with the model by `./build/teste --modelo` |
+| Interview mode, live | `ModoEntrevista.swift` | Mac-audio session, NSPanel with `sharingType = .none` | Keeps the interviewer's turn (PT and EN words since the candidate last spoke, fused by `Fusao.fundir`), runs the detector when Portuguese firms, and shows bullets from the notes in a corner panel that never takes focus. ⌃⌥P asks for bullets on the current turn. Reads the notes and the key once per session |
 | Notch | `Ilha.swift` | `DistributedNotificationCenter` | Transcription state on the Kizami island; never the text |
 
 ## One dictation, step by step
@@ -132,7 +133,7 @@ Decisions and why:
 ### Speech recognition: `SpeechAnalyzer` (Apple)
 - Runs on the Mac. Each language's models are downloaded by the system (`AssetInventory`) and shared across apps: Kanji doesn't bundle any model.
 - **`SpeechDetector`:** voice detector. Without it, silence and noise turned into words ("Não.", "Oh.").
-- **Two `SpeechTranscriber`s on the same audio.** The Portuguese one sends volatile results (the gray draft in the panel) and finalized ones. The English one sends only finalized results, with each word's timing, for the merge.
+- **Two `SpeechTranscriber`s on the same audio.** The Portuguese one sends volatile results (the gray draft in the panel) and finalized ones. The English one sends only finalized results, with each word's timing, for the merge. Both use `.fastResults`: without it the English one finalized 6.4 s after the end of speech on Mac audio, against ~1 s with it (measured with `say`), late for the merge and for interview mode.
 - **Pauses:** when volume drops for 0.35 s after speech, Kanji asks the recognizer to finalize the chunk. That way text isn't held back for 10 s.
 
 ### On-Mac model: Foundation Models (Apple Intelligence)

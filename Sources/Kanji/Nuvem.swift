@@ -242,8 +242,9 @@ enum Nuvem {
         """
 
     /// - pergunta: o que o entrevistador perguntou. - notas: o pacote de `Notas.ler`.
-    static func perguntar(_ pergunta: String, notas: String) async throws -> String {
-        guard let p = pronto, let chave = Chaveiro.ler(p) else {
+    /// - chave: já lida pelo modo entrevista; sem ela, lê do Keychain aqui.
+    static func perguntar(_ pergunta: String, notas: String, chave lida: String? = nil) async throws -> String {
+        guard let p = pronto, let chave = lida ?? Chaveiro.ler(p) else {
             throw Falha(mensagem: String(localized: "Para perguntar às notas, escolha um provedor da nuvem e salve a chave em Ajustes › Correção."))
         }
         guard notas.count <= Notas.limite else {
@@ -338,13 +339,14 @@ enum Nuvem {
 /// As chaves de API ficam no Keychain, uma por provedor, nunca no UserDefaults nem no código.
 @MainActor
 enum Chaveiro {
-    private static func item(_ p: Provedor) -> [String: Any] {
+    nonisolated private static func item(_ p: Provedor) -> [String: Any] {
         [kSecClass as String: kSecClassGenericPassword,
          kSecAttrService as String: "io.github.henriquebap.kanji",
          kSecAttrAccount as String: "\(p.rawValue)-api-key"]  // "anthropic-api-key": a conta de antes continua valendo
     }
 
-    static func ler(_ p: Provedor) -> String? {
+    /// Pode rodar fora da thread principal: no modo entrevista, a primeira leitura levou de 7 a 13 s.
+    nonisolated static func ler(_ p: Provedor) -> String? {
         var busca = item(p)
         busca[kSecReturnData as String] = true
         busca[kSecMatchLimit as String] = kSecMatchLimitOne

@@ -14,7 +14,8 @@ enum Ajustes {
     static let viuPrimeirosPassos = "viuPrimeirosPassos"
     static let escreverAoVivo = "escreverAoVivo"
     static let separarLocutores = "separarLocutores"
-    static let pastaDasNotas = "pastaDasNotas"  // caminho da pasta de notas de carreira (modo entrevista)
+    static let pastaDasNotas = "pastaDasNotas"
+    static let sugerirNaEntrevista = "sugerirNaEntrevista"  // modo entrevista ao vivo, na transcrição do Mac  // caminho da pasta de notas de carreira (modo entrevista)
     static let viuAvisoDeGravacao = "viuAvisoDeGravacao"
 
     static var padroes: [String: Any] { [

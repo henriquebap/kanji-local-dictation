@@ -108,7 +108,7 @@ While a job interview runs in a call, Kanji notices each question from the inter
 | 0 | Post-interview feedback (done) | yes, on saved transcripts |
 | 1 | Notes folder in Settings plus an "ask my notes" field: type a question, see the bullets (built 2026-11-17) | yes |
 | 2 | Question detection, with the labeled sets and their numbers (built 2026-11-17: 0.90 precision, 0.90 recall) | yes |
-| 3 | Live: detection during the session, the panel, latency logged (goal: bullets within 3 s of the end of the question) | mock interview |
+| 3 | Live: detection during the session, the panel, latency logged (goal: bullets within 3 s of the end of the question). Built 2026-11-17: 4.3 to 7.0 s measured with `say` (Portuguese firms ~2.3 s after the end of speech, the cloud takes ~3 s with the notes cached). Next: streaming the answer, and the volatile Portuguese text at the pause | mock interview |
 | 4 | Memory loop: question bank back into the vault | yes |
 
 **Rules carried over:** audio never leaves the Mac; only the question and the notes go to the provider the user chose; logs carry counts and timings, never the question or the notes. Without a key, credits or network, the panel says so and the transcription goes on.

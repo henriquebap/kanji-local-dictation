@@ -75,6 +75,7 @@ final class Kanji {
             case .abrir: janelas.mostrarPrincipal()
             case .cancelar: ditado.cancelar()
             case .transcrever: Kanji.shared.sessao.alternar()
+            case .perguntar: Kanji.shared.sessao.entrevista.pedirAgora()
             }
         }
         atalhos.aoSoltar = { [ditado] acao in
@@ -83,6 +84,7 @@ final class Kanji {
         atalhos.registrar(.ditar)
         atalhos.registrar(.abrir)
         atalhos.registrar(.transcrever)
+        atalhos.registrar(.perguntar)
         // Primeira vez: a janela de primeiros passos explica e pede cada permissão no momento certo.
         guard UserDefaults.standard.bool(forKey: Ajustes.viuPrimeirosPassos) else { return janelas.mostrarPrimeirosPassos() }
         janelas.mostrarPrincipal()

@@ -15,6 +15,7 @@ final class SessaoDoMac {
 
     @ObservationIgnored private let captura = CapturaAoVivo()
     @ObservationIgnored private let microfone = CanalDoMicrofone()
+    let entrevista = ModoEntrevista()
     @ObservationIgnored private var transcricao: Transcricao?
     @ObservationIgnored private var fila: Task<Void, Never>?  // trechos entram um de cada vez, em ordem
     @ObservationIgnored private var soIngles: [[Palavra]] = []  // esperando o português
@@ -76,10 +77,11 @@ final class SessaoDoMac {
                     origem: .mac,
                     aoNivel: { self.maiorNivel = max(self.maiorNivel, $0) },
                     aoTexto: { _, _ in },
-                    aoTrecho: { self.enfileirar($1) },
-                    aoTrechoIngles: { self.soEmIngles($0, $1) },
+                    aoTrecho: { self.entrevista.ouvirPortugues($1); self.enfileirar($1) },
+                    aoTrechoIngles: { self.entrevista.ouvirIngles($1); self.soEmIngles($0, $1) },
                     memoria: memoria)
                 fase = .gravando
+                entrevista.comecar(em: .now)  // o relógio do áudio começa com a captura, não com o pedido
                 mostrarNaIlha(chamada: false)
                 microfone.vigiar(desde: .now, aoMudar: { self.mostrarNaIlha(chamada: $0) }) { texto, palavras in
                     self.enfileirarDoMicrofone(texto, palavras)
@@ -96,6 +98,7 @@ final class SessaoDoMac {
     func parar() {
         guard fase == .gravando else { return }
         fase = .finalizando
+        entrevista.terminar()
         Task {
             let resultado = try? await captura.parar()  // os últimos trechos entram na fila durante a finalização
             await microfone.parar()
@@ -240,6 +243,7 @@ final class SessaoDoMac {
         let anterior = fila
         fila = Task {
             await anterior?.value
+            entrevista.candidatoFalou()
             adicionar(texto, palavras, canal: .microfone)
             salvar()
         }

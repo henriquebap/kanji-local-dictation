@@ -52,6 +52,7 @@ For each dictation, the history stores the raw transcription (`bruto`) and the f
 | `Transcricoes.swift`, `TranscricoesView.swift` | Transcripts section of the main window: list, read, rename speakers, summarize, interview feedback, Trash |
 | `Notas.swift`, `EntrevistaView.swift` | Interview mode, step 1: career notes folder (read at question time, never copied) and "ask my notes" in Settings |
 | `Pergunta.swift`, `PerguntaNoModelo.swift` | Interview mode, step 2: does the interviewer's turn ask for an answer? Pure PT/EN cue rule, then the Mac's model for what it rejects. Measured on two labeled sets in `Tests/perguntas-entrevista*.tsv` (`make teste`; `./build/teste --modelo` for the model) |
+| `ModoEntrevista.swift` | Interview mode, step 3: live turn of the interviewer, trigger, cloud bullets, corner panel kept out of screen capture, ⌃⌥P |
 | `Ilha.swift` | Transcription state on the Kizami island (sibling notch app), by distributed notification; never the text |
 | `Fusao.swift` | Picks PT or EN word by word; glossary; capitalization |
 | `Revisao.swift` | Pure rules: dictated lists, joining sentences by pause |
@@ -112,4 +113,5 @@ For each dictation, the history stores the raw transcription (`bruto`) and the f
   - with *greedy* decoding, the model sometimes loops until it overflows the 8,192-token context (hence the token cap);
   - the default guardrails reject harmless text (hence `.permissiveContentTransformations`).
 - **macOS permissions** (Microphone, Accessibility) are tied to the signature. An ad-hoc signature asks for everything again on every build: use `scripts/dev-certificate.sh`.
+- **Keychain prompts on every build.** Without a Team ID (the free "Kanji Dev" certificate), macOS ties "Always Allow" on the API key to the binary's hash, so each `make app` asks again. Never read the key on the main thread in a hot path: the prompt blocks it (the interview mode reads it in the background at session start).
 - **Provider models** change fast. Check the current name in the provider's documentation before changing `Provedor.modeloPadrao`; never write it from memory.

@@ -58,6 +58,7 @@ final class PerguntaDeTeste {
 /// Modo entrevista, passo 1: escolher as notas e testar uma pergunta antes de usar numa entrevista de verdade.
 struct EntrevistaView: View {
     @Bindable private var estado = PerguntaDeTeste.shared
+    @AppStorage(Ajustes.sugerirNaEntrevista) private var sugerir = false
 
     var body: some View {
         Form {
@@ -74,6 +75,15 @@ struct EntrevistaView: View {
                 Text("Notas de carreira")
             } footer: {
                 Text("Uma pasta de Markdown, como um cofre do Obsidian. Ficam de fora as pastas ocultas, as começadas por _ e as chamadas arquivo ou archive. O Kanji lê na hora de perguntar e não guarda cópia; só o texto das notas e a pergunta vão para o provedor da nuvem.")
+            }
+            Section {
+                Toggle("Sugerir respostas durante a transcrição do Mac", isOn: $sugerir)
+                    .disabled(estado.pasta == nil)
+                LabeledContent("Pedir tópicos agora") { CampoDeAtalho(gravador: .perguntar) }
+            } header: {
+                Text("Ao vivo")
+            } footer: {
+                Text("Quando o entrevistador pergunta, um painel no canto da tela mostra tópicos tirados das notas. O painel pede ao macOS para ficar fora do compartilhamento de tela: confira numa chamada de teste. Se uma pergunta passar sem painel, use o atalho. Vale a partir da próxima transcrição.")
             }
             Section("Testar uma pergunta") {
                 TextField("Pergunta do entrevistador", text: $estado.pergunta, axis: .vertical)

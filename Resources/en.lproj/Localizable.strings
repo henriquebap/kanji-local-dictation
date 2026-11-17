@@ -233,3 +233,13 @@
 "As notas passam do limite. Escolha uma pasta só com as notas de carreira." = "The notes are over the limit. Choose a folder with only your career notes.";
 "Para perguntar às notas, escolha um provedor da nuvem e salve a chave em Ajustes › Correção." = "To ask your notes, choose a cloud provider and save its key in Settings › Correction.";
 "Uma pasta de Markdown, como um cofre do Obsidian. Ficam de fora as pastas ocultas, as começadas por _ e as chamadas arquivo ou archive. O Kanji lê na hora de perguntar e não guarda cópia; só o texto das notas e a pergunta vão para o provedor da nuvem." = "A folder of Markdown files, like an Obsidian vault. Hidden folders, folders starting with _ and folders named arquivo or archive are left out. Kanji reads the notes when you ask and keeps no copy; only the text of the notes and the question go to the cloud provider.";
+"Ao vivo" = "Live";
+"Sugerir respostas durante a transcrição do Mac" = "Suggest answers while transcribing the Mac";
+"Pedir tópicos agora" = "Ask for bullets now";
+"Quando o entrevistador pergunta, um painel no canto da tela mostra tópicos tirados das notas. O painel pede ao macOS para ficar fora do compartilhamento de tela: confira numa chamada de teste. Se uma pergunta passar sem painel, use o atalho. Vale a partir da próxima transcrição." = "When the interviewer asks a question, a panel in the corner of the screen shows bullets taken from your notes. The panel asks macOS to stay out of screen sharing: check it in a test call. If a question goes by without a panel, use the shortcut. Takes effect on the next transcription.";
+"Modo entrevista" = "Interview mode";
+"Fechar" = "Close";
+"Ainda não ouvi o entrevistador." = "I haven't heard the interviewer yet.";
+"Escolha a pasta de notas em Ajustes › Entrevista." = "Choose the notes folder in Settings › Interview.";
+"Ligue as sugestões em Ajustes › Entrevista e comece a transcrição de novo." = "Turn on suggestions in Settings › Interview and start the transcription again.";
+"Comece a transcrição do Mac (%@) durante a entrevista." = "Start transcribing the Mac (%@) during the interview.";
