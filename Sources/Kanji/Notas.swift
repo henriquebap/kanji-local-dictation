@@ -35,6 +35,16 @@ enum Notas {
             .joined(separator: "\n\n")
     }
 
+    /// Onde o feedback de cada entrevista entra, dentro da pasta de notas.
+    static let pastaDeEntrevistas = "entrevistas"
+
+    /// O feedback de uma entrevista como nota, com o mesmo cabeçalho das outras. `status: rascunho` porque saiu de um
+    /// modelo e ninguém conferiu: o modo entrevista usa nota rascunho só como pista.
+    static func notaDeFeedback(_ feedback: String, sessao: String, hoje: Date) -> String {
+        let dia = hoje.formatted(.iso8601.year().month().day())
+        return "---\nstatus: rascunho\natualizado: \(dia)\nfontes: feedback do Kanji sobre a transcrição \(sessao)\n---\n\(feedback)"
+    }
+
     /// Lê os `.md` da pasta e monta o pacote. `quantas` é o número de notas que entraram.
     /// Um arquivo do iCloud que saiu do disco falha na leitura ("Resource deadlock"): o erro sobe com o nome dele.
     static func ler(_ pasta: URL) throws -> (pacote: String, quantas: Int) {

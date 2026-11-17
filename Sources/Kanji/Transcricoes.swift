@@ -13,6 +13,10 @@ final class Transcricoes {
     /// Uma chamada à nuvem por transcrição de cada vez; o valor diz qual, para a mensagem de espera.
     private(set) var resumindo: [Transcricao.ID: Analise] = [:]
     private(set) var erros: [Transcricao.ID: String] = [:]
+    /// Onde o feedback foi salvo na pasta de notas ("entrevistas/…md"), para a tela confirmar.
+    private(set) var salvas: [Transcricao.ID: String] = [:]
+    /// A sessão cujo feedback espera confirmação para ir às notas.
+    var confirmarNotas: Transcricao.ID?
     /// De onde cada uma foi lida, sem a extensão: a pessoa pode ter renomeado o arquivo no Finder.
     @ObservationIgnored private var bases: [Transcricao.ID: URL] = [:]
     /// O Markdown de cada uma, montado uma vez para a busca não refazer tudo a cada tecla.
@@ -110,6 +114,25 @@ final class Transcricoes {
         } catch {
             registro.error("resumo falhou: \(error.localizedDescription, privacy: .private)")  // pode citar a transcrição
             erros[t.id] = error.localizedDescription
+        }
+    }
+
+    /// O feedback da entrevista vai para `entrevistas/` na pasta de notas, e o modo entrevista passa a saber o que
+    /// faltou nas respostas. Só depois da confirmação (a pasta é da pessoa); salvar de novo substitui o arquivo.
+    func salvarNasNotas(_ t: Transcricao) {
+        guard let caminho = UserDefaults.standard.string(forKey: Ajustes.pastaDasNotas), let base = bases[t.id],
+              let feedback = resumos[t.id]?[.entrevista] else { return }
+        let pasta = URL(filePath: caminho, directoryHint: .isDirectory).appending(path: Notas.pastaDeEntrevistas, directoryHint: .isDirectory)
+        let nome = base.lastPathComponent + ".md"
+        do {
+            try FileManager.default.createDirectory(at: pasta, withIntermediateDirectories: true)
+            let nota = Notas.notaDeFeedback(feedback, sessao: base.lastPathComponent, hoje: .now)
+            try Data(nota.utf8).write(to: pasta.appending(path: nome), options: .atomic)
+            salvas[t.id] = "\(Notas.pastaDeEntrevistas)/\(nome)"
+            registro.notice("feedback salvo nas notas (\(nota.count) caracteres)")
+        } catch {
+            registro.error("feedback não foi para as notas: \(error.localizedDescription, privacy: .private)")
+            erros[t.id] = String(localized: "Não consegui salvar nas notas: \(error.localizedDescription)")
         }
     }
 }

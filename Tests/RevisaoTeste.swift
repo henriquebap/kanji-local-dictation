@@ -156,6 +156,10 @@ import Foundation
     ]
     conferir("pede resposta: perguntas sim, afirmações e fechamento não",
              turnos.map { Pergunta.pedeResposta($0) ? "1" : "0" }.joined(), "111111000000")
+    let nota = Notas.notaDeFeedback("# 17 nov\n\n- forte", sessao: "2026-11-17 10.00", hoje: Date(timeIntervalSince1970: 1_794_900_000))
+    conferir("feedback salvo nas notas: cabeçalho rascunho, entra no pacote, em entrevistas/",
+             "\(nota.hasPrefix("---\nstatus: rascunho\natualizado: 2026-11-")) \(nota.hasSuffix("---\n# 17 nov\n\n- forte")) \(Notas.obsoleta(nota)) \(Notas.entra(Notas.pastaDeEntrevistas + "/x.md"))",
+             "true true false true")
     conferir("anúncio do entrevistador não vai ao modelo; pergunta depois do anúncio vale",
              ["Bom, deixa eu te contar um pouco sobre a empresa a gente trabalha com saúde", "So let me tell you about the team.",
               "Deixa eu te contar da vaga. Qual sua experiência com Swift?"].map { Pergunta.anuncio($0) ? "1" : "0" }.joined(), "110")

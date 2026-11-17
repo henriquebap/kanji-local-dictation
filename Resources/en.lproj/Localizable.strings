@@ -243,3 +243,11 @@
 "Escolha a pasta de notas em Ajustes › Entrevista." = "Choose the notes folder in Settings › Interview.";
 "Ligue as sugestões em Ajustes › Entrevista e comece a transcrição de novo." = "Turn on suggestions in Settings › Interview and start the transcription again.";
 "Comece a transcrição do Mac (%@) durante a entrevista." = "Start transcribing the Mac (%@) during the interview.";
+
+/* Feedback da entrevista salvo na pasta de notas */
+"Salvar nas notas" = "Save to Notes";
+"Salva este feedback na sua pasta de notas, para o modo entrevista saber o que faltou da próxima vez" = "Saves this feedback to your notes folder, so interview mode knows what was missing next time";
+"Salvar o feedback nas suas notas?" = "Save the feedback to your notes?";
+"Vai para a pasta entrevistas dentro da sua pasta de notas, marcado como rascunho. O modo entrevista passa a usar esse feedback nas próximas perguntas." = "It goes to the entrevistas folder inside your notes folder, marked as a draft. Interview mode will use this feedback for the next questions.";
+"Feedback salvo nas notas: %@" = "Feedback saved to your notes: %@";
+"Não consegui salvar nas notas: %@" = "Couldn't save to your notes: %@";

@@ -58,6 +58,9 @@ struct DetalheDaTranscricao: View {
                 if let erro = arquivo.erros[transcricao.id] {
                     Label(erro, systemImage: "exclamationmark.triangle").foregroundStyle(.orange)
                 }
+                if let salva = arquivo.salvas[transcricao.id] {
+                    Label("Feedback salvo nas notas: \(salva)", systemImage: "checkmark.circle")
+                }
                 if let analise = arquivo.resumindo[transcricao.id] {
                     let com = Nuvem.pronto?.comArtigo ?? ""
                     ProgressView(analise == .entrevista ? String(localized: "Analisando a entrevista com \(com)…")
@@ -71,6 +74,13 @@ struct DetalheDaTranscricao: View {
                             HStack {
                                 Text(analise == .entrevista ? String(localized: "Feedback da entrevista") : String(localized: "Resumo"))
                                 Spacer()
+                                if analise == .entrevista, UserDefaults.standard.string(forKey: Ajustes.pastaDasNotas) != nil {
+                                    Button("Salvar nas notas", systemImage: "tray.and.arrow.down") {
+                                        arquivo.confirmarNotas = transcricao.id
+                                    }
+                                    .buttonStyle(.borderless)
+                                    .help("Salva este feedback na sua pasta de notas, para o modo entrevista saber o que faltou da próxima vez")
+                                }
                                 Button("Copiar", systemImage: "doc.on.doc") { Area.copiar(texto, historico: historico) }
                                     .buttonStyle(.borderless)
                             }
@@ -99,6 +109,14 @@ struct DetalheDaTranscricao: View {
             Button("Cancelar", role: .cancel) {}
         } message: {
             Text("Muda em todos os trechos e nos arquivos .md e .json.")
+        }
+        .confirmationDialog("Salvar o feedback nas suas notas?",
+                            isPresented: Binding(get: { arquivo.confirmarNotas == transcricao.id },
+                                                 set: { if !$0 { arquivo.confirmarNotas = nil } })) {
+            Button("Salvar") { arquivo.salvarNasNotas(transcricao) }
+            Button("Cancelar", role: .cancel) {}
+        } message: {
+            Text("Vai para a pasta entrevistas dentro da sua pasta de notas, marcado como rascunho. O modo entrevista passa a usar esse feedback nas próximas perguntas.")
         }
     }
 
