@@ -6,6 +6,7 @@ struct AjustesView: View {
             Tab("Geral", systemImage: "gearshape") { GeralView() }
             Tab("Correção", systemImage: "text.badge.checkmark") { CorrecaoView() }
             Tab("Histórico", systemImage: "clock.arrow.circlepath") { HistoricoAjustesView() }
+            Tab("Entrevista", systemImage: "person.wave.2") { EntrevistaView() }
         }
         .frame(width: 580, height: 560)
     }

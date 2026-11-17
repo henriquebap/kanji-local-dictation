@@ -98,7 +98,7 @@ While a job interview runs in a call, Kanji notices each question from the inter
 | Step | Delivers | Can be tested without an interview |
 |---|---|---|
 | 0 | Post-interview feedback (done) | yes, on saved transcripts |
-| 1 | Notes folder in Settings plus an "ask my notes" field: type a question, see the bullets | yes |
+| 1 | Notes folder in Settings plus an "ask my notes" field: type a question, see the bullets (built 2026-11-17) | yes |
 | 2 | Question detection on saved transcripts, with the labeled set and its numbers | yes |
 | 3 | Live: detection during the session, the panel, latency logged (goal: bullets within 3 s of the end of the question) | mock interview |
 | 4 | Memory loop: question bank back into the vault | yes |

@@ -216,3 +216,20 @@
 "Mover para o Lixo" = "Move to Trash";
 "Para resumir, escolha um provedor da nuvem e salve a chave em Ajustes › Correção." = "To summarize, choose a cloud provider and save its key in Settings › Correction.";
 "Transcrição longa demais para resumir de uma vez." = "This transcript is too long to summarize in one go.";
+
+/* Modo entrevista */
+"Entrevista" = "Interview";
+"Notas de carreira" = "Career Notes";
+"Pasta" = "Folder";
+"nenhuma" = "none";
+"Escolher…" = "Choose…";
+"Usar esta pasta" = "Use This Folder";
+"Lidas" = "Read";
+"%@ notas, %@ mil caracteres" = "%@ notes, %@ thousand characters";
+"Não consegui ler as notas: %@" = "Couldn't read the notes: %@";
+"Testar uma pergunta" = "Try a Question";
+"Pergunta do entrevistador" = "Interviewer's question";
+"Perguntar às notas" = "Ask My Notes";
+"As notas passam do limite. Escolha uma pasta só com as notas de carreira." = "The notes are over the limit. Choose a folder with only your career notes.";
+"Para perguntar às notas, escolha um provedor da nuvem e salve a chave em Ajustes › Correção." = "To ask your notes, choose a cloud provider and save its key in Settings › Correction.";
+"Uma pasta de Markdown, como um cofre do Obsidian. Ficam de fora as pastas ocultas, as começadas por _ e as chamadas arquivo ou archive. O Kanji lê na hora de perguntar e não guarda cópia; só o texto das notas e a pergunta vão para o provedor da nuvem." = "A folder of Markdown files, like an Obsidian vault. Hidden folders, folders starting with _ and folders named arquivo or archive are left out. Kanji reads the notes when you ask and keeps no copy; only the text of the notes and the question go to the cloud provider.";

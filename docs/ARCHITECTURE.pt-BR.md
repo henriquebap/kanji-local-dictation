@@ -57,6 +57,7 @@ flowchart LR
 | Canal "Você" | `CanalDoMicrofone.swift` | `AudioHardwareProcess.isRunningInput`, voice processing | O microfone entra na sessão enquanto outro app (uma chamada) o usa |
 | Locutores | `Vozes.swift`, `Locutores.swift` | Core ML (download opcional), Swift puro (testado) | Vetor de voz por janela de ~3 s, agrupamento ao vivo |
 | Transcrições | `Transcricoes.swift`, `TranscricoesView.swift` | SwiftUI, arquivos em Application Support | Lê as sessões salvas; renomear quem fala, resumir e feedback de entrevista (nuvem), Lixo |
+| Notas da entrevista | `Notas.swift`, `EntrevistaView.swift` | Arquivos numa pasta que a pessoa escolhe, nuvem com cache de prompt | Monta o pacote de notas (sem ocultos, `_`, `arquivo`/`archive`, arquivos de agente, `status: obsoleto`) e responde a uma pergunta com tópicos que citam a nota |
 | Notch | `Ilha.swift` | `DistributedNotificationCenter` | Estado da transcrição na ilha do Kizami; nunca o texto |
 
 ## Um ditado, passo a passo

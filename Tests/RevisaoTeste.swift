@@ -135,5 +135,17 @@ import Foundation
         let dados = try JSONEncoder().encode(renomeada)
         return try JSONDecoder().decode(Transcricao.self, from: dados).locutores.joined(separator: ", ")
     }(), "Lando, Henrique, Locutor 2")
+    // Notas de carreira: o que entra no pacote do modo entrevista.
+    conferir("nota da raiz e de pasta entram",
+             "\(Notas.entra("apresentacao.md")) \(Notas.entra("experiencias/hob-tech.md"))", "true true")
+    conferir("oculto, _, arquivo, agentes e não-.md ficam de fora",
+             ["arquivo/context/CV.md", "_exports/skill/SKILL.md", ".obsidian/app.md", "CLAUDE.md", "Archive/x.md", "Untitled.canvas"]
+                .map { "\(Notas.entra($0))" }.joined(separator: " "), "false false false false false false")
+    conferir("nota obsoleta sai, rascunho e sem cabeçalho ficam",
+             "\(Notas.obsoleta("---\nstatus: obsoleto\n---\n# X")) \(Notas.obsoleta("---\nstatus: rascunho\n---\nstatus: obsoleto")) \(Notas.obsoleta("# X"))",
+             "true false false")
+    conferir("pacote: raiz primeiro, em ordem, com o caminho",
+             Notas.pacote([("projetos/b.md", "B"), ("z.md", " Z\n"), ("arquivo/a.md", "A"), ("a.md", "---\nstatus: obsoleto\n---")]),
+             "<nota caminho=\"z.md\">\nZ\n</nota>\n\n<nota caminho=\"projetos/b.md\">\nB\n</nota>")
     return falhas
 }

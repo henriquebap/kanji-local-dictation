@@ -50,6 +50,7 @@ For each dictation, the history stores the raw transcription (`bruto`) and the f
 | `CanalDoMicrofone.swift` | "You" channel: microphone turns on by itself while another app (a call) uses it |
 | `Vozes.swift`, `Locutores.swift` | Optional speaker separation: CoreML voice embeddings, model download, online clustering |
 | `Transcricoes.swift`, `TranscricoesView.swift` | Transcripts section of the main window: list, read, rename speakers, summarize, interview feedback, Trash |
+| `Notas.swift`, `EntrevistaView.swift` | Interview mode, step 1: career notes folder (read at question time, never copied) and "ask my notes" in Settings |
 | `Ilha.swift` | Transcription state on the Kizami island (sibling notch app), by distributed notification; never the text |
 | `Fusao.swift` | Picks PT or EN word by word; glossary; capitalization |
 | `Revisao.swift` | Pure rules: dictated lists, joining sentences by pause |
