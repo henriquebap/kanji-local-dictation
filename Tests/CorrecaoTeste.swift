@@ -29,7 +29,7 @@ let registro = Logger(subsystem: "teste", category: "teste")
 }
 @main struct T {
     static func main() async {
-        let falhas = await testar() + testarRevisao()
+        let falhas = await testar() + testarRevisao() + avaliarPerguntas()
         if falhas > 0 { exit(1) }
     }
 }

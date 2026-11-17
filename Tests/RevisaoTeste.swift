@@ -147,5 +147,14 @@ import Foundation
     conferir("pacote: raiz primeiro, em ordem, com o caminho",
              Notas.pacote([("projetos/b.md", "B"), ("z.md", " Z\n"), ("arquivo/a.md", "A"), ("a.md", "---\nstatus: obsoleto\n---")]),
              "<nota caminho=\"z.md\">\nZ\n</nota>\n\n<nota caminho=\"projetos/b.md\">\nB\n</nota>")
+    // Modo entrevista: o turno do entrevistador pede resposta?
+    let turnos = [
+        "Tell me about yourself.", "so how did you measure that", "Legal, gostei. E como vocês mediram isso",
+        "me conta um projeto que você liderou", "Qual a sua pretensão salarial", "Do you have any questions for us?",
+        "Great, thanks.", "What we do here is mostly backend work.", "Como eu falei, o time é pequeno.",
+        "O que a gente faz aqui é integração.", "Por isso a gente prefere remoto.", "Next step is a technical interview.",
+    ]
+    conferir("pede resposta: perguntas sim, afirmações e fechamento não",
+             turnos.map { Pergunta.pedeResposta($0) ? "1" : "0" }.joined(), "111111000000")
     return falhas
 }

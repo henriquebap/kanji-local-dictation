@@ -51,6 +51,7 @@ For each dictation, the history stores the raw transcription (`bruto`) and the f
 | `Vozes.swift`, `Locutores.swift` | Optional speaker separation: CoreML voice embeddings, model download, online clustering |
 | `Transcricoes.swift`, `TranscricoesView.swift` | Transcripts section of the main window: list, read, rename speakers, summarize, interview feedback, Trash |
 | `Notas.swift`, `EntrevistaView.swift` | Interview mode, step 1: career notes folder (read at question time, never copied) and "ask my notes" in Settings |
+| `Pergunta.swift`, `PerguntaNoModelo.swift` | Interview mode, step 2: does the interviewer's turn ask for an answer? Pure PT/EN cue rule, then the Mac's model for what it rejects. Measured on two labeled sets in `Tests/perguntas-entrevista*.tsv` (`make teste`; `./build/teste --modelo` for the model) |
 | `Ilha.swift` | Transcription state on the Kizami island (sibling notch app), by distributed notification; never the text |
 | `Fusao.swift` | Picks PT or EN word by word; glossary; capitalization |
 | `Revisao.swift` | Pure rules: dictated lists, joining sentences by pause |

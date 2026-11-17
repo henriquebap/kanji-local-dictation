@@ -1,0 +1,120 @@
+1	pt	Então, pra vaga de dados a gente usa bastante dbt e Airflow. Você já mexeu com alguma dessas ferramentas.
+1	pt	Bom, deixa eu te explicar rapidinho como funciona o processo. São três etapas, essa é a primeira com o RH, depois tem a técnica e depois uma com o time. E aí, nessa primeira, eu queria saber o que te chamou atenção na vaga
+1	pt	como você explicaria um teste A/B pra alguém do comercial que nunca ouviu falar disso
+1	pt	Você já fez entrevista com usuário alguma vez.
+1	pt	Hum, tá. E se o designer e o PM discordassem sobre uma tela, você ficaria do lado de quem?
+1	pt	tipo, aqui o QA participa desde o refinamento, não é só no final. como era isso no seu time
+1	pt	Pensa num ticket de suporte em que o cliente tá muito irritado e o problema nem é culpa nossa. O que você responderia pra ele?
+1	pt	Me mostra aí no seu portfólio um projeto que você gosta, pode compartilhar a tela.
+1	pt	Você consegue me dizer qual foi a métrica principal que você acompanhava no seu último produto?
+1	pt	então nessa etapa final é mais uma conversa de fit cultural. o que te motiva no trabalho no dia a dia
+1	pt	E a modelagem dos dados, era estrela ou vocês tinham tudo numa tabela só.
+1	pt	Você teria disponibilidade pra uma conversa com o head de produto na semana que vem.
+1	pt	Ah, e outra coisa, você já tem CNPJ ou prefere CLT?
+1	pt	Legal. Sobre automação de teste, você usava Cypress, Playwright, Selenium, o quê?
+1	pt	Hum, deixa eu ver se eu entendi, você fez a pesquisa, o protótipo e o handoff sozinha. É isso?
+1	pt	Olha, a gente tá com um problema de churn alto no plano mensal, e eu fico pensando em várias hipóteses, preço, onboarding, suporte, ninguém sabe direito. Se você chegasse amanhã, por onde começaria a olhar?
+1	pt	Queria ouvir de você como é que você decide o que vai pro próximo sprint e o que fica de fora.
+1	pt	hum e o SQL, em que nível você diria que tá
+1	pt	E plantão de fim de semana, uma vez por mês, funciona pra você.
+1	pt	Me descreve um bug que passou pra produção mesmo com os testes, e o que você mudou depois.
+1	pt	Certo, certo. Então nesse experimento a conversão subiu dez por cento, mas você acha que esse número era confiável
+1	pt	Uma pergunta mais aberta: o que é um bom design pra você?
+1	pt	então, só pra fechar a parte de benefícios, ficou alguma dúvida
+1	pt	Supõe que um gerente te pede um relatório pra amanhã e você sabe que os dados tão com problema. O que você faz?
+1	pt	Você chegou a liderar alguém formalmente ou foi mais como referência técnica.
+1	pt	Tá, eu vi no seu currículo que você ficou só oito meses na última empresa. Me conta o que aconteceu ali.
+1	pt	E como você lida quando recebe um feedback que não concorda
+1	pt	É, porque aqui o suporte é em inglês e espanhol também, então você se sentiria confortável atendendo em espanhol.
+1	pt	Agora uma mais técnica, qual a diferença entre um left join e um inner join?
+1	pt	Pra encerrar, tem alguma coisa que você gostaria de perguntar pra mim sobre o time ou sobre a liderança?
+0	pt	Ótimo, ótimo.
+0	pt	tá, show de bola
+0	pt	Ah, então a pesquisa foi só quantitativa, com formulário.
+0	pt	Então, deixa eu te dar um contexto do produto. A gente tem um app de agendamento pra clínicas, umas duas mil clínicas usam hoje, e o time de produto são três PMs e cinco designers.
+0	pt	O time de dados aqui é novo, começou ano passado, então ainda tem muita coisa pra estruturar, o data lake tá meio bagunçado.
+0	pt	Onde a gente quer chegar com essa vaga é ter alguém olhando pra qualidade de ponta a ponta, não só executando caso de teste.
+0	pt	Respondendo o que você perguntou, o suporte funciona em turnos de seis horas e tem um líder por turno.
+0	pt	Hum, deixa eu abrir aqui o seu portfólio, só um minutinho.
+0	pt	Ok, então eu vou te mandar o case por email hoje à tarde e você tem uma semana pra entregar.
+0	pt	ah, eu também vim de suporte, é uma escola e tanto
+0	pt	Teste flaky aqui é tipo um colega de equipe, já faz parte da rotina.
+0	pt	É, quando a gente fala de métrica de produto, o que mais pesa aqui é retenção, mais do que aquisição.
+0	pt	Então, como funciona a avaliação: cada pessoa da banca dá uma nota e depois a gente conversa entre nós.
+0	pt	tá, tá, tô acompanhando
+0	pt	Interessante esse jeito de priorizar, a gente faz parecido com RICE.
+0	pt	Peraí que o meu fone desconectou... tá, agora sim.
+0	pt	Por que essa vaga abriu? Basicamente porque a pessoa que tava foi promovida pra coordenação.
+0	pt	Deixa eu parar de compartilhar a tela aqui.
+0	pt	Sinceramente, a gente demorou pra investir em pesquisa com usuário, e hoje a gente paga o preço disso.
+0	pt	A remuneração é fixa mais um bônus anual, que depende das metas do time.
+0	pt	Então era isso que eu queria de você nessa etapa, foi bem completo.
+0	pt	Qual ferramenta a gente usa pra BI? Hoje é Metabase, mas tem gente querendo migrar.
+0	pt	a parte de design system ainda é bem inicial, tipo, tem só os componentes básicos
+0	pt	Show, a sua resposta sobre o SQL foi bem clara.
+0	pt	Só um aviso, eu vou ficar com a câmera desligada porque a minha conexão tá ruim.
+0	pt	uhum, uhum, certo
+0	pt	Então, o horário é flexível, mas tem uma janela das dez às quatro em que todo mundo precisa estar online.
+0	pt	E qual era o tamanho do time de suporte? Ah, você comentou, eram oito. Ok.
+0	pt	como a gente comentou no começo a ideia é você entrar já tocando a parte de experimentação
+0	pt	Bom, eu acho que é isso então, obrigada pela conversa, o RH te procura até quarta.
+1	en	So for the data role we lean heavily on SQL and some Python. Have you built any data pipelines end to end.
+1	en	Okay so let me give you a quick overview first. The loop has four stages, this one is the hiring manager round, then there's a case study, then a panel, and finally a chat with our VP. So with that in mind, what drew you to this role in the first place
+1	en	how would you explain a p-value to someone in marketing
+1	en	You've run usability tests before.
+1	en	Right. And when engineering says a design is too expensive to build, what do you usually do?
+1	en	so here QA is embedded in each squad from day one, it's not a phase at the end. how did it work at your last place
+1	en	Picture a customer who's furious about an outage that wasn't really our fault. What would your first reply look like?
+1	en	Feel free to share your screen and take me through a case study from your portfolio, whichever one you think shows your process best.
+1	en	What did you look at first every Monday morning when you were PM on that product?
+1	en	this last round is mostly about values and how you work with people. what kind of manager brings out the best in you
+1	en	And for deduplication, were you doing that upstream or in the warehouse.
+1	en	Would you be free for a follow-up with our head of design sometime next week.
+1	en	Oh, and are you currently interviewing anywhere else?
+1	en	Cool. For test automation, what's your go-to framework these days?
+1	en	Hmm, let me make sure I got that right. You did the research, the prototype and the handoff yourself. Is that right?
+1	en	So honestly we've been seeing a lot of churn on the monthly plan, and we have a bunch of theories, pricing, onboarding, maybe support response times, nobody really knows. If you joined next month, where would you even start?
+1	en	I'd be interested to hear how you decide what makes it into a release and what gets cut.
+1	en	uh how would you rate your SQL on a scale of one to ten
+1	en	You're comfortable being on the support escalation rotation one weekend a month.
+1	en	Describe a bug that made it to production despite your test coverage, and what you changed afterwards.
+1	en	Okay, okay. So that experiment lifted conversion by ten percent, but how confident were you in that number
+1	en	If you had to cut one step from a typical design process, which would it be?
+1	en	so that covers benefits, anything unclear there
+1	en	Let's say a stakeholder insists a metric dropped because of your release, but you think it's seasonality. How do you handle that conversation?
+1	en	Did you manage people directly or were you more of a tech lead without reports.
+1	en	There's a gap of about a year on your resume, do you mind telling me about that?
+1	en	How do you handle feedback that you think is wrong
+1	en	We support customers across a bunch of time zones, so you'd be okay with an early morning shift.
+1	en	Quick one, what's the difference between precision and recall?
+1	en	To close, anything you'd like to ask me about the team or how I lead it?
+0	en	Awesome, awesome.
+0	en	sweet, love it
+0	en	Ah, so the mobile app was React Native, not fully native.
+0	en	So a bit of background on us. We build a reporting tool for nonprofits, about four hundred customers, and the product team is two PMs and three designers.
+0	en	The data team here is pretty new, it started last year, so there's still a lot to build and honestly the lake is a bit of a mess.
+0	en	Where we want to get with this hire is someone who owns quality end to end, not just someone executing test cases.
+0	en	To your question, support runs in six hour shifts and there's a lead on every shift.
+0	en	Let me just mute for a sec, my dog is barking.
+0	en	Okay so I'll send the case study over this afternoon and you'll have a week to work on it.
+0	en	oh nice, I did a QA rotation myself early on, it teaches you a lot
+0	en	On-call has been a sore spot for us this year, we're hiring partly to spread that load.
+0	en	When it comes to product metrics, retention matters way more to us than acquisition right now.
+0	en	How the debrief works is everyone on the panel scores independently and then we talk it through together.
+0	en	right right, I'm following
+0	en	Interesting way to prioritize, we do something pretty similar with RICE.
+0	en	Wait, you froze on my side. Okay, now I can hear you again.
+0	en	Who would you be working with? Mainly the growth PM and two analysts, plus whoever needs ad hoc stuff.
+0	en	Let me grab some water real quick, my throat is dry.
+0	en	To be honest we were slow to invest in user research, and we're paying for that now.
+0	en	Compensation is base plus an annual bonus tied to team goals.
+0	en	That's everything I needed from you for this stage, that was really thorough.
+0	en	What do we use for BI? Right now it's Looker, though some folks want to move off it.
+0	en	the design system is still pretty early, like it's just the basic components
+0	en	Nice, that's a cleaner explanation of precision and recall than I usually get.
+0	en	Just a heads up, we're running about five minutes behind, so this might be a bit shorter.
+0	en	Yep, yep. Noted.
+0	en	Travel is minimal, maybe twice a year for the offsite.
+0	en	And which ticketing tool was it? Oh, you already told me. Never mind, okay.
+0	en	as we said at the start the idea is that you'd own experimentation from day one
+0	en	Okay, we're at time. Thanks again, really enjoyed this, you'll hear from us early next week.

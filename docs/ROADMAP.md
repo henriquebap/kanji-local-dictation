@@ -84,7 +84,15 @@ While a job interview runs in a call, Kanji notices each question from the inter
 
 **Pipeline:**
 1. **Hear.** Reuse `SessaoDoMac`. Each segment the interviewer finishes (canal `.mac`, followed by a pause from `SpeechDetector`) is a candidate.
-2. **Detect the question.** The local model (Foundation Models, schema built by hand) classifies the segment into a closed enum: not a question, about you, project, technical, behavioral, logistics. It's free, private and fast. A question mark isn't reliable because the recognizer punctuates poorly. A test set of labeled interviewer segments from real interviews measures precision and recall before it goes live.
+2. **Detect the question.** Only one decision is needed, whether the interviewer's turn asks for an answer: the cloud picks the story in step 4, so classifying the type of question was dropped. A pure PT/EN cue rule (`Pergunta`) answers first; when it says no, the Mac's model (`PerguntaNoModelo`) gets the turn, because yes/no questions spoken as statements ("você teria disponibilidade pra semana que vem.") are only recognizable by meaning. A question mark isn't reliable because the recognizer punctuates poorly.
+   - **Measured on 2026-11-17** with two labeled sets of 120 turns (PT and EN), written by a separate agent that never saw the code. The rule was tuned on the first; the numbers below are from the second:
+
+     | Path | Precision | Recall | Time per turn |
+     |---|---|---|---|
+     | Rule only | 0.90 | 0.75 | ~0 ms |
+     | Mac model only | 0.98 | 0.68 | ~430 ms |
+     | Rule, then model (used) | 0.90 | 0.90 | ~250 ms |
+   - The sets are written, not recorded. Real interviews replace them as they come: the interview feedback already lists each interviewer question.
 3. **Retrieve.** The knowledge is the user's career notes, read-only from a folder they pick in Settings (an Obsidian vault). Kanji reads the files at run time and never copies them into the repository or the app. A curated set of notes for interviews is small enough to send whole.
    - ponytail: the whole pack goes in the prompt with prompt caching, so each question pays only for the question. Retrieval with `NLEmbedding` comes in only if the pack outgrows the context.
 4. **Suggest.** A fast cloud model (Claude Haiku via `Nuvem`) streams 3 to 5 bullets in the question's language.
@@ -99,7 +107,7 @@ While a job interview runs in a call, Kanji notices each question from the inter
 |---|---|---|
 | 0 | Post-interview feedback (done) | yes, on saved transcripts |
 | 1 | Notes folder in Settings plus an "ask my notes" field: type a question, see the bullets (built 2026-11-17) | yes |
-| 2 | Question detection on saved transcripts, with the labeled set and its numbers | yes |
+| 2 | Question detection, with the labeled sets and their numbers (built 2026-11-17: 0.90 precision, 0.90 recall) | yes |
 | 3 | Live: detection during the session, the panel, latency logged (goal: bullets within 3 s of the end of the question) | mock interview |
 | 4 | Memory loop: question bank back into the vault | yes |
 

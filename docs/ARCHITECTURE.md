@@ -58,6 +58,7 @@ flowchart LR
 | Speakers | `Vozes.swift`, `Locutores.swift` | Core ML (optional download), plain Swift (tested) | Voice embedding per ~3 s window, online clustering |
 | Transcripts | `Transcricoes.swift`, `TranscricoesView.swift` | SwiftUI, files in Application Support | Reads the saved sessions; rename speakers, summarize and interview feedback (cloud), Trash |
 | Interview notes | `Notas.swift`, `EntrevistaView.swift` | Files in a folder the user picks, cloud with prompt caching | Builds the notes pack (skips hidden, `_`, `arquivo`/`archive`, agent files, `status: obsoleto`) and answers a question with bullets that cite the note |
+| Question detector | `Pergunta.swift`, `PerguntaNoModelo.swift` | Pure rule, then Foundation Models | Decides whether the interviewer's turn asks for an answer: a "?" on the last sentence, a tag ("né", "right"), a request ("tell me", "me conta"), or a question word that isn't opening a statement ("what we do here is…"). What the rule rejects goes to the Mac's model (yes/no questions spoken as statements). Precision and recall printed by `make teste`, and with the model by `./build/teste --modelo` |
 | Notch | `Ilha.swift` | `DistributedNotificationCenter` | Transcription state on the Kizami island; never the text |
 
 ## One dictation, step by step
