@@ -83,7 +83,7 @@ While a job interview runs in a call, Kanji notices each question from the inter
 **Already in place:** the Mac-audio session separates the interviewer (Mac audio) from the candidate ("Você", microphone during a call), the cloud client with the user's key, and the post-interview feedback, which is step 0 below.
 
 **Pipeline:**
-1. **Hear.** Reuse `SessaoDoMac`. Each segment the interviewer finishes (canal `.mac`, followed by a pause from `SpeechDetector`) is a candidate.
+1. **Hear.** Reuse `SessaoDoMac`. The interviewer's turn is evaluated at the first sign of a pause: English firming (~1.2 s after speech ends), 1.3 s without a new Portuguese draft (drafts arrive in bursts every ~0.95 s while someone speaks), or Portuguese firming (~2.2 s). Each stretch of audio is evaluated once.
 2. **Detect the question.** Only one decision is needed, whether the interviewer's turn asks for an answer: the cloud picks the story in step 4, so classifying the type of question was dropped. A pure PT/EN cue rule (`Pergunta`) answers first; when it says no, the Mac's model (`PerguntaNoModelo`) gets the turn, because yes/no questions spoken as statements ("você teria disponibilidade pra semana que vem.") are only recognizable by meaning. A question mark isn't reliable because the recognizer punctuates poorly.
    - **Measured on 2026-11-17** with two labeled sets of 120 turns (PT and EN), written by a separate agent that never saw the code. The rule was tuned on the first; the numbers below are from the second:
 
@@ -91,7 +91,8 @@ While a job interview runs in a call, Kanji notices each question from the inter
      |---|---|---|---|
      | Rule only | 0.90 | 0.75 | ~0 ms |
      | Mac model only | 0.98 | 0.68 | ~430 ms |
-     | Rule, then model (used) | 0.90 | 0.90 | ~250 ms |
+     | Rule, then model | 0.90 | 0.90 | ~250 ms |
+     | Rule, then model, announcements ("deixa eu te contar", "let me") kept from the model (used) | 0.92 | 0.90 | ~230 ms |
    - The sets are written, not recorded. Real interviews replace them as they come: the interview feedback already lists each interviewer question.
 3. **Retrieve.** The knowledge is the user's career notes, read-only from a folder they pick in Settings (an Obsidian vault). Kanji reads the files at run time and never copies them into the repository or the app. A curated set of notes for interviews is small enough to send whole.
    - ponytail: the whole pack goes in the prompt with prompt caching, so each question pays only for the question. Retrieval with `NLEmbedding` comes in only if the pack outgrows the context.
@@ -100,7 +101,7 @@ While a job interview runs in a call, Kanji notices each question from the inter
    - Anything that isn't in the notes is said to be missing, never made up.
    - The question goes in as data inside `<pergunta>`, like the transcript today.
 5. **Show.** A small transparent panel (`NSPanel`, non-activating) that never takes focus. `sharingType = .none` keeps it out of screen sharing and recording. The Kizami island gets only the state ("pergunta detectada").
-6. **Remember.** After the interview, the feedback adds each question and how well it was answered to a note in the vault, with the user's confirmation, so the next interview's pack knows the weak spots.
+6. **Remember.** After the interview, *Save to Notes* writes the feedback (each question and how well it was answered) to `entrevistas/` in the notes folder, with the user's confirmation and `status: rascunho`, so the next interview's pack knows the weak spots.
 
 **Milestones:**
 | Step | Delivers | Can be tested without an interview |
@@ -108,16 +109,16 @@ While a job interview runs in a call, Kanji notices each question from the inter
 | 0 | Post-interview feedback (done) | yes, on saved transcripts |
 | 1 | Notes folder in Settings plus an "ask my notes" field: type a question, see the bullets (built 2026-11-17) | yes |
 | 2 | Question detection, with the labeled sets and their numbers (built 2026-11-17: 0.90 precision, 0.90 recall) | yes |
-| 3 | Live: detection during the session, the panel, latency logged (goal: bullets within 3 s of the end of the question). Built 2026-11-17: 4.3 to 7.0 s measured with `say` (Portuguese firms ~2.3 s after the end of speech, the cloud takes ~3 s with the notes cached). Next: streaming the answer, and the volatile Portuguese text at the pause | mock interview |
-| 4 | Memory loop: question bank back into the vault | yes |
+| 3 | Live: detection during the session, the panel, latency logged (goal: bullets within 3 s of the end of the question). Built 2026-11-17: 4.3 to 7.0 s measured with `say` (Portuguese firms ~2.3 s after the end of speech, the cloud takes ~3 s with the notes cached). Same day: the answer streams, and the question is detected 0.7 to 1.7 s after it ends (English firming or a pause in the Portuguese draft). Not yet measured with a real call | mock interview |
+| 4 | Memory loop: the feedback saved to the notes folder (built 2026-11-17) | yes |
 
 **Rules carried over:** audio never leaves the Mac; only the question and the notes go to the provider the user chose; logs carry counts and timings, never the question or the notes. Without a key, credits or network, the panel says so and the transcription goes on.
 
 **Honest risks:**
 - Latency: recognizer finalization, plus classification, plus the first cloud token, has to fit in a few seconds or the bullets arrive after the answer.
-- False positives while the interviewer is still talking.
+- False positives while the interviewer is still talking. Seen with `say`: the Mac's model sometimes takes a statement about the company for a question, depending on where the recognizer cuts the stretch.
 - The interviewer's speech is a third party's data. The consent notice already covers it.
-- Some companies forbid aids during interviews. The tool shows the user's own facts, and when to use it is the user's call.
+- Some companies forbid aids during interviews.
 
 ### v0.4: agent mode (opt-in)
 - **Integration:** the official package [`anthropics/ClaudeForFoundationModels`](https://github.com/anthropics/ClaudeForFoundationModels) implements the `LanguageModel` protocol. The same `LanguageModelSession` switches between the local model and Claude via Dynamic Profiles. It's in beta and requires Xcode 27.

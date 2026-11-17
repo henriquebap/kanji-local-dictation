@@ -49,15 +49,15 @@ For each dictation, the history stores the raw transcription (`bruto`) and the f
 | `SessaoDoMac.swift`, `Transcricao.swift` | Long Mac-audio transcription session, saved as JSON + Markdown per segment |
 | `CanalDoMicrofone.swift` | "You" channel: microphone turns on by itself while another app (a call) uses it |
 | `Vozes.swift`, `Locutores.swift` | Optional speaker separation: CoreML voice embeddings, model download, online clustering |
-| `Transcricoes.swift`, `TranscricoesView.swift` | Transcripts section of the main window: list, read, rename speakers, summarize, interview feedback, Trash |
+| `Transcricoes.swift`, `TranscricoesView.swift` | Transcripts section of the main window: list, read, rename speakers, summarize, interview feedback (and saving it to the notes folder), Trash |
 | `Notas.swift`, `EntrevistaView.swift` | Interview mode, step 1: career notes folder (read at question time, never copied) and "ask my notes" in Settings |
 | `Pergunta.swift`, `PerguntaNoModelo.swift` | Interview mode, step 2: does the interviewer's turn ask for an answer? Pure PT/EN cue rule, then the Mac's model for what it rejects. Measured on two labeled sets in `Tests/perguntas-entrevista*.tsv` (`make teste`; `./build/teste --modelo` for the model) |
-| `ModoEntrevista.swift` | Interview mode, step 3: live turn of the interviewer, trigger, cloud bullets, corner panel kept out of screen capture, ⌃⌥P |
+| `ModoEntrevista.swift` | Interview mode, step 3: live turn of the interviewer, triggers (English firmed, a pause in the Portuguese draft, Portuguese firmed), streamed cloud bullets, corner panel kept out of screen capture, ⌃⌥P |
 | `Ilha.swift` | Transcription state on the Kizami island (sibling notch app), by distributed notification; never the text |
 | `Fusao.swift` | Picks PT or EN word by word; glossary; capitalization |
 | `Revisao.swift` | Pure rules: dictated lists, joining sentences by pause |
 | `Correcao.swift` | Local model (Foundation Models) + fidelity guard |
-| `Nuvem.swift` | Cloud providers (Anthropic Messages / OpenAI Chat Completions) + Keychain |
+| `Nuvem.swift`, `Streaming.swift` | Cloud providers (Anthropic Messages / OpenAI Chat Completions) + Keychain; the pure reader of streamed (SSE) events |
 | `Aprendizado.swift` | Glossary that learns from the replacements the cloud makes |
 | `Saida.swift`, `Alvo.swift` | Paste with ⌘V; live typing via Accessibility |
 | `Historico.swift` | JSON history + clipboard monitor (filters passwords and keys) |
