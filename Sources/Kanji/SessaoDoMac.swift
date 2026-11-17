@@ -76,7 +76,7 @@ final class SessaoDoMac {
                     ingles: UserDefaults.standard.bool(forKey: Ajustes.misturarIngles) && idioma.hasPrefix("pt"),
                     origem: .mac,
                     aoNivel: { self.maiorNivel = max(self.maiorNivel, $0) },
-                    aoTexto: { _, _ in },
+                    aoTexto: { self.entrevista.ouvirRascunho($1) },
                     aoTrecho: { self.entrevista.ouvirPortugues($1); self.enfileirar($1) },
                     aoTrechoIngles: { self.entrevista.ouvirIngles($1); self.soEmIngles($0, $1) },
                     memoria: memoria)

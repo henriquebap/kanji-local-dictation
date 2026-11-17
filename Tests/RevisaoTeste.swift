@@ -156,5 +156,29 @@ import Foundation
     ]
     conferir("pede resposta: perguntas sim, afirmações e fechamento não",
              turnos.map { Pergunta.pedeResposta($0) ? "1" : "0" }.joined(), "111111000000")
+    conferir("anúncio do entrevistador não vai ao modelo; pergunta depois do anúncio vale",
+             ["Bom, deixa eu te contar um pouco sobre a empresa a gente trabalha com saúde", "So let me tell you about the team.",
+              "Deixa eu te contar da vaga. Qual sua experiência com Swift?"].map { Pergunta.anuncio($0) ? "1" : "0" }.joined(), "110")
+    // Streaming: o que cada linha do SSE traz, nos dois formatos.
+    let claude = [
+        "event: content_block_delta",
+        #"data: {"type":"message_start","message":{"usage":{"cache_read_input_tokens":900,"cache_creation_input_tokens":0}}}"#,
+        #"data: {"type":"ping"}"#,
+        #"data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"- STAR"}}"#,
+        #"data: {"type":"message_delta","delta":{"stop_reason":"end_turn"}}"#,
+        #"data: {"type":"error","error":{"type":"overloaded_error","message":"Overloaded"}}"#,
+    ].map { Streaming.evento($0, claude: true) }
+    let esperadoClaude: [Streaming.Evento?] = [
+        nil, Streaming.Evento(cacheLido: 900, cacheGravado: 0), nil, Streaming.Evento(texto: "- STAR"),
+        Streaming.Evento(fim: "end_turn"), Streaming.Evento(erro: "Overloaded"),
+    ]
+    conferir("streaming Claude: cache, texto, fim e erro; event e ping ignorados", "\(claude)", "\(esperadoClaude)")
+    let openai = [
+        #"data: {"choices":[{"delta":{"content":"- A"},"finish_reason":null}]}"#,
+        #"data: {"choices":[{"delta":{},"finish_reason":"stop"}]}"#,
+        "data: [DONE]",
+    ].map { Streaming.evento($0, claude: false) }
+    conferir("streaming OpenAI: texto, fim e [DONE] ignorado", "\(openai)",
+             "\([Streaming.Evento(texto: "- A"), Streaming.Evento(fim: "stop"), nil])")
     return falhas
 }

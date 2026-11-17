@@ -47,7 +47,8 @@ final class PerguntaDeTeste {
         perguntando = true
         defer { perguntando = false }
         do {
-            resposta = try await Nuvem.perguntar(pergunta, notas: notas)
+            resposta = nil
+            resposta = try await Nuvem.perguntar(pergunta, notas: notas) { self.resposta = $0 }
         } catch {
             registro.error("pergunta às notas falhou: \(error.localizedDescription, privacy: .private)")  // pode citar as notas
             erro = error.localizedDescription

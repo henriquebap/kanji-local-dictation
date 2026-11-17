@@ -39,9 +39,10 @@ enum PerguntaNoModelo {
 }
 
 extension Pergunta {
-    /// A regra primeiro (precisão boa, instantânea); só o que ela recusa vai ao modelo.
+    /// A regra primeiro (precisão boa, instantânea); só o que ela recusa vai ao modelo, menos os anúncios.
     static func pedeRespostaComModelo(_ turno: String) async -> Bool {
         if pedeResposta(turno) { return true }
+        if anuncio(turno) { return false }
         return await PerguntaNoModelo.pede(turno) ?? false
     }
 }

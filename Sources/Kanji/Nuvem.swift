@@ -243,7 +243,9 @@ enum Nuvem {
 
     /// - pergunta: o que o entrevistador perguntou. - notas: o pacote de `Notas.ler`.
     /// - chave: já lida pelo modo entrevista; sem ela, lê do Keychain aqui.
-    static func perguntar(_ pergunta: String, notas: String, chave lida: String? = nil) async throws -> String {
+    /// - parcial: recebe o texto acumulado enquanto a resposta chega (streaming); sem ela, a resposta vem inteira.
+    static func perguntar(_ pergunta: String, notas: String, chave lida: String? = nil,
+                          parcial: ((String) -> Void)? = nil) async throws -> String {
         guard let p = pronto, let chave = lida ?? Chaveiro.ler(p) else {
             throw Falha(mensagem: String(localized: "Para perguntar às notas, escolha um provedor da nuvem e salve a chave em Ajustes › Correção."))
         }
@@ -256,9 +258,14 @@ enum Nuvem {
         reconhecedor.processString(pergunta)
         let idioma = reconhecedor.dominantLanguage == .english ? "inglês" : "português"
         let comeco = Date.now
-        let texto = try await enviar(p, chave: chave, sistema: "\(instrucoesDaPergunta)\n\n<notas>\n\(notas)\n</notas>",
-                                     mensagem: "Responda inteiramente em \(idioma).\n<pergunta>\n\(pergunta)\n</pergunta>",
-                                     maximo: 800, espera: 45, cache: true)
+        let sistema = "\(instrucoesDaPergunta)\n\n<notas>\n\(notas)\n</notas>"
+        let mensagem = "Responda inteiramente em \(idioma).\n<pergunta>\n\(pergunta)\n</pergunta>"
+        let texto = if let parcial {
+            try await enviarAosPoucos(p, chave: chave, sistema: sistema, mensagem: mensagem, maximo: 800, espera: 45,
+                                      cache: true, parcial: parcial)
+        } else {
+            try await enviar(p, chave: chave, sistema: sistema, mensagem: mensagem, maximo: 800, espera: 45, cache: true)
+        }
         registro.notice("\(p.rawValue, privacy: .public) respondeu pelas notas (\(notas.count) caracteres) em \(Date.now.timeIntervalSince(comeco), format: .fixed(precision: 1)) s")
         return texto
     }
@@ -278,12 +285,74 @@ enum Nuvem {
     ///   Os provedores compatíveis com OpenAI já guardam um começo de prompt repetido sem pedir.
     private static func enviar(_ p: Provedor, chave: String, sistema: String, mensagem: String, maximo: Int,
                                espera: Double, cache: Bool = false) async throws -> String {
+        let pedido = try montar(p, chave: chave, sistema: sistema, mensagem: mensagem, maximo: maximo, espera: espera,
+                                cache: cache, aosPoucos: false)
+        let claude = p == .anthropic
+        let (dados, http) = try await URLSession.shared.data(for: pedido)
+        // Proxy ou endpoint próprio podem responder 502 em HTML: aí vale o status, não um erro de JSON.
+        let json = (try? JSONSerialization.jsonObject(with: dados)) as? [String: Any] ?? [:]
+        try conferir((http as? HTTPURLResponse)?.statusCode ?? 0, json)
+        if cache, let uso = json["usage"] as? [String: Any] {
+            registrarCache(uso["cache_read_input_tokens"] as? Int, uso["cache_creation_input_tokens"] as? Int)
+        }
+        let (texto, fim) = claude ? lerClaude(json) : lerOpenAI(json)
+        return try terminado(texto, fim: fim, claude: claude)
+    }
+
+    /// Igual a `enviar`, mas lê a resposta aos poucos e entrega o texto acumulado a cada pedaço que chega.
+    private static func enviarAosPoucos(_ p: Provedor, chave: String, sistema: String, mensagem: String, maximo: Int,
+                                        espera: Double, cache: Bool, parcial: (String) -> Void) async throws -> String {
+        let pedido = try montar(p, chave: chave, sistema: sistema, mensagem: mensagem, maximo: maximo, espera: espera,
+                                cache: cache, aosPoucos: true)
+        let claude = p == .anthropic
+        let (bytes, http) = try await URLSession.shared.bytes(for: pedido)
+        let status = (http as? HTTPURLResponse)?.statusCode ?? 0
+        guard status == 200 else {  // o erro vem como JSON comum, não como eventos
+            var corpo = ""
+            for try await linha in bytes.lines { corpo += linha }
+            try conferir(status, (try? JSONSerialization.jsonObject(with: Data(corpo.utf8))) as? [String: Any] ?? [:])
+            throw Falha(mensagem: "HTTP \(status)")
+        }
+        var (texto, fim) = ("", String?.none)
+        for try await linha in bytes.lines {
+            guard let e = Streaming.evento(linha, claude: claude) else { continue }
+            if let erro = e.erro { throw Falha(mensagem: erro) }
+            if e.cacheLido != nil || e.cacheGravado != nil { registrarCache(e.cacheLido, e.cacheGravado) }
+            if !e.texto.isEmpty {
+                texto += e.texto
+                parcial(texto)
+            }
+            fim = e.fim ?? fim
+        }
+        return try terminado(texto, fim: fim, claude: claude)
+    }
+
+    private static func conferir(_ status: Int, _ json: [String: Any]) throws {
+        guard status != 200 else { return }
+        let detalhe = (json["error"] as? [String: Any])?["message"] as? String ?? "HTTP \(status)"
+        throw Falha(mensagem: status == 401 ? String(localized: "chave inválida") : detalhe)
+    }
+
+    /// Só contagens: confere se o pacote de notas veio do cache.
+    private static func registrarCache(_ lidos: Int?, _ gravados: Int?) {
+        registro.notice("cache: \(lidos ?? 0, privacy: .public) tokens lidos, \(gravados ?? 0, privacy: .public) gravados")
+    }
+
+    private static func terminado(_ texto: String, fim: String?, claude: Bool) throws -> String {
+        guard fim == (claude ? "end_turn" : "stop") else { throw Falha(mensagem: String(localized: "resposta incompleta (\(fim ?? "?"))")) }
+        let limpo = texto.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !limpo.isEmpty else { throw Falha(mensagem: String(localized: "resposta vazia")) }
+        return limpo
+    }
+
+    private static func montar(_ p: Provedor, chave: String, sistema: String, mensagem: String, maximo: Int,
+                               espera: Double, cache: Bool, aosPoucos: Bool) throws -> URLRequest {
         guard let base = endereco(p) else { throw Falha(mensagem: String(localized: "endereço da API inválido (use https://)")) }
         let claude = p == .anthropic
         var pedido = URLRequest(url: claude ? base : base.appending(path: "chat/completions"), timeoutInterval: espera)
         pedido.httpMethod = "POST"
         pedido.setValue("application/json", forHTTPHeaderField: "content-type")
-        let corpo: [String: Any]
+        var corpo: [String: Any]
         if claude {
             pedido.setValue(chave, forHTTPHeaderField: "x-api-key")
             pedido.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
@@ -298,24 +367,9 @@ enum Nuvem {
             // max_completion_tokens) e modelos de raciocínio recusam temperature. O timeout e a trava de tamanho seguram.
             corpo = ["model": modelo(p), "messages": [["role": "system", "content": sistema], ["role": "user", "content": mensagem]]]
         }
+        if aosPoucos { corpo["stream"] = true }
         pedido.httpBody = try JSONSerialization.data(withJSONObject: corpo)
-
-        let (dados, http) = try await URLSession.shared.data(for: pedido)
-        // Proxy ou endpoint próprio podem responder 502 em HTML: aí vale o status, não um erro de JSON.
-        let json = (try? JSONSerialization.jsonObject(with: dados)) as? [String: Any] ?? [:]
-        let status = (http as? HTTPURLResponse)?.statusCode ?? 0
-        guard status == 200 else {
-            let detalhe = (json["error"] as? [String: Any])?["message"] as? String ?? "HTTP \(status)"
-            throw Falha(mensagem: status == 401 ? String(localized: "chave inválida") : detalhe)
-        }
-        if cache, let uso = json["usage"] as? [String: Any] {  // só contagens: confere se o pacote de notas veio do cache
-            registro.notice("cache: \(uso["cache_read_input_tokens"] as? Int ?? 0, privacy: .public) tokens lidos, \(uso["cache_creation_input_tokens"] as? Int ?? 0, privacy: .public) gravados")
-        }
-        let (texto, fim) = claude ? lerClaude(json) : lerOpenAI(json)
-        guard fim == (claude ? "end_turn" : "stop") else { throw Falha(mensagem: String(localized: "resposta incompleta (\(fim ?? "?"))")) }
-        let limpo = texto.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !limpo.isEmpty else { throw Falha(mensagem: String(localized: "resposta vazia")) }
-        return limpo
+        return pedido
     }
 
     private static func lerClaude(_ json: [String: Any]) -> (String, String?) {

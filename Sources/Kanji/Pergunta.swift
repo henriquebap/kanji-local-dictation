@@ -19,6 +19,15 @@ enum Pergunta {
         return oracoes(frase).contains { interrogativa(semMuleta($0)) }
     }
 
+    /// "Deixa eu te contar sobre a empresa", "let me grab some water": o entrevistador anuncia o que vai fazer. Vale
+    /// só depois de `pedeResposta` dizer não, e evita o modelo do Mac, que aceitou "Bom, deixa eu te contar um pouco
+    /// sobre a empresa" como pergunta (visto com `say`).
+    static func anuncio(_ turno: String) -> Bool {
+        guard let ultima = frases(turno).last else { return false }
+        let frase = semMuleta(normalizar(ultima))
+        return frase.hasPrefix("deixa eu ") || frase.hasPrefix("let me ")
+    }
+
     /// A frase inteira e o que vem depois de cada "e", "and", "então", "so": sem pontuação, a pergunta chega colada
     /// num comentário ("legal gostei e como vocês mediram isso").
     private static func oracoes(_ frase: String) -> [String] {
