@@ -9,7 +9,7 @@ final class CapturaAoVivo {
 
     private var engine: AVAudioEngine?  // criado a cada gravação: um engine criado antes da permissão do microfone grava silêncio
     private var mac: AudioDoMac?
-    private var comIngles = false
+    private(set) var comIngles = false
     private var analyzer: SpeechAnalyzer?
     private var entrada: AsyncStream<AnalyzerInput>.Continuation?
     private var leituras: [Task<Void, Never>] = []

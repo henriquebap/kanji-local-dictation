@@ -115,6 +115,21 @@ import Foundation
     reuniao.adicionar(Trecho(inicio: 10, fim: 14, canal: .microfone, texto: "Beleza, eu cuido dos testes e do backend amanhã."))
     conferir("português com termos em inglês continua português", reuniao.idiomaPrincipal ?? "nil", "pt")
     conferir("voz do Mac não vira Você", "\(fala.renomear("Outros", para: "Você"))", "false")
+    // Inglês que encosta no português: só entram as palavras onde o português não firmou nenhuma.
+    let w = { (t: String, i: Double, f: Double) in Palavra(texto: t, inicio: i, fim: f, confianca: 0.9) }
+    let fora = { (en: [Palavra], cobertos: [(inicio: Double, fim: Double)]) in
+        Fusao.foraDoPortugues(en, cobertos: cobertos)
+            .map { $0.map(\.texto).joined().trimmingCharacters(in: .whitespaces) }.joined(separator: " | ")
+    }
+    let colado = [w("You", 0.5, 1.0), w(" don't pretty", 1.0, 2.5), w(" Let's", 3.2, 3.6), w(" ship", 3.6, 4.0), w(" it.", 4.0, 4.5)]
+    conferir("inglês logo depois do português entra", fora(colado, [(0.4, 1.1), (1.1, 2.4), (2.4, 3.0)]), "Let's ship it.")
+    let entre = [w(" the", 2.5, 2.9), w(" We", 3.1, 3.5), w(" need", 3.5, 4.0), w(" more tests.", 4.0, 5.5), w(" German", 6.1, 6.5)]
+    conferir("inglês entre dois trechos em português entra", fora(entre, [(2.4, 3.0), (6.0, 6.6)]), "We need more tests.")
+    conferir("sobra de uma palavra na borda fica de fora", fora([w(" the", 3.05, 3.3)], [(2.4, 3.0)]), "")
+    conferir("inglês sozinho entra inteiro", fora(colado, []), "You don't pretty Let's ship it.")
+    let esticada = [w("Então", 0, 0.4), w(" entrega", 0.4, 1.0), w(" sip", 1.0, 3.2), w(" it on Friday", 3.2, 4.4)]
+    conferir("palavra esticada sai e corta o trecho",
+             Fusao.semEsticadas(esticada).map { $0.map(\.texto).joined() }.joined(separator: " |"), "Então entrega | it on Friday")
     conferir("nome vazio é recusado", "\(renomeada.renomear("Lando", para: "   "))", "false")
     conferir("renomeado sobrevive ao JSON", try! {
         let dados = try JSONEncoder().encode(renomeada)

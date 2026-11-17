@@ -17,8 +17,9 @@ final class SessaoDoMac {
     @ObservationIgnored private let microfone = CanalDoMicrofone()
     @ObservationIgnored private var transcricao: Transcricao?
     @ObservationIgnored private var fila: Task<Void, Never>?  // trechos entram um de cada vez, em ordem
-    @ObservationIgnored private var soIngles: [(texto: String, palavras: [Palavra])] = []  // esperando o português
+    @ObservationIgnored private var soIngles: [[Palavra]] = []  // esperando o português
     @ObservationIgnored private var firmouAte: Double = 0  // fim do último trecho em português, em segundos do áudio
+    @ObservationIgnored private var falado: [(inicio: Double, fim: Double)] = []  // cada palavra que o português firmou
     @ObservationIgnored private var maiorNivel: Float = 0
     // Separação de locutores, só com o modelo baixado e a opção ligada nos Ajustes.
     @ObservationIgnored private var voz: ImpressaoDeVoz?
@@ -46,7 +47,7 @@ final class SessaoDoMac {
     func iniciar() {
         guard !ativa else { return }
         fase = .preparando
-        (inicio, trechos, maiorNivel, fila, soIngles, firmouAte) = (.now, 0, 0, nil, [], 0)
+        (inicio, trechos, maiorNivel, fila, soIngles, firmouAte, falado) = (.now, 0, 0, nil, [], 0, [])
         transcricao = Transcricao(inicio: inicio)
         (voz, memoria, locutores, numeros, ultimoGrupo) = (nil, nil, Locutores(limiar: Self.limiar), [:], nil)
         Task {
@@ -75,7 +76,7 @@ final class SessaoDoMac {
                     origem: .mac,
                     aoNivel: { self.maiorNivel = max(self.maiorNivel, $0) },
                     aoTexto: { _, _ in },
-                    aoTrecho: { self.enfileirar($0, $1) },
+                    aoTrecho: { self.enfileirar($1) },
                     aoTrechoIngles: { self.soEmIngles($0, $1) },
                     memoria: memoria)
                 fase = .gravando
@@ -132,12 +133,17 @@ final class SessaoDoMac {
     // era transcrito depois disso (reproduzido com `say`). O reconhecedor fecha os trechos sozinho; demora mais,
     // e num arquivo isso não importa.
 
-    private func enfileirar(_ texto: String, _ palavras: [Palavra]) {
+    private func enfileirar(_ palavras: [Palavra]) {
         let anterior = fila
         fila = Task {
             await anterior?.value
-            await registrar(texto, palavras, fundir: true)
+            // Sem o inglês, nada viria no lugar da palavra esticada: o trecho fica como veio.
+            let partes = captura.comIngles ? Fusao.semEsticadas(palavras) : [palavras]
+            for parte in partes {
+                await registrar(parte.map(\.texto).joined(), parte, fundir: true)
+            }
             firmouAte = max(firmouAte, palavras.last?.fim ?? 0)
+            falado += partes.joined().map { ($0.inicio, $0.fim) }
             await resolverIngles(ate: firmouAte)
             salvar()
         }
@@ -146,21 +152,24 @@ final class SessaoDoMac {
     /// O reconhecedor de português não firma nada para uma fala toda em inglês: a frase sumia (testado com `say`).
     /// O de inglês, por outro lado, devolve lixo para fala em português ("You don't pretty see the German", uma
     /// fileira de vírgulas, visto num podcast). Por isso o trecho em inglês espera o português firmar além do fim
-    /// dele, o que leva de 30 s a 1 min sem forçar o fim do trecho, e só entra se nada em português cobriu o mesmo tempo.
+    /// dele, o que leva de 30 s a 1 min sem forçar o fim do trecho, e só entram as palavras que o português não cobriu.
+    /// Pela palavra, não pelo trecho: numa frase em inglês colada numa em português, o reconhecedor de português
+    /// escreve algumas palavras ("and", "ship it") e pula outras ("then the client said, let's"); o trecho dele
+    /// cobria a frase toda e o inglês era descartado (reproduzido com `say`).
     private func soEmIngles(_ texto: String, _ palavras: [Palavra]) {
         guard !palavras.isEmpty, texto.contains(where: \.isLetter) else { return }
-        soIngles.append((texto, palavras))
+        soIngles.append(palavras)
     }
 
-    // ponytail: um trecho em inglês que encosta num de português fica de fora; separar por palavra se aparecer no uso.
     private func resolverIngles(ate limite: Double) async {
-        let prontos = soIngles.filter { ($0.palavras.last?.fim ?? 0) <= limite }
-        soIngles = soIngles.filter { ($0.palavras.last?.fim ?? 0) > limite }
-        for (texto, palavras) in prontos {
+        let prontos = soIngles.filter { ($0.last?.fim ?? 0) <= limite }
+        soIngles = soIngles.filter { ($0.last?.fim ?? 0) > limite }
+        for palavras in prontos {
             let (inicio, fim) = (palavras.first?.inicio ?? 0, palavras.last?.fim ?? 0)
-            guard transcricao?.trechos.contains(where: { $0.canal == .mac && $0.fim > inicio && $0.inicio < fim }) == false
-            else { continue }
-            await registrar(texto, palavras, fundir: false)
+            let cobertos = falado.filter { $0.fim > inicio && $0.inicio < fim }
+            for parte in Fusao.foraDoPortugues(palavras, cobertos: cobertos) {
+                await registrar(parte.map(\.texto).joined(), parte, fundir: false)
+            }
         }
     }
 
