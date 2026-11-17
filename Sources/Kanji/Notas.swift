@@ -31,7 +31,8 @@ enum Notas {
     static func pacote(_ notas: [(caminho: String, texto: String)]) -> String {
         notas.filter { entra($0.caminho) && !obsoleta($0.texto) }
             .sorted { ($0.caminho.contains("/") ? 1 : 0, $0.caminho) < ($1.caminho.contains("/") ? 1 : 0, $1.caminho) }
-            .map { "<nota caminho=\"\($0.caminho)\">\n\($0.texto.trimmingCharacters(in: .whitespacesAndNewlines))\n</nota>" }
+            // Um feedback salvo cita a fala do entrevistador: um "</nota>" ou "</notas>" no texto não pode fechar o bloco.
+            .map { "<nota caminho=\"\($0.caminho)\">\n\(Self.escapar($0.texto))\n</nota>" }
             .joined(separator: "\n\n")
     }
 
@@ -41,8 +42,12 @@ enum Notas {
     /// O feedback de uma entrevista como nota, com o mesmo cabeçalho das outras. `status: rascunho` porque saiu de um
     /// modelo e ninguém conferiu: o modo entrevista usa nota rascunho só como pista.
     static func notaDeFeedback(_ feedback: String, sessao: String, hoje: Date) -> String {
-        let dia = hoje.formatted(.iso8601.year().month().day())
+        let dia = hoje.formatted(Date.ISO8601FormatStyle(timeZone: .current).year().month().day())  // GMT viraria o dia às 21 h em Brasília
         return "---\nstatus: rascunho\natualizado: \(dia)\nfontes: feedback do Kanji sobre a transcrição \(sessao)\n---\n\(feedback)"
+    }
+
+    private static func escapar(_ texto: String) -> String {
+        texto.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: "</nota", with: "<\\/nota")
     }
 
     /// Lê os `.md` da pasta e monta o pacote. `quantas` é o número de notas que entraram.

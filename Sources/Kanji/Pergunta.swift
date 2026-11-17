@@ -38,12 +38,14 @@ enum Pergunta {
 
     /// Frases do turno, com a pontuação final. Uma última frase que é só agradecimento ou "ok" não pede nada, mesmo
     /// depois de uma pergunta: a pergunta já foi respondida e o entrevistador está fechando.
+    /// Só fecha a frase quando depois do ponto vem espaço ou o fim: "Node.js", "ASP.NET" e "3.5" não são duas frases.
     static func frases(_ turno: String) -> [String] {
         var frases: [String] = []
         var atual = ""
-        for c in turno {
+        let letras = Array(turno)
+        for (i, c) in letras.enumerated() {
             atual.append(c)
-            if ".?!".contains(c) {
+            if ".?!".contains(c), i + 1 == letras.count || letras[i + 1].isWhitespace {
                 frases.append(atual.trimmingCharacters(in: .whitespaces))
                 atual = ""
             }

@@ -27,7 +27,9 @@ final class Transcricoes {
     func carregar() {
         let urls = ((try? FileManager.default.contentsOfDirectory(at: Self.pasta, includingPropertiesForKeys: nil)) ?? [])
             .filter { $0.pathExtension == "json" }
-            .sorted { $0.lastPathComponent < $1.lastPathComponent }  // uma cópia do Finder ("… copy") repete o id: fica a original
+            // Uma cópia do Finder ("… copy") repete o id: fica a original, que tem o nome mais curto. Só em ordem
+            // alfabética a cópia vinha antes (o espaço vem antes do ponto).
+            .sorted { ($0.lastPathComponent.count, $0.lastPathComponent) < ($1.lastPathComponent.count, $1.lastPathComponent) }
         var lidas: [Transcricao] = []
         var bases: [Transcricao.ID: URL] = [:]
         for url in urls {
@@ -122,8 +124,19 @@ final class Transcricoes {
     func salvarNasNotas(_ t: Transcricao) {
         guard let caminho = UserDefaults.standard.string(forKey: Ajustes.pastaDasNotas), let base = bases[t.id],
               let feedback = resumos[t.id]?[.entrevista] else { return }
-        let pasta = URL(filePath: caminho, directoryHint: .isDirectory).appending(path: Notas.pastaDeEntrevistas, directoryHint: .isDirectory)
+        let raiz = URL(filePath: caminho, directoryHint: .isDirectory)
+        let pasta = raiz.appending(path: Notas.pastaDeEntrevistas, directoryHint: .isDirectory)
         let nome = base.lastPathComponent + ".md"
+        // A pasta de notas sumiu (movida, iCloud fora do ar): criar o caminho de novo faria um vault vazio.
+        guard FileManager.default.fileExists(atPath: raiz.path(percentEncoded: false)) else {
+            erros[t.id] = String(localized: "Não achei a pasta de notas. Escolha de novo em Ajustes › Entrevista.")
+            return
+        }
+        // A nota pode ter sido revisada (status verificado): salvar de novo não passa por cima.
+        guard !FileManager.default.fileExists(atPath: pasta.appending(path: nome).path(percentEncoded: false)) else {
+            salvas[t.id] = "\(Notas.pastaDeEntrevistas)/\(nome)"
+            return
+        }
         do {
             try FileManager.default.createDirectory(at: pasta, withIntermediateDirectories: true)
             let nota = Notas.notaDeFeedback(feedback, sessao: base.lastPathComponent, hoje: .now)

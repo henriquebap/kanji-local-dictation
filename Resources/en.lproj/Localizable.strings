@@ -251,3 +251,4 @@
 "Vai para a pasta entrevistas dentro da sua pasta de notas, marcado como rascunho. O modo entrevista passa a usar esse feedback nas próximas perguntas." = "It goes to the entrevistas folder inside your notes folder, marked as a draft. Interview mode will use this feedback for the next questions.";
 "Feedback salvo nas notas: %@" = "Feedback saved to your notes: %@";
 "Não consegui salvar nas notas: %@" = "Couldn't save to your notes: %@";
+"Não achei a pasta de notas. Escolha de novo em Ajustes › Entrevista." = "Couldn't find the notes folder. Pick it again in Settings › Interview.";

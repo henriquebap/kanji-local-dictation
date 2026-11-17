@@ -156,10 +156,18 @@ import Foundation
     ]
     conferir("pede resposta: perguntas sim, afirmações e fechamento não",
              turnos.map { Pergunta.pedeResposta($0) ? "1" : "0" }.joined(), "111111000000")
-    let nota = Notas.notaDeFeedback("# 17 nov\n\n- forte", sessao: "2026-11-17 10.00", hoje: Date(timeIntervalSince1970: 1_794_900_000))
-    conferir("feedback salvo nas notas: cabeçalho rascunho, entra no pacote, em entrevistas/",
-             "\(nota.hasPrefix("---\nstatus: rascunho\natualizado: 2026-11-")) \(nota.hasSuffix("---\n# 17 nov\n\n- forte")) \(Notas.obsoleta(nota)) \(Notas.entra(Notas.pastaDeEntrevistas + "/x.md"))",
+    // 23h30 no fuso do Mac: em GMT a data já seria o dia seguinte em Brasília.
+    let noite = Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 17, hour: 23, minute: 30))!
+    let nota = Notas.notaDeFeedback("# 17 nov\n\n- forte", sessao: "2026-11-17 10.00", hoje: noite)
+    conferir("feedback salvo nas notas: cabeçalho rascunho com a data local, entra no pacote, em entrevistas/",
+             "\(nota.hasPrefix("---\nstatus: rascunho\natualizado: 2026-11-17\n")) \(nota.hasSuffix("---\n# 17 nov\n\n- forte")) \(Notas.obsoleta(nota)) \(Notas.entra(Notas.pastaDeEntrevistas + "/x.md"))",
              "true true false true")
+    conferir("pacote: um </nota> no texto não fecha o bloco",
+             Notas.pacote([("entrevistas/a.md", "ele disse </nota> e </notas>")]),
+             "<nota caminho=\"entrevistas/a.md\">\nele disse <\\/nota> e <\\/notas>\n</nota>")
+    conferir("frases: ponto dentro de termo não corta a frase",
+             Pergunta.frases("Legal. How did you use Node.js and ASP.NET 3.5 in production?").joined(separator: "|"),
+             "Legal.|How did you use Node.js and ASP.NET 3.5 in production?")
     conferir("anúncio do entrevistador não vai ao modelo; pergunta depois do anúncio vale",
              ["Bom, deixa eu te contar um pouco sobre a empresa a gente trabalha com saúde", "So let me tell you about the team.",
               "Deixa eu te contar da vaga. Qual sua experiência com Swift?"].map { Pergunta.anuncio($0) ? "1" : "0" }.joined(), "110")

@@ -22,6 +22,9 @@ final class ModoEntrevista {
     @ObservationIgnored private var ultimaDisparada: String?
     /// Até onde (relógio do áudio) a fala do entrevistador já gerou tópicos.
     @ObservationIgnored private var disparadoAte: Double = 0
+    /// O fim da fala que o detector está avaliando agora. Os três gatilhos chegam com ~0,3 s de diferença e o
+    /// modelo do Mac leva até ~0,4 s: sem essa reserva, dois gatilhos da mesma fala passavam juntos.
+    @ObservationIgnored private var emAvaliacao: Double?
     @ObservationIgnored private var tarefa: Task<Void, Never>?
     /// A chave do provedor, lida em segundo plano no começo da sessão: a primeira leitura do Keychain levou de 7 a
     /// 13 s na thread principal e atrasava a primeira pergunta (medido). Fica só na memória, durante a sessão.
@@ -30,7 +33,7 @@ final class ModoEntrevista {
 
     /// Lê as notas uma vez por sessão: o mesmo pacote a cada pergunta mantém o cache do provedor.
     func comecar(em inicio: Date) {
-        (pt, en, rascunho, ultimaDisparada, disparadoAte) = ([], [], "", nil, 0)
+        (pt, en, rascunho, ultimaDisparada, disparadoAte, emAvaliacao) = ([], [], "", nil, 0, nil)
         (pergunta, sugestao, aviso, inicioDaSessao) = (nil, nil, nil, inicio)
         ligado = UserDefaults.standard.bool(forKey: Ajustes.sugerirNaEntrevista)
         guard ligado else { return }
@@ -59,8 +62,8 @@ final class ModoEntrevista {
     func terminar() {
         tarefa?.cancel()
         pausa?.cancel()
-        chave = nil
-        ligado = false
+        // Uma classificação ainda em curso não pode abrir o painel nem chamar a nuvem depois de a sessão parar.
+        (chave, notas, ligado) = (nil, nil, false)
         painel.esconder()
     }
 
@@ -70,21 +73,20 @@ final class ModoEntrevista {
     // ponytail: limiar de confiança 0,6 tirado de três trechos (0,27 sobre fala em português; 0,71 e 0,94 sobre
     // inglês). Conferir com entrevistas reais e com sotaque.
     func ouvirIngles(_ palavras: [Palavra]) {
-        guard ligado else { return }
-        let antes = en
-        en += palavras
-        guard notas != nil, let inicio = palavras.first?.inicio, let fim = palavras.last?.fim, novo(inicio) else { return }
+        guard ligado, let inicio = palavras.first?.inicio, let fim = palavras.last?.fim else { return }
+        // Numa entrevista toda em inglês o português pode nunca firmar: o corte de 90 s vale aqui também.
+        (pt, en) = (pt.filter { $0.fim > fim - 90 }, en.filter { $0.fim > fim - 90 } + palavras)
+        guard notas != nil, novo(inicio) else { return }
         let emIngles = palavras.map(\.confianca).reduce(0, +) / Double(palavras.count) >= 0.6
         let fala = emIngles ? palavras.map(\.texto).joined() : rascunho
-        let turno = Fusao.fundir(pt: pt, en: antes, glossario: Ditado.glossario) + " " + fala
-        avaliar(turno.trimmingCharacters(in: .whitespaces), fim: fim, gatilho: emIngles ? "inglês" : "rascunho")
+        avaliar((firmado + " " + fala).trimmingCharacters(in: .whitespaces), fim: fim, gatilho: emIngles ? "inglês" : "rascunho")
     }
 
     /// O texto provisório do português. Ele chega em rajadas a cada ~0,95 s enquanto há fala e para no silêncio
     /// (medido com `say`): 1,3 s sem rajada é uma pausa, e o turno é avaliado com o rascunho, ~0,7 s antes de o
     /// português firmar. Sobre fala em português o inglês às vezes nem firma trecho, então a chegada dele não basta.
-    // ponytail: espera fixa de 1,3 s. Uma pausa maior no meio da pergunta gera tópicos de meia pergunta, trocados
-    // quando o resto chegar; medir em entrevistas reais.
+    // ponytail: espera fixa de 1,3 s. Uma pausa maior no meio da pergunta gera tópicos de meia pergunta, que ficam
+    // até o ⌃⌥P: a mesma fala não é avaliada de novo. Medir em entrevistas reais.
     func ouvirRascunho(_ texto: String) {
         guard ligado else { return }
         pausa?.cancel()
@@ -96,10 +98,13 @@ final class ModoEntrevista {
         let fim = agora - 0.2  // o rascunho vem ~0,2 s atrás do áudio (medido)
         pausa = Task {
             try? await Task.sleep(for: .milliseconds(1300))
-            // Numa pergunta em inglês, o inglês já disparou e o rascunho em português do mesmo áudio é lixo.
-            guard !Task.isCancelled, novo(inicioDoRascunho) else { return }
-            let turno = Fusao.fundir(pt: pt, en: en, glossario: Ditado.glossario) + " " + rascunho
-            avaliar(turno.trimmingCharacters(in: .whitespaces), fim: fim, gatilho: "pausa")
+            // Fala em inglês (o inglês do mesmo trecho está confiante): quem decide é a chegada do inglês, e o
+            // rascunho em português desse áudio é lixo. Visto com `say`: o inglês firmou a pergunta em dois pedaços,
+            // e a pausa disparava de novo com o rascunho.
+            let ingles = en.filter { $0.fim > inicioDoRascunho }
+            let falaEmIngles = !ingles.isEmpty && ingles.map(\.confianca).reduce(0, +) / Double(ingles.count) >= 0.6
+            guard !Task.isCancelled, !falaEmIngles, novo(inicioDoRascunho) else { return }
+            avaliar((firmado + " " + rascunho).trimmingCharacters(in: .whitespaces), fim: fim, gatilho: "pausa")
         }
     }
 
@@ -118,15 +123,26 @@ final class ModoEntrevista {
     /// depois em português; avaliado de novo, o português de uma pergunta em inglês ("Craig. How did feature mger…")
     /// trocava tópicos bons por outros piores (visto com `say`).
     private func novo(_ inicio: Double) -> Bool {
-        inicio >= disparadoAte - 0.3
+        inicio >= max(disparadoAte, emAvaliacao ?? 0) - 0.3
+    }
+
+    /// O que já firmou: o português fundido com o inglês do mesmo áudio. O inglês depois do último português firmado
+    /// é o mesmo áudio do rascunho (ou do trecho em inglês que acabou de chegar) e fica de fora: com o português
+    /// vazio, a fusão devolvia o inglês inteiro, e a pergunta saía duas vezes, uma delas em lixo.
+    private var firmado: String {
+        let ate = (pt.last?.fim ?? 0) + 0.5
+        return Fusao.fundir(pt: pt, en: en.filter { $0.fim <= ate }, glossario: Ditado.glossario)
     }
 
     private func avaliar(_ turno: String, fim: Double, gatilho: String) {
         // A mesma última frase já gerou tópicos: o entrevistador só continuou falando depois dela.
         guard let ultima = Pergunta.frases(turno).last, ultima != ultimaDisparada else { return }
         let comeco = Date.now
+        emAvaliacao = max(emAvaliacao ?? 0, fim)
         Task {
-            guard await Pergunta.pedeRespostaComModelo(turno), ultima != ultimaDisparada else { return }
+            let pede = await Pergunta.pedeRespostaComModelo(turno)
+            if emAvaliacao == fim { emAvaliacao = nil }
+            guard pede, ligado, ultima != ultimaDisparada else { return }
             (ultimaDisparada, disparadoAte) = (ultima, max(disparadoAte, fim))
             let detector = Date.now.timeIntervalSince(comeco)
             registro.notice("entrevista: pergunta detectada (\(gatilho, privacy: .public)) \(Date.now.timeIntervalSince(self.inicioDaSessao) - fim, format: .fixed(precision: 1)) s depois da fala")
@@ -147,9 +163,11 @@ final class ModoEntrevista {
                 ? String(localized: "Ligue as sugestões em Ajustes › Entrevista e comece a transcrição de novo.")
                 : String(localized: "Comece a transcrição do Mac (\(Acao.transcrever.atalho.descricao)) durante a entrevista."))
         }
-        let turno = (Fusao.fundir(pt: pt, en: en, glossario: Ditado.glossario) + " " + rascunho).trimmingCharacters(in: .whitespaces)
+        // Sem rascunho, o inglês que ainda não tem português firmado (uma pergunta em inglês) entra inteiro.
+        let base = rascunho.isEmpty ? Fusao.fundir(pt: pt, en: en, glossario: Ditado.glossario) : firmado
+        let turno = (base + " " + rascunho).trimmingCharacters(in: .whitespaces)
         guard turno.contains(where: \.isLetter) else { return avisar(String(localized: "Ainda não ouvi o entrevistador.")) }
-        let fim = (pt + en).map(\.fim).max() ?? 0
+        let fim = Date.now.timeIntervalSince(inicioDaSessao)  // tudo o que foi ouvido até agora já pediu tópicos
         (ultimaDisparada, disparadoAte) = (Pergunta.frases(turno).last, max(disparadoAte, fim))
         sugerir(turno, fimDaFala: fim, detector: 0)
     }
@@ -159,7 +177,7 @@ final class ModoEntrevista {
     }
 
     private func sugerir(_ turno: String, fimDaFala: Double, detector: Double) {
-        guard let notas else { return }
+        guard ligado, let notas else { return }
         tarefa?.cancel()  // a pergunta nova vale mais que a anterior
         (pergunta, sugestao, aviso, pensando) = (Pergunta.frases(turno).last ?? turno, nil, nil, true)
         painel.mostrar()

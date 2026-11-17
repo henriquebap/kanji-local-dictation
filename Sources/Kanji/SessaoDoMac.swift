@@ -95,11 +95,14 @@ final class SessaoDoMac {
         }
     }
 
+    /// O fim da sessão em andamento (finalizar, salvar), para o app esperar antes de fechar.
+    private(set) var finalizacao: Task<Void, Never>?
+
     func parar() {
         guard fase == .gravando else { return }
         fase = .finalizando
         entrevista.terminar()
-        Task {
+        finalizacao = Task {
             let resultado = try? await captura.parar()  // os últimos trechos entram na fila durante a finalização
             await microfone.parar()
             try? await Task.sleep(for: .milliseconds(300))  // a fusão dos últimos trechos do microfone espera 150 ms

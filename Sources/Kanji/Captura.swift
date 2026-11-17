@@ -122,6 +122,9 @@ final class CapturaAoVivo {
             // "RecogRejected": com o detector de voz, um trecho já firmado na pausa seguido só de silêncio até o fim
             // faz o finalizar falhar (reproduzido com áudio sintetizado). O texto já firmado continua valendo.
             registro.notice("fim só com silêncio (RecogRejected); fica o que já firmou")
+        } catch {
+            // Outro erro também não pode levar o texto já firmado nem deixar as leituras vivas para a próxima gravação.
+            registro.error("finalizar falhou: \(error.localizedDescription, privacy: .public); fica o que já firmou")
         }
         // `results` não termina sozinho após finalizar: dá um instante para os últimos resultados
         // chegarem e encerra a leitura. Rascunho que sobrou entra também, para não perder palavras.

@@ -11,6 +11,9 @@ final class CanalDoMicrofone {
     private var relogio = Date()  // começo da sessão: o tempo dos trechos é contado a partir daqui
     private var deslocamento: Double?  // quando o microfone ligou, em segundos da sessão; nil = desligado
     private var ocupado = false  // ligando ou desligando
+    /// Entre `vigiar` e `parar`. Um `ligar` que termina depois do `parar` (a permissão do microfone pode demorar)
+    /// desliga o que acabou de abrir, senão o microfone ficava ligado sem sessão.
+    private var vigiando = false
     private var semChamadaDesde: Date?
     private var aoTrecho: (String, [Palavra]) -> Void = { _, _ in }
     private var aoMudar: (Bool) -> Void = { _ in }
@@ -18,7 +21,7 @@ final class CanalDoMicrofone {
     /// - aoMudar: true quando o microfone liga numa chamada, false quando desliga.
     /// - aoTrecho: texto final (fusão PT+EN e glossário) e palavras já no tempo da sessão.
     func vigiar(desde relogio: Date, aoMudar: @escaping (Bool) -> Void, aoTrecho: @escaping (String, [Palavra]) -> Void) {
-        (self.relogio, self.aoMudar, self.aoTrecho, semChamadaDesde) = (relogio, aoMudar, aoTrecho, nil)
+        (self.relogio, self.aoMudar, self.aoTrecho, semChamadaDesde, vigiando) = (relogio, aoMudar, aoTrecho, nil, true)
         vigia = .scheduledTimer(withTimeInterval: 2, repeats: true) { _ in
             MainActor.assumeIsolated { self.verificar() }
         }
@@ -27,7 +30,7 @@ final class CanalDoMicrofone {
 
     func parar() async {
         vigia?.invalidate()
-        vigia = nil
+        (vigia, vigiando) = (nil, false)
         await desligar()
     }
 
@@ -52,7 +55,7 @@ final class CanalDoMicrofone {
         guard await AVCaptureDevice.requestAccess(for: .audio) else {
             return registro.notice("chamada no \(app, privacy: .public), mas sem acesso ao microfone; segue só o áudio do Mac")
         }
-        let inicio = Date.now.timeIntervalSince(relogio)
+        guard vigiando else { return }
         do {
             let idioma = UserDefaults.standard.string(forKey: Ajustes.idioma) ?? "pt_BR"
             try await captura.iniciar(
@@ -61,8 +64,14 @@ final class CanalDoMicrofone {
                 semEco: true,
                 aoNivel: { _ in },
                 aoTexto: { _, _ in },
-                aoTrecho: { [weak self] texto, palavras in self?.entregar(texto, palavras, desde: inicio) })
-            deslocamento = inicio
+                aoTrecho: { [weak self] texto, palavras in
+                    guard let self, let desde = self.deslocamento else { return }
+                    self.entregar(texto, palavras, desde: desde)
+                })
+            guard vigiando else { return await captura.cancelar() }
+            // O relógio do microfone começa quando a captura começa, não antes de baixar modelos e abrir o áudio:
+            // contado antes, os trechos do "Você" saíam 1 a 3 s adiantados.
+            deslocamento = Date.now.timeIntervalSince(relogio)
             aoMudar(true)
             registro.notice("microfone ligado: \(app, privacy: .public) está usando o microfone")
         } catch {

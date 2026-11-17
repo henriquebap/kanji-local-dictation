@@ -38,6 +38,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Kanji.shared.iniciar()
     }
 
+    /// ⌘Q, sair da conta ou reiniciar no meio de uma transcrição: o reconhecedor ainda segura o fim da fala, e só o
+    /// `parar` da sessão firma e salva. Espera ele, com teto de 15 s para um finalizar travado não prender o app.
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        let sessao = Kanji.shared.sessao
+        sessao.parar()
+        guard let fim = sessao.finalizacao, sessao.ativa else { return .terminateNow }
+        var respondeu = false
+        let responder = {
+            guard !respondeu else { return }
+            respondeu = true
+            sender.reply(toApplicationShouldTerminate: true)
+        }
+        Task { await fim.value; responder() }
+        Task { try? await Task.sleep(for: .seconds(15)); responder() }
+        return .terminateLater
+    }
+
     /// Sem isso o "transcrevendo" ficaria na ilha do Kizami depois de o Kanji fechar.
     // ponytail: numa queda o aviso fica; o "Limpar a ilha" do Kizami tira.
     func applicationWillTerminate(_ notification: Notification) {
