@@ -85,7 +85,7 @@ struct HistoricoView: View {
                 .contextMenu {
                     Button("Mostrar no Finder") { arquivo.mostrarNoFinder(t) }
                     Button("Mover para o Lixo", role: .destructive) { arquivo.apagar(t) }
-                        .disabled(arquivo.emAndamento(t) || arquivo.resumindo.contains(t.id))
+                        .disabled(arquivo.emAndamento(t) || arquivo.resumindo[t.id] != nil)
                 }
         }
         .navigationSplitViewColumnWidth(min: 260, ideal: 320)

@@ -112,9 +112,9 @@ struct Transcricao: Codable, Identifiable, Sendable {
         return try decodificador.decode(Transcricao.self, from: Data(contentsOf: url))
     }
 
-    /// O resumo fica ao lado, com o mesmo nome: no Finder os três arquivos aparecem juntos.
-    static func resumo(de base: URL) -> URL {
-        base.deletingLastPathComponent().appending(path: "\(base.lastPathComponent) resumo.md")
+    /// O resumo e o feedback ficam ao lado, com o mesmo nome: no Finder os arquivos aparecem juntos.
+    static func resumo(de base: URL, _ analise: Analise = .resumo) -> URL {
+        base.deletingLastPathComponent().appending(path: "\(base.lastPathComponent) \(analise.rawValue).md")
     }
 
     /// Se `atual` continua a fala de quem disse `anterior` ou começa um parágrafo novo no arquivo.
@@ -143,4 +143,10 @@ struct Transcricao: Codable, Identifiable, Sendable {
         f.dateFormat = padrao
         return f
     }
+}
+
+/// O que a nuvem gera de uma transcrição. O valor bruto é o fim do nome do arquivo: não traduzir.
+enum Analise: String, CaseIterable, Sendable {
+    case resumo
+    case entrevista  // feedback para quem gravou (o "Você"): pontos fortes e o que melhorar
 }

@@ -56,7 +56,7 @@ flowchart LR
 | Sessão do Mac | `SessaoDoMac.swift`, `Transcricao.swift` | `@Observable`, JSON + Markdown | Transcrição longa salva trecho a trecho; turnos; trechos só em inglês |
 | Canal "Você" | `CanalDoMicrofone.swift` | `AudioHardwareProcess.isRunningInput`, voice processing | O microfone entra na sessão enquanto outro app (uma chamada) o usa |
 | Locutores | `Vozes.swift`, `Locutores.swift` | Core ML (download opcional), Swift puro (testado) | Vetor de voz por janela de ~3 s, agrupamento ao vivo |
-| Transcrições | `Transcricoes.swift`, `TranscricoesView.swift` | SwiftUI, arquivos em Application Support | Lê as sessões salvas; renomear quem fala, resumir (nuvem), Lixo |
+| Transcrições | `Transcricoes.swift`, `TranscricoesView.swift` | SwiftUI, arquivos em Application Support | Lê as sessões salvas; renomear quem fala, resumir e feedback de entrevista (nuvem), Lixo |
 | Notch | `Ilha.swift` | `DistributedNotificationCenter` | Estado da transcrição na ilha do Kizami; nunca o texto |
 
 ## Um ditado, passo a passo
@@ -122,7 +122,7 @@ Decisões e por quê:
 - **Troca de taxa.** O AirPods cai de 48 para 24 kHz enquanto uma chamada usa o microfone. O dispositivo agregado tem só o tap (nenhuma saída como relógio), um aviso atualiza o formato, e todo buffer é reamostrado para o primeiro formato: o `AnalyzerInputConverter` fica no formato com que começou e não devolve nada, sem erro, para outro.
 - **"Você".** A chamada é outro processo com a entrada ligada (`isRunningInput`), fora os serviços de fala do macOS. O voice processing cancela o eco da caixa de som.
 - **Locutores.** Não há diarização nativa. Cada trecho vira janelas de ~1,5–3 s de palavras (uma pausa de 1 s sempre fecha a janela). Cada janela vira um vetor do WeSpeaker ResNet34, tirado dentro de 10 s de áudio de verdade com uma máscara: completada com zeros, vozes diferentes pareciam iguais (0,65–0,80 contra 0,01–0,20). Agrupamento guloso ao vivo, cosseno ≥ 0,5; janela com menos de 1 s nunca cria locutor, e uma janela curta entre duas do mesmo locutor fica com ele.
-- **Os arquivos são a fonte.** A seção Transcrições lê os `.json` e os reescreve ao renomear quem fala, então o Finder e o app nunca discordam. O resumo é um `… resumo.md` à parte, e a transcrição fica intacta.
+- **Os arquivos são a fonte.** A seção Transcrições lê os `.json` e os reescreve ao renomear quem fala, então o Finder e o app nunca discordam. O resumo e o feedback de entrevista são arquivos à parte (`… resumo.md`, `… entrevista.md`; o sufixo é `Analise.rawValue`), e a transcrição fica intacta.
 - **Kizami.** O estado (transcrevendo, numa chamada, salva, erro) vai para o app irmão do notch por notificação distribuída. Qualquer processo lê essas notificações, então o texto nunca vai.
 
 ## Os modelos

@@ -42,7 +42,8 @@ struct DetalheDaTranscricao: View {
     let transcricao: Transcricao
 
     private var andamento: Bool { arquivo.emAndamento(transcricao) }
-    private var resumindo: Bool { arquivo.resumindo.contains(transcricao.id) }
+    private var resumindo: Bool { arquivo.resumindo[transcricao.id] != nil }
+    private var analises: [Analise: String] { arquivo.resumos[transcricao.id] ?? [:] }
 
     var body: some View {
         ScrollView {
@@ -57,18 +58,22 @@ struct DetalheDaTranscricao: View {
                 if let erro = arquivo.erros[transcricao.id] {
                     Label(erro, systemImage: "exclamationmark.triangle").foregroundStyle(.orange)
                 }
-                if resumindo {
-                    ProgressView(String(localized: "Resumindo com \(Nuvem.pronto?.comArtigo ?? "")…")).controlSize(.small)
+                if let analise = arquivo.resumindo[transcricao.id] {
+                    let com = Nuvem.pronto?.comArtigo ?? ""
+                    ProgressView(analise == .entrevista ? String(localized: "Analisando a entrevista com \(com)…")
+                                                        : String(localized: "Resumindo com \(com)…")).controlSize(.small)
                 }
-                if let resumo = arquivo.resumos[transcricao.id] {
-                    GroupBox {
-                        TextoMarkdown(texto: resumo)
-                    } label: {
-                        HStack {
-                            Text("Resumo")
-                            Spacer()
-                            Button("Copiar resumo", systemImage: "doc.on.doc") { Area.copiar(resumo, historico: historico) }
-                                .buttonStyle(.borderless)
+                ForEach(Analise.allCases.reversed(), id: \.self) { analise in  // o feedback, quando houver, vem primeiro
+                    if let texto = analises[analise] {
+                        GroupBox {
+                            TextoMarkdown(texto: texto)
+                        } label: {
+                            HStack {
+                                Text(analise == .entrevista ? String(localized: "Feedback da entrevista") : String(localized: "Resumo"))
+                                Spacer()
+                                Button("Copiar", systemImage: "doc.on.doc") { Area.copiar(texto, historico: historico) }
+                                    .buttonStyle(.borderless)
+                            }
                         }
                     }
                 }
@@ -100,11 +105,16 @@ struct DetalheDaTranscricao: View {
     /// Fora da barra da janela: com o seletor de seções nela, os botões iam parar escondidos no menu "»".
     private var acoes: some View {
         HStack {
-            Button(arquivo.resumos[transcricao.id] == nil ? String(localized: "Resumir") : String(localized: "Resumir de novo"),
+            Button(analises[.resumo] == nil ? String(localized: "Resumir") : String(localized: "Resumir de novo"),
                    systemImage: "sparkles") {
                 Task { await arquivo.resumir(transcricao) }
             }
             .buttonStyle(.borderedProminent)
+            .disabled(resumindo)
+            Button("Feedback", systemImage: "person.fill.checkmark") {
+                Task { await arquivo.resumir(transcricao, .entrevista) }
+            }
+            .help("Feedback de entrevista: pontos fortes e o que melhorar nas suas respostas (as do Você)")
             .disabled(resumindo)
             Button("Copiar", systemImage: "doc.on.doc") { Area.copiar(transcricao.markdown(), historico: historico) }
             Menu("Renomear", systemImage: "person.text.rectangle") {
@@ -114,7 +124,10 @@ struct DetalheDaTranscricao: View {
             }
             .fixedSize()
             .disabled(andamento)
+            // Só o ícone: com o botão do feedback, os rótulos não cabiam e todos saíam cortados ("Resumi…").
             Button("Mostrar no Finder", systemImage: "folder") { arquivo.mostrarNoFinder(transcricao) }
+                .labelStyle(.iconOnly)
+                .help("Mostrar no Finder")
             Button("Mover para o Lixo", systemImage: "trash") { arquivo.apagar(transcricao) }
                 .labelStyle(.iconOnly)
                 .help("Mover para o Lixo")

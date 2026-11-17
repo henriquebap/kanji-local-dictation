@@ -9,8 +9,9 @@ final class Transcricoes {
     private static var pasta: URL { SessaoDoMac.pasta }
 
     private(set) var itens: [Transcricao] = []
-    private(set) var resumos: [Transcricao.ID: String] = [:]
-    private(set) var resumindo: Set<Transcricao.ID> = []
+    private(set) var resumos: [Transcricao.ID: [Analise: String]] = [:]
+    /// Uma chamada à nuvem por transcrição de cada vez; o valor diz qual, para a mensagem de espera.
+    private(set) var resumindo: [Transcricao.ID: Analise] = [:]
     private(set) var erros: [Transcricao.ID: String] = [:]
     /// De onde cada uma foi lida, sem a extensão: a pessoa pode ter renomeado o arquivo no Finder.
     @ObservationIgnored private var bases: [Transcricao.ID: URL] = [:]
@@ -39,7 +40,10 @@ final class Transcricoes {
         itens = lidas.sorted { $0.inicio > $1.inicio }
         textos = itens.reduce(into: [:]) { $0[$1.id] = $1.markdown() }
         resumos = itens.reduce(into: [:]) { resumos, t in
-            resumos[t.id] = bases[t.id].flatMap { try? String(contentsOf: Transcricao.resumo(de: $0), encoding: .utf8) }
+            guard let base = bases[t.id] else { return }
+            resumos[t.id] = Analise.allCases.reduce(into: [:]) { lidos, a in
+                lidos[a] = try? String(contentsOf: Transcricao.resumo(de: base, a), encoding: .utf8)
+            }
         }
     }
 
@@ -72,8 +76,9 @@ final class Transcricoes {
 
     /// Vai para o Lixo, não some: dá para recuperar pelo Finder.
     func apagar(_ t: Transcricao) {
-        guard !emAndamento(t), !resumindo.contains(t.id), let base = bases[t.id] else { return }
-        let arquivos = [base.appendingPathExtension("json"), base.appendingPathExtension("md"), Transcricao.resumo(de: base)]
+        guard !emAndamento(t), resumindo[t.id] == nil, let base = bases[t.id] else { return }
+        let arquivos = [base.appendingPathExtension("json"), base.appendingPathExtension("md")]
+            + Analise.allCases.map { Transcricao.resumo(de: base, $0) }
         for url in arquivos where FileManager.default.fileExists(atPath: url.path) {
             do {
                 try FileManager.default.trashItem(at: url, resultingItemURL: nil)
@@ -89,18 +94,19 @@ final class Transcricoes {
         NSWorkspace.shared.activateFileViewerSelecting([base.appendingPathExtension("md")])
     }
 
-    /// Só o texto vai para o provedor da nuvem escolhido; o resultado fica num `… resumo.md` ao lado.
-    func resumir(_ t: Transcricao) async {
-        guard resumindo.insert(t.id).inserted else { return }
+    /// Só o texto vai para o provedor da nuvem escolhido; o resultado fica num `… resumo.md` (ou `… entrevista.md`) ao lado.
+    func resumir(_ t: Transcricao, _ analise: Analise = .resumo) async {
+        guard resumindo[t.id] == nil else { return }
+        resumindo[t.id] = analise
         erros[t.id] = nil
-        defer { resumindo.remove(t.id) }
+        defer { resumindo[t.id] = nil }
         do {
-            let texto = try await Nuvem.resumir(t.markdown(), idioma: t.idiomaPrincipal)
+            let texto = try await Nuvem.resumir(t.markdown(), idioma: t.idiomaPrincipal, analise: analise)
             // A pessoa pode ter recarregado a lista durante os até 2 min de espera.
             guard let base = bases[t.id] else { return }
             let conteudo = "# \(t.data)\n\n\(texto)\n"  // sem "Resumo": a palavra seria em português num resumo em inglês
-            try Data(conteudo.utf8).write(to: Transcricao.resumo(de: base), options: .atomic)
-            resumos[t.id] = conteudo
+            try Data(conteudo.utf8).write(to: Transcricao.resumo(de: base, analise), options: .atomic)
+            resumos[t.id, default: [:]][analise] = conteudo
         } catch {
             registro.error("resumo falhou: \(error.localizedDescription, privacy: .private)")  // pode citar a transcrição
             erros[t.id] = error.localizedDescription

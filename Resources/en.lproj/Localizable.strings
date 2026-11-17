@@ -202,7 +202,10 @@
 "Resumir" = "Summarize";
 "Resumir de novo" = "Summarize Again";
 "Resumo" = "Summary";
-"Copiar resumo" = "Copy Summary";
+"Feedback" = "Feedback";
+"Feedback da entrevista" = "Interview Feedback";
+"Analisando a entrevista com %@…" = "Analyzing the interview with %@…";
+"Feedback de entrevista: pontos fortes e o que melhorar nas suas respostas (as do Você)" = "Interview feedback: strengths and what to improve in your answers (the Você channel)";
 "Renomear" = "Rename";
 "Renomear %@" = "Rename %@";
 "Nome" = "Name";
