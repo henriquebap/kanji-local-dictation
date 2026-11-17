@@ -28,7 +28,7 @@ install: app
 
 teste:
 	mkdir -p build
-	swiftc -parse-as-library -swift-version 6 -target arm64-apple-macosx27.0 Tests/*.swift Sources/Kanji/Correcao.swift Sources/Kanji/Revisao.swift Sources/Kanji/Fusao.swift Sources/Kanji/Historico.swift Sources/Kanji/Aprendizado.swift -o build/teste
+	swiftc -parse-as-library -swift-version 6 -target arm64-apple-macosx27.0 Tests/*.swift Sources/Kanji/Correcao.swift Sources/Kanji/Revisao.swift Sources/Kanji/Fusao.swift Sources/Kanji/Historico.swift Sources/Kanji/Aprendizado.swift Sources/Kanji/Transcricao.swift Sources/Kanji/Locutores.swift Sources/Kanji/Notas.swift Sources/Kanji/Pergunta.swift Sources/Kanji/PerguntaNoModelo.swift Sources/Kanji/Streaming.swift -o build/teste
 	./build/teste
 
 # Release para distribuir fora da App Store: Developer ID + Hardened Runtime + notarização (docs/DISTRIBUTION.md).

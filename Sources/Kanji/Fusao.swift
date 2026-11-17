@@ -47,6 +47,27 @@ enum Fusao {
         return saida.trimmingCharacters(in: .whitespaces)
     }
 
+    /// O que o reconhecedor de inglês ouviu onde o de português não firmou palavra nenhuma, em sequências seguidas.
+    /// Sobre fala em português o inglês devolve lixo ("You don't pretty see the German"); descartar o trecho
+    /// inteiro por encostar no português perdia a frase em inglês dita logo antes ou logo depois.
+    // ponytail: sequência de uma palavra só fica de fora (sobra da borda: os dois reconhecedores não cortam no
+    // mesmo instante); uma interjeição solta em inglês entre duas falas em português se perde junto.
+    static func foraDoPortugues(_ en: [Palavra], cobertos: [(inicio: Double, fim: Double)]) -> [[Palavra]] {
+        en.split { p in cobertos.contains { p.fim > $0.inicio && p.inicio < $0.fim } }
+            .map(Array.init)
+            .filter { $0.filter { $0.texto.contains(where: \.isLetter) }.count >= 2 }
+    }
+
+    /// Diante de uma frase em inglês o português às vezes firma uma "palavra" que se estica por boa parte dela
+    /// ("sip", "clientship", ".ac": de 2,2 a 5,8 s, reproduzido com `say`), e ela cobriria o inglês. A palavra de
+    /// verdade mais longa nos mesmos testes, a última antes do silêncio, teve 1,6 s. O trecho é cortado ali e a
+    /// palavra esticada sai: o inglês daquele pedaço entra no lugar dela, na ordem.
+    // ponytail: limiar fixo de 2 s; uma palavra arrastada de verdade acima disso também sai. Comparar com o
+    // número de palavras em inglês que ela engole se aparecer no uso.
+    static func semEsticadas(_ palavras: [Palavra]) -> [[Palavra]] {
+        palavras.split { $0.fim - $0.inicio > 2 }.map(Array.init)
+    }
+
     /// Palavra que não existe nem em português nem em inglês e é parecida com um termo do glossário vira o termo
     /// ("Stabase" → "Supabase"). Roda em todo trecho, com ou sem o reconhecedor de inglês.
     static func aplicarGlossario(_ texto: String, _ glossario: [String]) -> String {

@@ -1,0 +1,120 @@
+1	pt	Pra começar, me conta um pouco sobre você e sobre a sua trajetória.
+1	pt	então tipo me fala um pouco do seu último projeto. o que você fazia lá
+1	pt	Legal, gostei. E como vocês mediram isso?
+1	pt	legal gostei e como vocês mediram isso
+1	pt	Hum, entendi. Queria entender melhor como era a arquitetura desse sistema, o deploy era em Kubernetes ou era tudo em VM.
+1	pt	Qual é a sua pretensão salarial?
+1	pt	e a sua disponibilidade pra começar seria imediata
+1	pt	Você já trabalhou com Kafka ou com alguma outra fila de mensageria?
+1	pt	Me dá um exemplo de uma situação em que você discordou do seu gestor e como você lidou com isso.
+1	pt	Beleza. Bom, a gente tá chegando no final, você tem alguma pergunta pra gente?
+1	pt	Então você ficou responsável pelo backend inteiro, né?
+1	pt	ok então o time era de cinco pessoas e você liderava né
+1	pt	Imagina que a API começou a responder com latência alta em produção. Por onde você começaria a investigar?
+1	pt	uh tem alguma coisa que você faria diferente hoje nesse projeto
+1	pt	Tá, como eu falei, o time é pequeno, então cada pessoa acaba pegando um pouco de tudo. Como você se sente com isso?
+1	pt	Eu adoraria ouvir sobre algum bug difícil que você resolveu.
+1	pt	Fala um pouco pra mim sobre como funciona o code review no seu time atual.
+1	pt	E por que você quer sair da sua empresa atual?
+1	pt	Certo. Você prefere trabalhar remoto, híbrido ou presencial
+1	pt	então assim, a vaga é pra pleno, mas a gente tá aberto a sênior também. em que nível você se vê hoje
+1	pt	Me explica a diferença entre processo e thread.
+1	pt	Se você tivesse que desenhar um encurtador de URL, como você faria?
+1	pt	Show. E o cache, vocês usavam Redis ou era alguma coisa em memória mesmo.
+1	pt	Pode me contar sobre uma vez em que você errou feio e o que aprendeu com isso?
+1	pt	Você toparia fazer um case técnico pra próxima etapa?
+1	pt	Antes de seguir, só confirmando, o seu inglês é avançado, certo?
+1	pt	hum interessante. e quanto tempo levou pra migrar tudo pro banco novo
+1	pt	Onde você se vê daqui a uns cinco anos?
+1	pt	Me conta como foi a sua experiência com testes automatizados, tipo, unitário, integração, o que vocês usavam.
+1	pt	Bom, a parte técnica é isso. Agora, tem alguma coisa sobre você que eu não perguntei e que você acha importante a gente saber?
+0	pt	Legal, entendi.
+0	pt	hum faz sentido
+0	pt	Perfeito, obrigado.
+0	pt	Então, deixa eu te contar um pouco sobre a empresa. A gente é uma fintech de crédito, tem uns trezentos funcionários e o time de engenharia tá crescendo bastante.
+0	pt	como eu falei o time é pequeno, são quatro devs e um designer, e a gente trabalha com squads
+0	pt	O que a gente faz aqui é basicamente processar pagamentos em tempo real pra lojistas.
+0	pt	Boa pergunta. A gente trabalha com sprint de duas semanas e o deploy é contínuo, várias vezes por dia.
+0	pt	então respondendo a sua pergunta, o modelo é híbrido, dois dias no escritório
+0	pt	Ok, vou anotar aqui rapidinho.
+0	pt	Deixa eu ver aqui qual era a próxima pergunta... hum, peraí.
+0	pt	Os próximos passos são uma entrevista técnica com o tech lead e depois uma conversa com o diretor. O RH te manda o retorno por email até sexta.
+0	pt	tá ótimo era isso que eu queria saber
+0	pt	Desculpa, a minha internet caiu um pouco aqui. Pronto, voltou.
+0	pt	Nossa, que legal, eu também já trabalhei com Elixir, é uma linguagem muito boa.
+0	pt	Entendi, então o problema era o índice no banco. Faz total sentido.
+0	pt	A stack aqui é Go no backend, React no front e tudo roda na AWS com Terraform.
+0	pt	Por que a gente usa monorepo? Então, foi uma decisão de uns dois anos atrás pra facilitar o compartilhamento de código.
+0	pt	a pergunta que todo mundo faz é sobre plano de carreira, e a gente tem uma trilha de IC e uma de gestão
+0	pt	E qual era o banco de vocês? Ah não, você já falou, era Postgres. Beleza.
+0	pt	Eu me pergunto às vezes se a gente não devia ter ido de microsserviço desde o começo, mas enfim.
+0	pt	Bacana, gostei bastante da sua resposta.
+0	pt	Só pra você saber, essa conversa vai ser gravada pra avaliação interna.
+0	pt	A faixa salarial pra essa vaga vai de doze a quinze mil, mais benefícios.
+0	pt	Então, quem vai ser o seu gestor sou eu, e hoje eu cuido de dois times.
+0	pt	hum tá beleza anotado
+0	pt	Muito obrigado pelo seu tempo, foi uma conversa ótima. A gente te dá um retorno em breve.
+0	pt	Como funciona o onboarding aqui: na primeira semana você configura o ambiente e na segunda já pega uma task pequena.
+0	pt	É, legado é complicado mesmo, aqui a gente também tem bastante.
+0	pt	Ok ok, então você usava Python e um pouco de Go, entendi.
+0	pt	quando eu entrei aqui a dúvida era a mesma que a sua, se dava pra crescer rápido, e deu
+1	en	So, to start, could you tell me a bit about yourself?
+1	en	so tell me about yourself
+1	en	Walk me through the architecture of the last system you built.
+1	en	Nice, I like that. And how did you measure the impact
+1	en	uh I'd love to hear about a time you had to push back on a product decision.
+1	en	What are your salary expectations for this role?
+1	en	and when would you be able to start
+1	en	Have you worked with Kubernetes in production.
+1	en	Okay, cool. So we're almost out of time. Do you have any questions for us?
+1	en	So you were the only backend engineer on that team, right?
+1	en	you mentioned you led the migration so you owned the rollout plan too right
+1	en	Let's say the checkout service starts timing out every day at noon. How would you debug that?
+1	en	Got it. What would you do differently if you started that project today
+1	en	Like I said, the team is pretty small, so everyone wears a lot of hats. How do you feel about that?
+1	en	I'm curious how you approach code reviews when you disagree with a senior engineer.
+1	en	Can you explain the difference between a process and a thread
+1	en	how would you design a rate limiter for a public API
+1	en	So what made you want to leave your current company?
+1	en	Tell me about a project you're really proud of.
+1	en	Okay. Are you open to relocating, or are you looking for fully remote only?
+1	en	Hmm, interesting. Why Postgres and not something like DynamoDB there
+1	en	Give me an example of a time you missed a deadline and how you handled it.
+1	en	Where do you see yourself in, say, three to five years?
+1	en	Okay so the role is mostly backend but there's some frontend work too. how comfortable are you with React
+1	en	Would you be okay doing a take-home assignment as the next step?
+1	en	I want to understand how you prioritize when everything is urgent.
+1	en	so what does a good engineering culture look like to you
+1	en	And how big was the dataset we're talking about here, like millions of rows, billions?
+1	en	Just to double check, you wouldn't need visa sponsorship, correct?
+1	en	Before we wrap up, is there anything else you'd like us to know about you?
+0	en	Got it, thanks.
+0	en	okay cool
+0	en	That makes a lot of sense.
+0	en	So let me tell you a bit about the company. We're a B2B SaaS company, around two hundred people, and engineering is about sixty of those.
+0	en	What we do here is help logistics companies plan their delivery routes.
+0	en	like I said the team is small, it's four engineers and a PM, and we ship pretty much every day
+0	en	Great question. So we do two week sprints, and on call rotates every six weeks.
+0	en	so to answer your question it's fully remote but we meet in person once a quarter
+0	en	Let me just take a quick note here.
+0	en	Uh, let me see what's next on my list. One sec.
+0	en	As for next steps, you'll have a technical interview with one of our tech leads and then a final chat with the hiring manager. Our recruiter will follow up by end of week.
+0	en	Perfect, that's exactly what I was looking for.
+0	en	Sorry, my connection dropped for a second. Okay, I'm back.
+0	en	Oh nice, I used Elixir at my previous job too, it's a great language.
+0	en	Okay, so the bottleneck was the database index. That makes total sense.
+0	en	Our stack is mostly TypeScript on the backend, React on the frontend, and everything runs on GCP.
+0	en	Why do we use a monorepo? Honestly, it was a decision made a few years ago to make code sharing easier, and it stuck.
+0	en	the question everyone asks is about growth, and we have both an IC track and a management track
+0	en	Alright, I'll hand it over to my colleague for the technical part.
+0	en	I sometimes wonder whether we should have gone with microservices from day one, but anyway.
+0	en	Really liked that answer.
+0	en	Just so you know, this call is being recorded for internal review only.
+0	en	The salary range for this position is between one hundred twenty and one hundred forty thousand, plus equity.
+0	en	So I'd be your manager, and I currently look after two teams.
+0	en	And what database were you using? Oh wait, you already said Postgres. Okay, cool.
+0	en	Thank you so much for your time today, it was a great conversation. We'll get back to you soon.
+0	en	How onboarding works here is, your first week is mostly setup and the second week you pick up a small ticket.
+0	en	who owns the infra is a fair question actually, right now it's a shared responsibility between platform and the product teams
+0	en	yeah legacy code is rough, we have plenty of it here too
+0	en	Mm-hmm. Right. Okay.

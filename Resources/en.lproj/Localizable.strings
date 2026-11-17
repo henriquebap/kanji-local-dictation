@@ -12,6 +12,19 @@
 "Abrir Kanji  (%@)" = "Open Kanji  (%@)";
 "Primeiros passos…" = "Getting Started…";
 "Sair do Kanji" = "Quit Kanji";
+"Transcrever o áudio do Mac  (%@)" = "Transcribe Mac Audio  (%@)";
+"Parar a transcrição do Mac (%@ trechos)" = "Stop Mac Transcription (%@ segments)";
+"Transcrever ou parar o áudio do Mac" = "Transcribe or Stop Mac Audio";
+"Abrir transcrições" = "Open Transcripts";
+
+/* Transcrição do áudio do Mac */
+"O macOS não criou a captura do áudio do Mac." = "macOS didn't create the Mac audio capture.";
+"Formato de áudio do Mac não reconhecido." = "Unrecognized Mac audio format.";
+"O macOS não criou o dispositivo de captura." = "macOS didn't create the capture device.";
+"O áudio do Mac não começou (erro %@)." = "Mac audio didn't start (error %@).";
+"Não consegui ouvir o áudio do Mac: %@" = "Couldn't listen to the Mac's audio: %@";
+"Nenhum som do Mac chegou. Libere o Kanji em Ajustes do Sistema › Privacidade e Segurança › Gravação de Áudio do Sistema." = "No sound from the Mac came through. Allow Kanji in System Settings › Privacy & Security › System Audio Recording.";
+"Ouvi o áudio do Mac, mas não reconheci fala." = "I heard the Mac's audio but didn't recognize any speech.";
 
 /* Títulos de janela */
 "Kanji" = "Kanji";
@@ -83,6 +96,16 @@
 "Para colar sozinho. Ajustes do Sistema › Privacidade › Acessibilidade." = "To paste on its own. System Settings › Privacy & Security › Accessibility.";
 
 /* Ajustes › Geral */
+"Transcrever o áudio do Mac" = "Transcribe Mac audio";
+"Transcrição do áudio do Mac" = "Mac Audio Transcription";
+"Separar quem fala" = "Tell speakers apart";
+"Usa pesos externos: um modelo de voz de ~15 MB (WeSpeaker ResNet34, CC-BY-4.0), baixado uma vez do Hugging Face. O áudio continua no Mac." = "Uses external weights: a ~15 MB voice model (WeSpeaker ResNet34, CC-BY-4.0), downloaded once from Hugging Face. Audio stays on the Mac.";
+"Modelo de voz baixado e conferido" = "Voice model downloaded and verified";
+"Baixando o modelo de voz…" = "Downloading the voice model…";
+"Baixar o modelo de voz (~15 MB)" = "Download the voice model (~15 MB)";
+"Tentar de novo" = "Try Again";
+"Não consegui baixar o modelo de locutores: %@" = "Couldn't download the speaker model: %@";
+"o arquivo %@ veio diferente do esperado" = "the file %@ didn't match the expected one";
 "Geral" = "General";
 "Atalhos globais" = "Global shortcuts";
 "Começar e parar o ditado" = "Start and stop dictation";
@@ -100,7 +123,7 @@
 "Abrir Ajustes" = "Open Settings";
 "O texto aparece no campo enquanto você fala, revisado pelo modelo do Mac. Sem campo selecionado, ele aparece no painel e é colado no fim." = "The text appears in the field while you talk, reviewed by the on-Mac model. With no field selected, it appears in the panel and is pasted at the end.";
 "Durante a fala o painel mostra só a onda. Ao parar, o texto revisado pela nuvem entra de uma vez no campo (com o modelo do Mac, o ditado escreve ao vivo)." = "While you talk, the panel only shows the waveform. When you stop, the text reviewed in the cloud goes into the field all at once (with the on-Mac model, dictation types live).";
-"Pressione as teclas…" = "Press the keys…";
+"Pressione ⌃⌥ e uma letra…" = "Press ⌃⌥ and a letter…";
 "Padrão" = "Default";
 "Espaço" = "Space";
 
@@ -158,3 +181,74 @@
 "Apagar todo o histórico?" = "Delete the entire history?";
 "Ditados e itens copiados serão removidos deste Mac. Não dá para desfazer." = "Dictations and copied items will be removed from this Mac. This can't be undone.";
 "Cancelar" = "Cancel";
+
+/* Mac audio: Kizami island and recording notice */
+"%@ trechos em %@ min" = "%@ segments in %@ min";
+"A transcrição do Mac parou" = "Mac transcription stopped";
+"Antes de transcrever o áudio do Mac" = "Before transcribing the Mac's audio";
+"Numa chamada: o seu microfone também entra" = "On a call: your microphone is included too";
+"O Kanji vai transcrever tudo o que o Mac tocar. Numa chamada, o seu microfone também entra, como “Você”. Avise as pessoas antes de transcrever uma reunião: gravar uma conversa sem consentimento pode ferir a LGPD e as regras da sua empresa.\n\nO áudio não sai do Mac. O texto fica em Application Support › Kanji › Transcricoes." = "Kanji will transcribe everything the Mac plays. On a call, your microphone is included too, as “Você” (“You”). Tell people before you transcribe a meeting: recording a conversation without consent may break privacy laws (such as the LGPD) and your company's rules.\n\nThe audio never leaves the Mac. The text is saved in Application Support › Kanji › Transcricoes.";
+"Transcrevendo o áudio do Mac" = "Transcribing the Mac's audio";
+"Transcrever" = "Transcribe";
+"Transcrição salva" = "Transcript saved";
+
+/* Transcripts in the Kanji window */
+"Transcrições" = "Transcripts";
+"Nenhuma transcrição ainda" = "No transcripts yet";
+"Escolha uma transcrição" = "Choose a transcript";
+"Aperte %@ para transcrever o que o Mac está tocando." = "Press %@ to transcribe what the Mac is playing.";
+"Gravando: renomear e apagar ficam para depois de parar" = "Recording: renaming and deleting wait until it stops";
+"Resumindo com %@…" = "Summarizing with %@…";
+"Resumir" = "Summarize";
+"Resumir de novo" = "Summarize Again";
+"Resumo" = "Summary";
+"Feedback" = "Feedback";
+"Feedback da entrevista" = "Interview Feedback";
+"Analisando a entrevista com %@…" = "Analyzing the interview with %@…";
+"Feedback de entrevista: pontos fortes e o que melhorar nas suas respostas (as do Você)" = "Interview feedback: strengths and what to improve in your answers (the Você channel)";
+"Renomear" = "Rename";
+"Renomear %@" = "Rename %@";
+"Nome" = "Name";
+"Muda em todos os trechos e nos arquivos .md e .json." = "Changes it in every segment and in the .md and .json files.";
+"Esse nome está vazio ou já é de outra voz." = "That name is empty or already belongs to another voice.";
+"Não consegui salvar: %@" = "Couldn't save: %@";
+"Mostrar no Finder" = "Show in Finder";
+"Mover para o Lixo" = "Move to Trash";
+"Para resumir, escolha um provedor da nuvem e salve a chave em Ajustes › Correção." = "To summarize, choose a cloud provider and save its key in Settings › Correction.";
+"Transcrição longa demais para resumir de uma vez." = "This transcript is too long to summarize in one go.";
+
+/* Modo entrevista */
+"Entrevista" = "Interview";
+"Notas de carreira" = "Career Notes";
+"Pasta" = "Folder";
+"nenhuma" = "none";
+"Escolher…" = "Choose…";
+"Usar esta pasta" = "Use This Folder";
+"Lidas" = "Read";
+"%@ notas, %@ mil caracteres" = "%@ notes, %@ thousand characters";
+"Não consegui ler as notas: %@" = "Couldn't read the notes: %@";
+"Testar uma pergunta" = "Try a Question";
+"Pergunta do entrevistador" = "Interviewer's question";
+"Perguntar às notas" = "Ask My Notes";
+"As notas passam do limite. Escolha uma pasta só com as notas de carreira." = "The notes are over the limit. Choose a folder with only your career notes.";
+"Para perguntar às notas, escolha um provedor da nuvem e salve a chave em Ajustes › Correção." = "To ask your notes, choose a cloud provider and save its key in Settings › Correction.";
+"Uma pasta de Markdown, como um cofre do Obsidian. Ficam de fora as pastas ocultas, as começadas por _ e as chamadas arquivo ou archive. O Kanji lê na hora de perguntar e não guarda cópia; só o texto das notas e a pergunta vão para o provedor da nuvem." = "A folder of Markdown files, like an Obsidian vault. Hidden folders, folders starting with _ and folders named arquivo or archive are left out. Kanji reads the notes when you ask and keeps no copy; only the text of the notes and the question go to the cloud provider.";
+"Ao vivo" = "Live";
+"Sugerir respostas durante a transcrição do Mac" = "Suggest answers while transcribing the Mac";
+"Pedir tópicos agora" = "Ask for bullets now";
+"Quando o entrevistador pergunta, um painel no canto da tela mostra tópicos tirados das notas. O painel pede ao macOS para ficar fora do compartilhamento de tela: confira numa chamada de teste. Se uma pergunta passar sem painel, use o atalho. Vale a partir da próxima transcrição." = "When the interviewer asks a question, a panel in the corner of the screen shows bullets taken from your notes. The panel asks macOS to stay out of screen sharing: check it in a test call. If a question goes by without a panel, use the shortcut. Takes effect on the next transcription.";
+"Modo entrevista" = "Interview mode";
+"Fechar" = "Close";
+"Ainda não ouvi o entrevistador." = "I haven't heard the interviewer yet.";
+"Escolha a pasta de notas em Ajustes › Entrevista." = "Choose the notes folder in Settings › Interview.";
+"Ligue as sugestões em Ajustes › Entrevista e comece a transcrição de novo." = "Turn on suggestions in Settings › Interview and start the transcription again.";
+"Comece a transcrição do Mac (%@) durante a entrevista." = "Start transcribing the Mac (%@) during the interview.";
+
+/* Feedback da entrevista salvo na pasta de notas */
+"Salvar nas notas" = "Save to Notes";
+"Salva este feedback na sua pasta de notas, para o modo entrevista saber o que faltou da próxima vez" = "Saves this feedback to your notes folder, so interview mode knows what was missing next time";
+"Salvar o feedback nas suas notas?" = "Save the feedback to your notes?";
+"Vai para a pasta entrevistas dentro da sua pasta de notas, marcado como rascunho. O modo entrevista passa a usar esse feedback nas próximas perguntas." = "It goes to the entrevistas folder inside your notes folder, marked as a draft. Interview mode will use this feedback for the next questions.";
+"Feedback salvo nas notas: %@" = "Feedback saved to your notes: %@";
+"Não consegui salvar nas notas: %@" = "Couldn't save to your notes: %@";
+"Não achei a pasta de notas. Escolha de novo em Ajustes › Entrevista." = "Couldn't find the notes folder. Pick it again in Settings › Interview.";

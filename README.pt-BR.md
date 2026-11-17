@@ -19,6 +19,7 @@ Nativo (Swift, sem Electron), gratuito e de código aberto. A transcrição acon
 - **Glossário que aprende.** Cada termo que a revisão da nuvem corrige duas vezes ("Cláudio" → Claude) passa a valer também no modelo do Mac, sem internet.
 - **Ignora o silêncio.** Um detector de voz da Apple impede que ruído e silêncio virem palavras que você não disse.
 - **Histórico pesquisável** de tudo que você ditou e copiou. Ficam de fora as senhas marcadas pelos gerenciadores (1Password, Bitwarden, Chaves) e os textos com cara de chave de API ou token. Dá para desligar o histórico do clipboard.
+- **Transcreve o que o Mac toca.** Um vídeo, um podcast ou uma reunião, em segundo plano, num arquivo Markdown e num JSON. Numa chamada, a sua voz entra como "Você"; com o modelo de voz opcional, as outras vozes viram "Locutor 1, 2…". Veja [Transcrever o áudio do Mac](#transcrever-o-áudio-do-mac).
 
 ## Instalar
 
@@ -80,11 +81,30 @@ A janela volta quando quiser pelo menu do Kanji › *Primeiros passos…*.
 |---|---|---|
 | **⌃⌥D** (global) | Começa a gravar; de novo, para e escreve o texto | Ajustes › Geral |
 | **esc** (gravando) | Cancela | fixo |
-| **⌃⌥T** (global) | Abre a janela do Kanji | Ajustes › Geral |
+| **⌃⌥K** (global) | Abre a janela do Kanji | Ajustes › Geral |
+| **⌃⌥M** (global) | Começa a transcrever o áudio do Mac; de novo para parar e salvar | Ajustes › Geral |
 | **⌘Y** | Histórico | fixo |
 | **⌘,** | Ajustes | fixo |
 
+Todo atalho global é **⌃⌥ + uma letra**: **D** de ditar, **M** de Mac, **K** de Kanji. O macOS não usa ⌃⌥ + letra, então eles não tiram o atalho de outro app. Ao gravar um novo, os Ajustes só aceitam combinações com ⌃⌥.
+
 Em Ajustes › Geral também ficam o modo "segurar enquanto fala" e o "escrever enquanto você fala". Neste último, o texto aparece no campo durante a fala, revisado trecho a trecho pelo modelo do Mac. É o modo padrão quando não há provedor da nuvem.
+
+## Transcrever o áudio do Mac
+
+Aperte **⌃⌥M** (ou *Transcrever o áudio do Mac* no menu) e o Kanji transcreve tudo o que o Mac tocar, menos os sons dele mesmo, com fone ou com caixa de som. Aperte de novo para parar.
+
+- **Na primeira vez:** um aviso lembra de avisar as pessoas antes de transcrever uma reunião, e o macOS pede a *Gravação de Áudio do Sistema* (*Ajustes do Sistema › Privacidade e Segurança*). Ela é mais estreita que a Gravação de Tela: o Kanji nunca vê a tela.
+- **Ler e usar:** *Abrir transcrições* no menu abre a janela do Kanji em **Transcrições**: cada sessão com data, duração e quem falou. Numa sessão dá para *Copiar* (Markdown, pronto para colar num documento ou num chat), *Renomear* quem fala ("Locutor 1" → um nome, em todos os parágrafos e arquivos), *Mostrar no Finder* ou mandar para o Lixo. A busca também procura nas transcrições.
+- **Resumir:** manda o **texto** da transcrição para o provedor da nuvem dos *Ajustes › Correção* (a sua chave) e devolve resumo, pontos importantes com a hora, decisões e tarefas, no idioma principal da transcrição (um podcast em inglês tem resumo em inglês; nada é traduzido). Fica salvo ao lado, como `… resumo.md`. O modelo do Mac não dá conta: o contexto dele é pequeno para uma hora de conversa.
+- **Feedback:** para uma entrevista de emprego gravada numa chamada. Você é o "Você" (o microfone) e os entrevistadores são o áudio do Mac. Devolve um resumo, os seus pontos fortes, o que melhorar (a apresentação pessoal, a explicação de cada projeto, respostas sem exemplo concreto ou sem resultado) com uma formulação melhor para tentar, e cada pergunta do entrevistador avaliada como boa, parcial ou fraca. As frases sugeridas nunca inventam fatos: o que você não disse fica como lacuna entre colchetes, como `[quanto tempo economizou]`. Mesma regra de idioma do resumo: entrevista em inglês tem feedback em inglês. Fica salvo como `… entrevista.md`. *Salvar nas notas* também o coloca numa pasta `entrevistas` dentro da sua pasta de notas (depois de você confirmar), marcado como rascunho, para o modo ao vivo saber o que faltou da próxima vez.
+- **Notas da entrevista (Ajustes › Entrevista):** escolha uma pasta de notas de carreira em Markdown (um cofre do Obsidian serve) e teste uma pergunta de entrevistador: o Kanji responde com 3 a 5 tópicos tirados só das suas notas, cada um com a nota de onde veio, no idioma da pergunta. Ficam de fora as pastas ocultas, as começadas por `_` e as chamadas `arquivo` ou `archive`. As notas são lidas na hora e nunca copiadas; o texto delas e a pergunta vão para o seu provedor da nuvem, com cache de prompt para perguntas seguidas saírem baratas. É o passo 1 do modo entrevista em tempo real do [ROADMAP](docs/ROADMAP.md).
+- **Modo entrevista ao vivo (Ajustes › Entrevista › Ao vivo, desligado por padrão):** enquanto o Kanji transcreve o Mac numa chamada, cada pergunta do entrevistador abre um painel no canto de cima, à direita, com tópicos das suas notas. Ele nunca pega o foco e pede ao macOS para ficar fora do compartilhamento de tela e de gravações; confira numa chamada de teste com a sua ferramenta. Se uma pergunta passar sem painel, aperte ⌃⌥P. Medido com áudio sintetizado: a pergunta é detectada de 0,7 a 1,7 s depois do fim, e os tópicos aparecem enquanto a nuvem os escreve.
+- **Arquivos:** um `.md` e um `.json` por sessão em `~/Library/Application Support/Kanji/Transcricoes`. Salvos trecho a trecho: se o app cair, o que já foi transcrito fica. Cada parágrafo tem a hora e quem falou.
+- **Chamadas:** quando outro app (Zoom, Meet, Teams, FaceTime) abre o microfone, o Kanji põe o microfone na sessão sozinho, com cancelamento de eco, como "Você". Desliga 10 s depois que a chamada solta o microfone. Um vídeo não abre o microfone, então o som da sala fica de fora.
+- **Quem falou (opcional):** *Ajustes › Geral › Transcrição do áudio do Mac › Separar quem fala* baixa uma vez um modelo de voz de ~15 MB (WeSpeaker ResNet34 convertido para Core ML, CC BY 4.0, do Hugging Face), conferido por SHA-256. Sem ele, tudo o que o Mac toca sai como "Outros".
+- **Notch:** com o Kizami (app irmão que desenha uma ilha em volta do notch) aberto, a ilha dele mostra que o Kanji está transcrevendo, quando uma chamada põe o seu microfone e quando a transcrição foi salva. Só vão o estado e contagens, nunca o texto.
+- **Recursos:** num podcast de 5 minutos, o Kanji usou ~8,5% de um núcleo e ~70 MB; o serviço de fala da Apple, mais ~11% e até ~200 MB.
 
 ## Privacidade
 
@@ -92,6 +112,7 @@ Em Ajustes › Geral também ficam o modo "segurar enquanto fala" e o "escrever 
 - **Com o modelo do Mac,** nada sai do computador.
 - **Com um provedor da nuvem,** só o **texto** do ditado vai para ele, usando a **sua** chave e conforme os termos dele. O Kanji não tem servidor.
 - **Chaves de API** ficam no Keychain.
+- **Transcrições do áudio do Mac** ficam em `~/Library/Application Support/Kanji/Transcricoes`. O áudio nunca é salvo nem enviado; o modelo de voz só é baixado se você ligar *Separar quem fala*.
 - **Histórico** fica em `~/Library/Application Support/Kanji`; **ajustes e glossário** (inclusive os termos aprendidos), nas preferências do app.
 - **Histórico do clipboard:** vem ligado e guarda o que você copia, para achar depois. Uma senha que não venha de um gerenciador também entra nele. Se você copia senhas de outros lugares, desligue em Ajustes › Histórico.
 

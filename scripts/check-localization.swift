@@ -15,7 +15,7 @@ func falhar(_ mensagem: String) {
 
 // Inicializadores do SwiftUI que recebem LocalizedStringKey, e rótulos de argumento que levam texto da interface.
 let inicio = try! NSRegularExpression(pattern:
-    #"(?:\b(?:Text|Button|Toggle|Section|Picker|Tab|LabeledContent|GroupBox|TextField|SecureField|Label|CommandMenu|ContentUnavailableView)\(\s*|\b(?:localized|titulo|detalhe|texto|ajuda|prompt|withTitle):\s*)""#)
+    #"(?:\b(?:Text|Button|Toggle|Section|Picker|Tab|LabeledContent|GroupBox|TextField|SecureField|Label|CommandMenu|ContentUnavailableView)\(\s*|\.(?:help|confirmationDialog)\(\s*|\b(?:localized|titulo|detalhe|texto|ajuda|prompt|withTitle):\s*)""#)
 
 /// Lê o literal que começa logo depois das aspas e devolve a chave como o Foundation a monta:
 /// cada interpolação vira %@ e os escapes viram o caractere.

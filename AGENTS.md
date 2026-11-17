@@ -12,8 +12,8 @@ Kanji is a native macOS app for dictation in **Brazilian Portuguese mixed with E
 
 Free app, open source (Apache 2.0). The name and icon are reserved (`NOTICE`).
 
-**Current scope:** microphone dictation, review, a glossary that learns, and dictation and clipboard history.
-**Out of scope for now:** system audio/meetings (v0.3), agent mode (v0.4), iPhone, App Store and our own server. See [docs/ROADMAP.md](docs/ROADMAP.md).
+**Current scope:** microphone dictation, review, a glossary that learns, dictation and clipboard history, and transcribing what the Mac plays (videos, podcasts, meetings; optional speakers; read, rename, summarize and get interview feedback in the Transcripts section).
+**Out of scope for now:** agent mode (v0.4), iPhone, App Store and our own server. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Build and tests
 
@@ -44,11 +44,20 @@ For each dictation, the history stores the raw transcription (`bruto`) and the f
 |---|---|
 | `KanjiApp.swift` | App entry point, menu bar, composition (`Kanji.shared`) |
 | `Ditado.swift` | Dictation state machine and the segment queue. **Start here** |
-| `Captura.swift` | Microphone → `SpeechDetector` + PT and EN `SpeechTranscriber` |
+| `Captura.swift` | Microphone or Mac audio → `SpeechDetector` + PT and EN `SpeechTranscriber` |
+| `AudioDoMac.swift` | Core Audio process tap (everything the Mac plays, minus Kanji) |
+| `SessaoDoMac.swift`, `Transcricao.swift` | Long Mac-audio transcription session, saved as JSON + Markdown per segment |
+| `CanalDoMicrofone.swift` | "You" channel: microphone turns on by itself while another app (a call) uses it |
+| `Vozes.swift`, `Locutores.swift` | Optional speaker separation: CoreML voice embeddings, model download, online clustering |
+| `Transcricoes.swift`, `TranscricoesView.swift` | Transcripts section of the main window: list, read, rename speakers, summarize, interview feedback (and saving it to the notes folder), Trash |
+| `Notas.swift`, `EntrevistaView.swift` | Interview mode, step 1: career notes folder (read at question time, never copied) and "ask my notes" in Settings |
+| `Pergunta.swift`, `PerguntaNoModelo.swift` | Interview mode, step 2: does the interviewer's turn ask for an answer? Pure PT/EN cue rule, then the Mac's model for what it rejects. Measured on two labeled sets in `Tests/perguntas-entrevista*.tsv` (`make teste`; `./build/teste --modelo` for the model) |
+| `ModoEntrevista.swift` | Interview mode, step 3: live turn of the interviewer, triggers (English firmed, a pause in the Portuguese draft, Portuguese firmed), streamed cloud bullets, corner panel kept out of screen capture, ⌃⌥P |
+| `Ilha.swift` | Transcription state on the Kizami island (sibling notch app), by distributed notification; never the text |
 | `Fusao.swift` | Picks PT or EN word by word; glossary; capitalization |
 | `Revisao.swift` | Pure rules: dictated lists, joining sentences by pause |
 | `Correcao.swift` | Local model (Foundation Models) + fidelity guard |
-| `Nuvem.swift` | Cloud providers (Anthropic Messages / OpenAI Chat Completions) + Keychain |
+| `Nuvem.swift`, `Streaming.swift` | Cloud providers (Anthropic Messages / OpenAI Chat Completions) + Keychain; the pure reader of streamed (SSE) events |
 | `Aprendizado.swift` | Glossary that learns from the replacements the cloud makes |
 | `Saida.swift`, `Alvo.swift` | Paste with ⌘V; live typing via Accessibility |
 | `Historico.swift` | JSON history + clipboard monitor (filters passwords and keys) |
@@ -70,12 +79,14 @@ For each dictation, the history stores the raw transcription (`bruto`) and the f
    - Don't concatenate user text into the system instructions. Style and glossary come from Settings, which the user wrote themselves.
 4. **Never translate.**
    - What was said in English stays in English.
+   - Anything generated from a transcript (summaries, and whatever comes next) is written in the transcript's **main language**, detected on the Mac (`Transcricao.idiomaPrincipal`, `NLLanguageRecognizer`), never in the Mac's or the dictation's language. An all-English podcast gets an English summary; a Portuguese meeting full of English terms stays in Portuguese and keeps the terms as they were said.
    - The ~3B local model translates often. The `Correcao.fiel` guard discards the review when that happens, and any change to the local model must keep the fidelity tests in `Tests/CorrecaoTeste.swift` passing.
 5. **Failure degrades, it doesn't break.**
    - Without a key, network or credits, dictation delivers the local text and the panel shows a warning.
    - Text must never disappear: if there's no field, it stays in the clipboard and in the history.
 6. **Audio never leaves the Mac.** Only text goes to the cloud, and only to the provider the user chose.
 7. **No third-party dependencies.** Apple frameworks only. Open an issue before adding one.
+   - The one exception is data, not code: the optional speaker-separation weights (CC BY 4.0, credited in `NOTICE`), downloaded at a pinned revision and checked by SHA-256 (`ModeloDeVozes`). Never bundle them or load an unchecked file.
 
 ## Conventions
 
@@ -102,4 +113,5 @@ For each dictation, the history stores the raw transcription (`bruto`) and the f
   - with *greedy* decoding, the model sometimes loops until it overflows the 8,192-token context (hence the token cap);
   - the default guardrails reject harmless text (hence `.permissiveContentTransformations`).
 - **macOS permissions** (Microphone, Accessibility) are tied to the signature. An ad-hoc signature asks for everything again on every build: use `scripts/dev-certificate.sh`.
+- **Keychain prompts on every build.** Without a Team ID (the free "Kanji Dev" certificate), macOS ties "Always Allow" on the API key to the binary's hash, so each `make app` asks again. Never read the key on the main thread in a hot path: the prompt blocks it (the interview mode reads it in the background at session start).
 - **Provider models** change fast. Check the current name in the provider's documentation before changing `Provedor.modeloPadrao`; never write it from memory.

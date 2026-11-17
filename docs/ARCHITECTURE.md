@@ -52,6 +52,15 @@ flowchart LR
 | Output | `Saida.swift`, `Alvo.swift` | `CGEvent` (⌘V), Accessibility API | Pastes into the focused app or types live into the field |
 | Interface | `Painel.swift`, `AjustesView.swift`, `PrimeirosPassos.swift`, `HistoricoView.swift` | SwiftUI + `NSPanel` | Panel that doesn't steal focus, Settings, onboarding, history |
 | Data | `Historico.swift` | JSON in Application Support | Dictations and clipboard (polling `changeCount`); ignores passwords and keys |
+| Mac audio | `AudioDoMac.swift` | Core Audio process tap (`AudioHardwareSystem`) | Everything the Mac plays, minus Kanji, as mono buffers; follows sample-rate changes |
+| Mac session | `SessaoDoMac.swift`, `Transcricao.swift` | `@Observable`, JSON + Markdown | Long transcription saved segment by segment; turns; English-only segments |
+| "You" channel | `CanalDoMicrofone.swift` | `AudioHardwareProcess.isRunningInput`, voice processing | Microphone joins the session while another app (a call) holds it |
+| Speakers | `Vozes.swift`, `Locutores.swift` | Core ML (optional download), plain Swift (tested) | Voice embedding per ~3 s window, online clustering |
+| Transcripts | `Transcricoes.swift`, `TranscricoesView.swift` | SwiftUI, files in Application Support | Reads the saved sessions; rename speakers, summarize and interview feedback (cloud), Trash |
+| Interview notes | `Notas.swift`, `EntrevistaView.swift` | Files in a folder the user picks, cloud with prompt caching | Builds the notes pack (skips hidden, `_`, `arquivo`/`archive`, agent files, `status: obsoleto`) and answers a question with bullets that cite the note |
+| Question detector | `Pergunta.swift`, `PerguntaNoModelo.swift` | Pure rule, then Foundation Models | Decides whether the interviewer's turn asks for an answer: a "?" on the last sentence, a tag ("né", "right"), a request ("tell me", "me conta"), or a question word that isn't opening a statement ("what we do here is…"). What the rule rejects goes to the Mac's model (yes/no questions spoken as statements). Precision and recall printed by `make teste`, and with the model by `./build/teste --modelo` |
+| Interview mode, live | `ModoEntrevista.swift` | Mac-audio session, NSPanel with `sharingType = .none` | Keeps the interviewer's turn (PT and EN words since the candidate last spoke, fused by `Fusao.fundir`), runs the detector as soon as the speaker pauses, and streams bullets from the notes into a corner panel that never takes focus. Three triggers, whichever comes first: English firming (~1.2 s after speech ends; in English when that recognizer is confident, otherwise with the Portuguese draft), 1.3 s without a new Portuguese draft, and Portuguese firming (~2.2 s). The same stretch of audio never asks twice. ⌃⌥P asks for bullets on the current turn. Reads the notes and the key once per session. The feedback of an interview can be saved to `entrevistas/` in the notes folder, so the next questions know what was missing |
+| Notch | `Ilha.swift` | `DistributedNotificationCenter` | Transcription state on the Kizami island; never the text |
 
 ## One dictation, step by step
 
@@ -93,12 +102,38 @@ sequenceDiagram
 
 Pasting with ⌘V works in any app. Typing via Accessibility doesn't: web and Electron editors (the Claude chat, for example) answer "ok" and ignore the text. That's why "only at the end" mode always pastes.
 
+## Transcribing the Mac's audio
+
+A second path, separate from dictation, for long audio: a video, a podcast, a meeting.
+
+```mermaid
+flowchart LR
+    T[Core Audio tap<br/>everything the Mac plays] --> C[Captura<br/>PT + EN transcribers]
+    M[Microphone<br/>only during a call] --> C2[Captura<br/>'Você']
+    C --> S[SessaoDoMac]
+    C2 --> S
+    T -. 16 kHz copy .-> V[Voice embeddings<br/>Core ML, optional]
+    V --> S
+    S --> F[.md + .json<br/>per segment]
+    S -. state only .-> K[Kizami island]
+```
+
+Decisions and why:
+- **Process tap, not ScreenCaptureKit.** It asks only for *System Audio Recording* and excludes Kanji by bundle ID. Without `NSAudioCaptureUsageDescription` the tap records silence with no error.
+- **The session never forces `finalize`.** After `finalize`, the tap's digital silence made the result streams end with `RecogRejected`, and nothing was transcribed after the first pause. The recognizer closes segments on its own, 30 s to 1 min later; for a file that's fine.
+- **English-only segments wait.** The Portuguese recognizer drops a sentence said entirely in English; the English one returns noise for Portuguese. An English segment waits until Portuguese has finalized past its end, and then only its words where Portuguese finalized no word of its own go in. Coverage is per word, not per segment: on an English sentence right next to a Portuguese one, the Portuguese recognizer writes a few words, skips others and sometimes stretches one "word" over 2–6 s; with the English recognizer on, such a stretched word is cut out and the English takes its place, in order. Words of an English sentence that the Portuguese recognizer did write (badly) stay as it wrote them.
+- **Sample-rate changes.** AirPods drop from 48 to 24 kHz while a call holds the microphone. The aggregate device holds only the tap (no output device as clock), a listener updates the format, and every buffer is resampled to the first format: `AnalyzerInputConverter` stays on the format it started with and silently returns nothing for another one.
+- **"You".** A call is detected as another process with input running (`isRunningInput`), minus macOS speech services. Voice processing cancels the speaker echo.
+- **Speakers.** No native diarization exists. Each segment is split into ~1.5–3 s word windows (a 1 s pause always closes one). Each window becomes a WeSpeaker ResNet34 embedding taken inside 10 s of real audio context with a mask: padded with zeros, different voices looked alike (0.65–0.80 vs 0.01–0.20). Online greedy clustering, cosine ≥ 0.5; a window under 1 s never creates a speaker, and a short window between two of the same speaker is smoothed.
+- **The files are the source.** The Transcripts section reads the `.json` files and rewrites them when a speaker is renamed, so the Finder and the app never disagree. The summary and the interview feedback are separate files (`… resumo.md`, `… entrevista.md`; the suffix is `Analise.rawValue`), leaving the transcript untouched.
+- **Kizami.** The state (transcribing, on a call, saved, error) goes to the sibling notch app as a distributed notification. Any process can read those, so the text never goes there.
+
 ## The models
 
 ### Speech recognition: `SpeechAnalyzer` (Apple)
 - Runs on the Mac. Each language's models are downloaded by the system (`AssetInventory`) and shared across apps: Kanji doesn't bundle any model.
 - **`SpeechDetector`:** voice detector. Without it, silence and noise turned into words ("Não.", "Oh.").
-- **Two `SpeechTranscriber`s on the same audio.** The Portuguese one sends volatile results (the gray draft in the panel) and finalized ones. The English one sends only finalized results, with each word's timing, for the merge.
+- **Two `SpeechTranscriber`s on the same audio.** The Portuguese one sends volatile results (the gray draft in the panel) and finalized ones. The English one sends only finalized results, with each word's timing, for the merge. Both use `.fastResults`: without it the English one finalized 6.4 s after the end of speech on Mac audio, against ~1 s with it (measured with `say`), late for the merge and for interview mode.
 - **Pauses:** when volume drops for 0.35 s after speech, Kanji asks the recognizer to finalize the chunk. That way text isn't held back for 10 s.
 
 ### On-Mac model: Foundation Models (Apple Intelligence)
@@ -139,19 +174,24 @@ The second time the same term shows up, it goes into the glossary. From then on 
   - items flagged as passwords by password managers (nspasteboard.org convention);
   - any text that looks like a key or token.
 - Logs (`os.Logger`) don't record dictation content.
+- Mac audio is never saved: only the text, in `Application Support/Kanji/Transcricoes`. The Kizami island gets only the state and counts.
+- The optional voice model is data, not code: downloaded at a pinned revision, each file checked by SHA-256 at download and again before loading.
 
 ## Open tools used
 
 Apple frameworks only:
 - `SpeechAnalyzer` / `Speech`, `FoundationModels`, `AVFoundation`, `NaturalLanguage`, `AppKit` / `SwiftUI`, `Security` (Keychain), `ApplicationServices` (Accessibility);
 - `Accelerate` (audio volume);
-- `Carbon` (global shortcuts).
+- `Carbon` (global shortcuts);
+- `CoreAudio` (process tap), `CoreML` (voice embeddings).
 
-No third-party dependencies, no model downloaded by the app.
+No third-party dependencies. The only download is optional: the speaker-separation weights (pyannote community-1 / WeSpeaker ResNet34, converted to Core ML by FluidInference, CC BY 4.0, credited in `NOTICE`).
 
 ## Known limitations
 
 - Requires macOS 27 and Apple Silicon; local correction requires Apple Intelligence.
 - The on-Mac model doesn't understand the whole text: lists in the requested order and terms that are wrong in context need a cloud model.
 - Typing live via Accessibility doesn't work in web and Electron editors. In those apps, the text is pasted at the end.
-- No diarization (who said what) and no system audio capture for now: see the [ROADMAP](ROADMAP.md).
+- Speakers: similar voices may merge, overlapping speech gets one label, and a speaker born from a noisy window stays (no end-of-session re-clustering yet).
+- Mac audio during a call on AirPods is transcribed a little worse: Bluetooth call mode carries only 24 kHz.
+- In dictation, English words the Portuguese recognizer swallowed can't be recovered by the merge (Mac-audio sessions recover them, since they can wait for the English recognizer).

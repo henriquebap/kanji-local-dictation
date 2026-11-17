@@ -3,40 +3,60 @@ import SwiftUI
 /// ponytail: estado da tela numa classe @Observable em vez de @State (macro do SwiftUI só vem com o Xcode).
 @MainActor @Observable
 final class FiltroHistorico {
+    enum Secao: Hashable { case tudo, ditados, copiados, transcricoes }
+
     static let shared = FiltroHistorico()
     var busca = ""
-    var filtro: Entrada.Tipo?
+    var secao = Secao.tudo
     var selecao: Entrada.ID?
+    var transcricao: Transcricao.ID?
+
+    /// Abre a janela nas transcrições, com a mais recente aberta.
+    func mostrarTranscricoes() {
+        Transcricoes.shared.carregar()
+        (secao, busca, transcricao) = (.transcricoes, "", Transcricoes.shared.itens.first?.id)
+        Kanji.shared.janelas.mostrarPrincipal()
+    }
 }
 
 struct HistoricoView: View {
     @Environment(Historico.self) private var historico
     @Bindable private var ui = FiltroHistorico.shared
 
+    @Bindable private var arquivo = Transcricoes.shared
+
     private var filtradas: [Entrada] {
-        historico.entradas.filter { e in
-            (ui.filtro == nil || e.tipo == ui.filtro) && (ui.busca.isEmpty || e.texto.localizedStandardContains(ui.busca))
+        let tipo: Entrada.Tipo? = switch ui.secao {
+        case .ditados: .ditado
+        case .copiados: .clipboard
+        case .tudo, .transcricoes: nil
         }
+        return historico.entradas.filter { e in
+            (tipo == nil || e.tipo == tipo) && (ui.busca.isEmpty || e.texto.localizedStandardContains(ui.busca))
+        }
+    }
+
+    private var transcricoes: [Transcricao] {
+        guard !ui.busca.isEmpty else { return arquivo.itens }
+        return arquivo.itens.filter { arquivo.textos[$0.id]?.localizedStandardContains(ui.busca) == true }
     }
 
     var body: some View {
         NavigationSplitView {
-            List(filtradas, selection: $ui.selecao) { entrada in
-                Linha(entrada: entrada)
-                    .contextMenu {
-                        Button("Copiar") { Area.copiar(entrada.texto, historico: historico) }
-                        Button("Apagar", role: .destructive) { historico.remover([entrada.id]) }
-                    }
-            }
-            .navigationSplitViewColumnWidth(min: 260, ideal: 320)
-            .overlay {
-                if filtradas.isEmpty {
-                    ContentUnavailableView(ui.busca.isEmpty ? String(localized: "Nada por aqui ainda") : String(localized: "Sem resultados"),
-                                           systemImage: "clock.arrow.circlepath")
-                }
+            if ui.secao == .transcricoes {
+                listaDeTranscricoes
+            } else {
+                listaDoHistorico
             }
         } detail: {
-            if let id = ui.selecao, let entrada = historico.entradas.first(where: { $0.id == id }) {
+            if ui.secao == .transcricoes {
+                if let id = ui.transcricao, let t = arquivo.itens.first(where: { $0.id == id }) {
+                    DetalheDaTranscricao(transcricao: t)
+                } else {
+                    ContentUnavailableView("Escolha uma transcrição", systemImage: "record.circle",
+                                           description: Text("Aperte \(Acao.transcrever.atalho.descricao) para transcrever o que o Mac está tocando."))
+                }
+            } else if let id = ui.selecao, let entrada = historico.entradas.first(where: { $0.id == id }) {
                 Detalhe(entrada: entrada)
             } else {
                 Inicio()
@@ -44,15 +64,54 @@ struct HistoricoView: View {
         }
         .searchable(text: $ui.busca, placement: .sidebar, prompt: "Buscar no histórico")
         .toolbar {
-            Picker("Filtro", selection: $ui.filtro) {
-                Text("Tudo").tag(Entrada.Tipo?.none)
-                Text("Ditados").tag(Entrada.Tipo?.some(.ditado))
-                Text("Copiados").tag(Entrada.Tipo?.some(.clipboard))
+            Picker("Filtro", selection: $ui.secao) {
+                Text("Tudo").tag(FiltroHistorico.Secao.tudo)
+                Text("Ditados").tag(FiltroHistorico.Secao.ditados)
+                Text("Copiados").tag(FiltroHistorico.Secao.copiados)
+                Text("Transcrições").tag(FiltroHistorico.Secao.transcricoes)
             }
             .pickerStyle(.segmented)
             Button("Ajustes", systemImage: "gearshape") { Kanji.shared.janelas.mostrarAjustes() }
         }
-        .onDeleteCommand { if let id = ui.selecao { historico.remover([id]) } }
+        .onChange(of: ui.secao) { _, secao in if secao == .transcricoes { arquivo.carregar() } }
+        .onDeleteCommand {
+            if ui.secao != .transcricoes, let id = ui.selecao { historico.remover([id]) }
+        }
+    }
+
+    private var listaDeTranscricoes: some View {
+        List(transcricoes, selection: $ui.transcricao) { t in
+            LinhaDaTranscricao(transcricao: t)
+                .contextMenu {
+                    Button("Mostrar no Finder") { arquivo.mostrarNoFinder(t) }
+                    Button("Mover para o Lixo", role: .destructive) { arquivo.apagar(t) }
+                        .disabled(arquivo.emAndamento(t) || arquivo.resumindo[t.id] != nil)
+                }
+        }
+        .navigationSplitViewColumnWidth(min: 260, ideal: 320)
+        .overlay {
+            if transcricoes.isEmpty {
+                ContentUnavailableView(ui.busca.isEmpty ? String(localized: "Nenhuma transcrição ainda") : String(localized: "Sem resultados"),
+                                       systemImage: "record.circle")
+            }
+        }
+    }
+
+    private var listaDoHistorico: some View {
+        List(filtradas, selection: $ui.selecao) { entrada in
+            Linha(entrada: entrada)
+                .contextMenu {
+                    Button("Copiar") { Area.copiar(entrada.texto, historico: historico) }
+                    Button("Apagar", role: .destructive) { historico.remover([entrada.id]) }
+                }
+        }
+        .navigationSplitViewColumnWidth(min: 260, ideal: 320)
+        .overlay {
+            if filtradas.isEmpty {
+                ContentUnavailableView(ui.busca.isEmpty ? String(localized: "Nada por aqui ainda") : String(localized: "Sem resultados"),
+                                       systemImage: "clock.arrow.circlepath")
+            }
+        }
     }
 }
 

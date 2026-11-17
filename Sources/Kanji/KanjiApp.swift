@@ -13,8 +13,10 @@ struct KanjiApp: App {
             MenuView()
                 .environment(Kanji.shared.ditado)
                 .environment(Kanji.shared.historico)
+                .environment(Kanji.shared.sessao)
         } label: {
-            Image(systemName: Kanji.shared.ditado.icone)
+            // Ditado tem prioridade no ícone; fora dele, a sessão do Mac gravando aparece como um ponto de gravação.
+            Image(systemName: Kanji.shared.sessao.ativa && !Kanji.shared.ditado.ativo ? "record.circle" : Kanji.shared.ditado.icone)
         }
         .commands {
             CommandGroup(replacing: .appSettings) {
@@ -23,6 +25,7 @@ struct KanjiApp: App {
             }
             CommandMenu("Ditado") {
                 Button("Começar ou parar ditado") { Kanji.shared.ditado.alternar() }
+                Button("Transcrever ou parar o áudio do Mac") { Kanji.shared.sessao.alternar() }
                 Button("Mostrar histórico") { Kanji.shared.janelas.mostrarPrincipal() }
                     .keyboardShortcut("y")  // mesmo atalho do histórico no Safari; ⌘H é "Ocultar" no macOS
             }
@@ -33,6 +36,29 @@ struct KanjiApp: App {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         Kanji.shared.iniciar()
+    }
+
+    /// ⌘Q, sair da conta ou reiniciar no meio de uma transcrição: o reconhecedor ainda segura o fim da fala, e só o
+    /// `parar` da sessão firma e salva. Espera ele, com teto de 15 s para um finalizar travado não prender o app.
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        let sessao = Kanji.shared.sessao
+        sessao.parar()
+        guard let fim = sessao.finalizacao, sessao.ativa else { return .terminateNow }
+        var respondeu = false
+        let responder = {
+            guard !respondeu else { return }
+            respondeu = true
+            sender.reply(toApplicationShouldTerminate: true)
+        }
+        Task { await fim.value; responder() }
+        Task { try? await Task.sleep(for: .seconds(15)); responder() }
+        return .terminateLater
+    }
+
+    /// Sem isso o "transcrevendo" ficaria na ilha do Kizami depois de o Kanji fechar.
+    // ponytail: numa queda o aviso fica; o "Limpar a ilha" do Kizami tira.
+    func applicationWillTerminate(_ notification: Notification) {
+        if Kanji.shared.sessao.ativa { Ilha.remover() }
     }
 
     /// Clique no ícone do Dock com a janela fechada: abre de novo.
@@ -48,6 +74,7 @@ final class Kanji {
     static let shared = Kanji()
 
     let historico = Historico()
+    let sessao = SessaoDoMac()
     let ditado: Ditado
     let janelas: Janelas
 
@@ -64,6 +91,8 @@ final class Kanji {
             case .ditar: ditado.teclaDesceu()
             case .abrir: janelas.mostrarPrincipal()
             case .cancelar: ditado.cancelar()
+            case .transcrever: Kanji.shared.sessao.alternar()
+            case .perguntar: Kanji.shared.sessao.entrevista.pedirAgora()
             }
         }
         atalhos.aoSoltar = { [ditado] acao in
@@ -71,6 +100,8 @@ final class Kanji {
         }
         atalhos.registrar(.ditar)
         atalhos.registrar(.abrir)
+        atalhos.registrar(.transcrever)
+        atalhos.registrar(.perguntar)
         // Primeira vez: a janela de primeiros passos explica e pede cada permissão no momento certo.
         guard UserDefaults.standard.bool(forKey: Ajustes.viuPrimeirosPassos) else { return janelas.mostrarPrimeirosPassos() }
         janelas.mostrarPrincipal()
@@ -83,6 +114,7 @@ final class Kanji {
 struct MenuView: View {
     @Environment(Ditado.self) private var ditado
     @Environment(Historico.self) private var historico
+    @Environment(SessaoDoMac.self) private var sessao
 
     var body: some View {
         Button(ditado.fase == .gravando ? String(localized: "Parar e colar")
@@ -90,6 +122,16 @@ struct MenuView: View {
             ditado.alternar()
         }
         .disabled(ditado.fase == .preparando || ditado.fase == .ajustando)
+
+        Divider()
+        Button(sessao.fase == .gravando
+               ? String(localized: "Parar a transcrição do Mac (\(String(sessao.trechos)) trechos)")
+               : String(localized: "Transcrever o áudio do Mac  (\(Acao.transcrever.atalho.descricao))")) {
+            sessao.alternar()
+        }
+        .disabled(sessao.fase == .preparando || sessao.fase == .finalizando)
+        if case .erro(let mensagem) = sessao.fase { Text(mensagem) }
+        Button("Abrir transcrições") { FiltroHistorico.shared.mostrarTranscricoes() }
 
         Divider()
         Section("Recentes") {
