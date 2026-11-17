@@ -40,7 +40,7 @@ final class CapturaAoVivo {
         let principal = SpeechTranscriber(locale: Locale(identifier: idioma), transcriptionOptions: [],
                                           reportingOptions: [.volatileResults, .fastResults], attributeOptions: atributos)
         let segundo = ingles
-            ? SpeechTranscriber(locale: Locale(identifier: "en_US"), transcriptionOptions: [], reportingOptions: [],
+            ? SpeechTranscriber(locale: Locale(identifier: "en_US"), transcriptionOptions: [], reportingOptions: [.fastResults],
                                 attributeOptions: atributos)
             : nil
         // Detector de voz: o reconhecedor só olha o áudio com fala. Sem ele, o silêncio e o ruído de fundo
